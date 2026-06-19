@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  # Base de datos PostgreSQL
+  postgres:
+    image: postgres:15
+    container_name: incidencias_db
+    restart: always
+    environment:
+      POSTGRES_DB: incidencias_db
+      POSTGRES_USER: incidencias_user
+      POSTGRES_PASSWORD: incidencias_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/scripts:/docker-entrypoint-initdb.d
+    networks:
+      - incidencias_network
+
+  # Backend Laravel
+  backend:
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+    container_name: incidencias_backend
+    restart: always
+    working_dir: /var/www/html
+    volumes:
+      - ./backend:/var/www/html
+    depends_on:
+      - postgres
+    networks:
+      - incidencias_network
+
+  # Servidor Nginx
+  nginx:
+    image: nginx:alpine
+    container_name: incidencias_nginx
+    restart: always
+    ports:
+      - "8080:80"
+    volumes:
+      - ./backend:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - backend
+    networks:
+      - incidencias_network
+
+volumes:
+  postgres_data:
+
+networks:
+  incidencias_network:
+    driver: bridge
