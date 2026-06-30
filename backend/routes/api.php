@@ -23,7 +23,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
 
     // Dashboard
-    Route::get('/dashboard', [DashboardController::class, 'index']);
+    Route::get('/dashboard', [DashboardController::class, 'api']);
 
     // Usuarios
     Route::get('/usuarios', [UsuarioController::class, 'index']);

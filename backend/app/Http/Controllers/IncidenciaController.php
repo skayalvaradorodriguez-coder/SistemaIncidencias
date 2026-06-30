@@ -6,27 +6,40 @@ use Illuminate\Http\Request;
 use App\Models\Incidencia;
 use App\Models\HistorialEstado;
 use App\Models\EstadoIncidencia;
+use App\Models\Pais;
+use App\Models\TipoIncidencia;
 
 class IncidenciaController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Incidencia::with(['usuario', 'ciudad', 'tipo', 'subtipo', 'estado']);
+        $query = Incidencia::with([
+            'usuario',
+            'ciudad',
+            'tipo',
+            'subtipo',
+            'estado'
+        ]);
 
         if ($request->estado_id) {
             $query->where('estado_incidencia_id', $request->estado_id);
         }
+
         if ($request->tipo_id) {
             $query->where('tipo_incidencia_id', $request->tipo_id);
         }
+
         if ($request->prioridad) {
             $query->where('prioridad', $request->prioridad);
         }
+
         if ($request->ciudad_id) {
             $query->where('ciudad_id', $request->ciudad_id);
         }
 
-        return response()->json($query->orderBy('created_at', 'desc')->get());
+        return response()->json(
+            $query->orderBy('created_at', 'desc')->get()
+        );
     }
 
     public function store(Request $request)
@@ -67,12 +80,31 @@ class IncidenciaController extends Controller
             'observacion' => 'Incidencia registrada',
         ]);
 
-        return response()->json($incidencia->load(['usuario', 'ciudad', 'tipo', 'subtipo', 'estado']), 201);
+        return response()->json(
+            $incidencia->load([
+                'usuario',
+                'ciudad',
+                'tipo',
+                'subtipo',
+                'estado'
+            ]),
+            201
+        );
     }
 
     public function show($id)
     {
-        $incidencia = Incidencia::with(['usuario', 'ciudad.provincia.pais', 'tipo', 'subtipo', 'estado', 'historial.estadoNuevo', 'asignaciones.usuario', 'comentarios.usuario'])->findOrFail($id);
+        $incidencia = Incidencia::with([
+            'usuario',
+            'ciudad.provincia.pais',
+            'tipo',
+            'subtipo',
+            'estado',
+            'historial.estadoNuevo',
+            'asignaciones.usuario',
+            'comentarios.usuario'
+        ])->findOrFail($id);
+
         return response()->json($incidencia);
     }
 
@@ -87,9 +119,27 @@ class IncidenciaController extends Controller
             'ciudad_id' => 'exists:ciudades,id',
         ]);
 
-        $incidencia->update($request->only(['titulo', 'descripcion', 'prioridad', 'ciudad_id', 'direccion', 'latitud', 'longitud']));
+        $incidencia->update(
+            $request->only([
+                'titulo',
+                'descripcion',
+                'prioridad',
+                'ciudad_id',
+                'direccion',
+                'latitud',
+                'longitud'
+            ])
+        );
 
-        return response()->json($incidencia->load(['usuario', 'ciudad', 'tipo', 'subtipo', 'estado']));
+        return response()->json(
+            $incidencia->load([
+                'usuario',
+                'ciudad',
+                'tipo',
+                'subtipo',
+                'estado'
+            ])
+        );
     }
 
     public function cambiarEstado(Request $request, $id)
@@ -102,7 +152,9 @@ class IncidenciaController extends Controller
         $incidencia = Incidencia::findOrFail($id);
         $estadoAnteriorId = $incidencia->estado_incidencia_id;
 
-        $incidencia->update(['estado_incidencia_id' => $request->estado_incidencia_id]);
+        $incidencia->update([
+            'estado_incidencia_id' => $request->estado_incidencia_id
+        ]);
 
         HistorialEstado::create([
             'incidencia_id' => $incidencia->id,
@@ -112,13 +164,46 @@ class IncidenciaController extends Controller
             'observacion' => $request->observacion,
         ]);
 
-        return response()->json($incidencia->load(['estado', 'historial.estadoNuevo']));
+        return response()->json(
+            $incidencia->load([
+                'estado',
+                'historial.estadoNuevo'
+            ])
+        );
     }
 
     public function destroy($id)
     {
         $incidencia = Incidencia::findOrFail($id);
+
         $incidencia->delete();
-        return response()->json(['message' => 'Incidencia eliminada']);
+
+        return response()->json([
+            'message' => 'Incidencia eliminada'
+        ]);
+    }
+
+    public function vistaIndex()
+    {
+        $incidencias = Incidencia::with([
+            'usuario',
+            'ciudad',
+            'tipo',
+            'subtipo',
+            'estado'
+        ])
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+        return view('incidencias.index', compact('incidencias'));
+    }
+
+    public function vistaCreate()
+    {
+        $paises = Pais::with('provincias.ciudades')->get();
+
+        $tipos = TipoIncidencia::with('subtipos')->get();
+
+        return view('incidencias.create', compact('paises', 'tipos'));
     }
 }
