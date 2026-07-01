@@ -6,6 +6,12 @@
 
     <title>@yield('title', 'Sistema de Incidencias')</title>
 
+    <script>
+        if (!localStorage.getItem('token')) {
+            window.location.href = '/login';
+        }
+    </script>
+
     <link rel="stylesheet" href="{{ asset('plugins/fontawesome-free/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ asset('plugins/overlayScrollbars/css/OverlayScrollbars.min.css') }}">
     <link rel="stylesheet" href="{{ asset('dist/css/adminlte.min.css') }}">
@@ -15,7 +21,6 @@
 
 <div class="wrapper">
 
-    <!-- Navbar -->
     <nav class="main-header navbar navbar-expand navbar-dark">
         <ul class="navbar-nav">
             <li class="nav-item">
@@ -26,7 +31,6 @@
         </ul>
     </nav>
 
-    <!-- Sidebar -->
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
 
         <a href="/" class="brand-link">
@@ -36,9 +40,7 @@
         </a>
 
         <div class="sidebar">
-
             <nav class="mt-2">
-
                 <ul class="nav nav-pills nav-sidebar flex-column">
 
                     <li class="nav-item">
@@ -63,22 +65,15 @@
                     </li>
 
                 </ul>
-
             </nav>
-
         </div>
 
     </aside>
 
-    <!-- Contenido -->
     <div class="content-wrapper">
-
         <section class="content pt-3">
-
             @yield('content')
-
         </section>
-
     </div>
 
     <footer class="main-footer">
@@ -91,6 +86,8 @@
 <script src="{{ asset('plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 <script src="{{ asset('plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js') }}"></script>
 <script src="{{ asset('dist/js/adminlte.min.js') }}"></script>
+
+<script src="{{ asset('js/auth.js') }}"></script>
 
 @yield('scripts')
 

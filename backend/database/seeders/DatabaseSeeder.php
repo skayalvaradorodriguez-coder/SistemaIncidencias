@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             RolesSeeder::class,
             EstadosIncidenciaSeeder::class,
             UbicacionSeeder::class,
+            TiposIncidenciaSeeder::class,
             AdminSeeder::class,
         ]);
     }
