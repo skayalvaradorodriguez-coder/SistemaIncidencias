@@ -31,6 +31,7 @@
                         <th>Prioridad</th>
                         <th>Usuario</th>
                         <th>Fecha</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
 
@@ -49,10 +50,21 @@
                             <td>{{ $incidencia->prioridad }}</td>
                             <td>{{ $incidencia->usuario->name ?? 'Sin usuario' }}</td>
                             <td>{{ $incidencia->created_at->format('d/m/Y') }}</td>
+                            <td>
+                                <a href="{{ route('incidencias.show', $incidencia->id) }}" class="btn btn-sm btn-info">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ route('incidencias.edit', $incidencia->id) }}" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-danger btn-eliminar" data-id="{{ $incidencia->id }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center">
+                            <td colspan="9" class="text-center">
                                 No hay incidencias registradas.
                             </td>
                         </tr>
@@ -64,4 +76,26 @@
 
 </div>
 
+@endsection
+
+@section('scripts')
+<script>
+document.querySelectorAll('.btn-eliminar').forEach(btn => {
+    btn.addEventListener('click', async function () {
+        if (!confirm('¿Seguro que deseas eliminar esta incidencia?')) return;
+
+        const id = this.dataset.id;
+        try {
+            const response = await authFetch(`/api/incidencias/${id}`, { method: 'DELETE' });
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('No se pudo eliminar la incidencia');
+            }
+        } catch (err) {
+            alert('Error de conexión');
+        }
+    });
+});
+</script>
 @endsection

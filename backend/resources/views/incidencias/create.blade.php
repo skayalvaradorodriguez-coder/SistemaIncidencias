@@ -105,7 +105,7 @@
                     Cancelar
                 </a>
 
-                <button type="button" id="btnGuardar" class="btn btn-primary">
+                <button type="submit" id="btnGuardar" class="btn btn-primary">
                     Guardar Incidencia
                 </button>
 
@@ -173,7 +173,9 @@
     });
 
     // Guardar incidencia
-    document.getElementById('btnGuardar').addEventListener('click', async function () {
+    document.getElementById('formIncidencia').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
         const alertBox = document.getElementById('alertBox');
         alertBox.className = 'alert d-none';
 

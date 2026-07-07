@@ -58,6 +58,12 @@ class IncidenciaController extends Controller
 
         $estadoPendiente = EstadoIncidencia::where('nombre', 'Pendiente')->first();
 
+        if (!$estadoPendiente) {
+            return response()->json([
+                'message' => 'No existe el estado Pendiente en la base de datos.'
+            ], 500);
+        }
+
         $incidencia = Incidencia::create([
             'usuario_id' => $request->user()->id,
             'ciudad_id' => $request->ciudad_id,
@@ -113,10 +119,15 @@ class IncidenciaController extends Controller
         $incidencia = Incidencia::findOrFail($id);
 
         $request->validate([
-            'titulo' => 'string|max:200',
-            'descripcion' => 'string',
-            'prioridad' => 'in:Baja,Media,Alta,Crítica',
-            'ciudad_id' => 'exists:ciudades,id',
+            'titulo' => 'required|string|max:200',
+            'descripcion' => 'required|string',
+            'prioridad' => 'required|in:Baja,Media,Alta,Crítica',
+            'ciudad_id' => 'required|exists:ciudades,id',
+            'tipo_incidencia_id' => 'nullable|exists:tipos_incidencia,id',
+            'subtipo_incidencia_id' => 'nullable|exists:subtipos_incidencia,id',
+            'latitud' => 'nullable|numeric',
+            'longitud' => 'nullable|numeric',
+            'direccion' => 'nullable|string|max:255',
         ]);
 
         $incidencia->update(
@@ -125,6 +136,8 @@ class IncidenciaController extends Controller
                 'descripcion',
                 'prioridad',
                 'ciudad_id',
+                'tipo_incidencia_id',
+                'subtipo_incidencia_id',
                 'direccion',
                 'latitud',
                 'longitud'
@@ -150,6 +163,7 @@ class IncidenciaController extends Controller
         ]);
 
         $incidencia = Incidencia::findOrFail($id);
+
         $estadoAnteriorId = $incidencia->estado_incidencia_id;
 
         $incidencia->update([
@@ -161,7 +175,7 @@ class IncidenciaController extends Controller
             'estado_anterior_id' => $estadoAnteriorId,
             'estado_nuevo_id' => $request->estado_incidencia_id,
             'usuario_id' => $request->user()->id,
-            'observacion' => $request->observacion,
+            'observacion' => $request->observacion ?? 'Cambio de estado',
         ]);
 
         return response()->json(
@@ -179,7 +193,7 @@ class IncidenciaController extends Controller
         $incidencia->delete();
 
         return response()->json([
-            'message' => 'Incidencia eliminada'
+            'message' => 'Incidencia eliminada correctamente.'
         ]);
     }
 
@@ -205,5 +219,41 @@ class IncidenciaController extends Controller
         $tipos = TipoIncidencia::with('subtipos')->get();
 
         return view('incidencias.create', compact('paises', 'tipos'));
+    }
+
+    public function vistaShow($id)
+    {
+        $incidencia = Incidencia::with([
+            'usuario',
+            'ciudad.provincia.pais',
+            'tipo',
+            'subtipo',
+            'estado',
+            'historial.estadoNuevo',
+            'asignaciones.usuario',
+            'comentarios.usuario'
+        ])->findOrFail($id);
+
+        return view('incidencias.show', compact('incidencia'));
+    }
+
+    public function vistaEdit($id)
+    {
+        $incidencia = Incidencia::with([
+            'ciudad.provincia.pais',
+            'tipo',
+            'subtipo',
+            'estado'
+        ])->findOrFail($id);
+
+        $paises = Pais::with('provincias.ciudades')->get();
+
+        $tipos = TipoIncidencia::with('subtipos')->get();
+
+        return view('incidencias.edit', compact(
+            'incidencia',
+            'paises',
+            'tipos'
+        ));
     }
 }
