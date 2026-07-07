@@ -234,7 +234,9 @@ class IncidenciaController extends Controller
             'comentarios.usuario'
         ])->findOrFail($id);
 
-        return view('incidencias.show', compact('incidencia'));
+        $estados = EstadoIncidencia::all();
+
+        return view('incidencias.show', compact('incidencia', 'estados'));
     }
 
     public function vistaEdit($id)
