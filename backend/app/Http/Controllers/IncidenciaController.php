@@ -166,6 +166,12 @@ class IncidenciaController extends Controller
 
         $estadoAnteriorId = $incidencia->estado_incidencia_id;
 
+        if ($estadoAnteriorId == $request->estado_incidencia_id) {
+            return response()->json([
+                'message' => 'La incidencia ya se encuentra en ese estado.'
+            ], 422);
+        }
+
         $incidencia->update([
             'estado_incidencia_id' => $request->estado_incidencia_id
         ]);

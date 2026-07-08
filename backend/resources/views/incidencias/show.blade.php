@@ -12,6 +12,7 @@
     </div>
 
     <div id="alertEstado" class="alert d-none"></div>
+    <div id="alertComentario" class="alert d-none"></div>
 
     <div class="card">
         <div class="card-header">
@@ -126,6 +127,24 @@
         </div>
 
         <div class="card-body">
+
+            <form id="formComentario" class="mb-3">
+                <div class="form-group">
+                    <label>Nuevo Comentario</label>
+                    <textarea
+                        id="comentario"
+                        class="form-control"
+                        rows="2"
+                        placeholder="Escriba un comentario sobre la incidencia"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-comment"></i> Guardar Comentario
+                </button>
+            </form>
+
+            <hr>
+
             @forelse($incidencia->comentarios as $c)
                 <p>
                     <strong>{{ $c->usuario->name ?? 'N/A' }}:</strong>
@@ -137,6 +156,7 @@
             @empty
                 <p class="text-muted">Sin comentarios aún.</p>
             @endforelse
+
         </div>
     </div>
 
@@ -179,6 +199,40 @@ document.getElementById('formEstado').addEventListener('submit', async function 
         alertEstado.textContent = 'Error de conexión con el servidor';
         alertEstado.classList.remove('d-none');
         alertEstado.classList.add('alert-danger');
+    }
+});
+
+document.getElementById('formComentario').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const alertComentario = document.getElementById('alertComentario');
+    alertComentario.className = 'alert d-none';
+
+    const payload = {
+        comentario: document.getElementById('comentario').value
+    };
+
+    try {
+        const response = await authFetch('/api/incidencias/{{ $incidencia->id }}/comentarios', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            alertComentario.textContent = data.message || 'No se pudo guardar el comentario';
+            alertComentario.classList.remove('d-none');
+            alertComentario.classList.add('alert-danger');
+            return;
+        }
+
+        location.reload();
+
+    } catch (error) {
+        alertComentario.textContent = 'Error de conexión con el servidor';
+        alertComentario.classList.remove('d-none');
+        alertComentario.classList.add('alert-danger');
     }
 });
 </script>
