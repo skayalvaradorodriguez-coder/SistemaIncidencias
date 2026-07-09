@@ -42,74 +42,75 @@ class IncidenciaController extends Controller
         );
     }
 
-    public function store(Request $request)
-{
-    $request->validate([
-        'titulo' => 'required|string|max:200',
-        'descripcion' => 'required|string',
-        'ciudad_id' => 'required|exists:ciudades,id',
-        'tipo_incidencia_id' => 'required|exists:tipos_incidencia,id',
-        'subtipo_incidencia_id' => 'required|exists:subtipos_incidencia,id',
-        'prioridad' => 'required|in:Baja,Media,Alta,Crítica',
-        'latitud' => 'nullable|numeric|between:-90,90',
-        'longitud' => 'nullable|numeric|between:-180,180',
-        'direccion' => 'nullable|string|max:255',
-    ], [
-        'titulo.required' => 'El título es obligatorio.',
-        'descripcion.required' => 'La descripción es obligatoria.',
-        'ciudad_id.required' => 'Debe seleccionar una ciudad.',
-        'tipo_incidencia_id.required' => 'Debe seleccionar un tipo de incidencia.',
-        'subtipo_incidencia_id.required' => 'Debe seleccionar un subtipo de incidencia.',
-        'prioridad.required' => 'Debe seleccionar una prioridad.',
+        public function store(Request $request)
+    {
+        $request->validate([
+            'titulo' => 'required|string|max:200',
+            'descripcion' => 'required|string',
+            'ciudad_id' => 'required|exists:ciudades,id',
+            'tipo_incidencia_id' => 'required|exists:tipos_incidencia,id',
+            'subtipo_incidencia_id' => 'required|exists:subtipos_incidencia,id',
+            'prioridad' => 'required|in:Baja,Media,Alta,Crítica',
+            'latitud' => 'nullable|numeric|between:-90,90',
+            'longitud' => 'nullable|numeric|between:-180,180',
+            'direccion' => 'nullable|string|max:255',
+        ], [
+            'titulo.required' => 'El título es obligatorio.',
+            'titulo.max' => 'El título no debe superar los 200 caracteres.',
+            'descripcion.required' => 'La descripción es obligatoria.',
+            'ciudad_id.required' => 'Debe seleccionar una ciudad.',
+            'tipo_incidencia_id.required' => 'Debe seleccionar un tipo de incidencia.',
+            'subtipo_incidencia_id.required' => 'Debe seleccionar un subtipo de incidencia.',
+            'prioridad.required' => 'Debe seleccionar una prioridad.',
 
-        'latitud.numeric' => 'La latitud debe ser un valor numérico.',
-        'latitud.between' => 'La latitud debe estar entre -90 y 90.',
+            'latitud.numeric' => 'La latitud debe ser un valor numérico.',
+            'latitud.between' => 'La latitud debe estar entre -90 y 90.',
 
-        'longitud.numeric' => 'La longitud debe ser un valor numérico.',
-        'longitud.between' => 'La longitud debe estar entre -180 y 180.',
-    ]);
+            'longitud.numeric' => 'La longitud debe ser un valor numérico.',
+            'longitud.between' => 'La longitud debe estar entre -180 y 180.',
+        ]);
 
-    $estadoPendiente = EstadoIncidencia::where('nombre', 'Pendiente')->first();
+        $estadoPendiente = EstadoIncidencia::where('nombre', 'Pendiente')->first();
 
-    if (!$estadoPendiente) {
-        return response()->json([
-            'message' => 'No existe el estado Pendiente en la base de datos.'
-        ], 500);
+        if (!$estadoPendiente) {
+            return response()->json([
+                'message' => 'No existe el estado Pendiente en la base de datos.'
+            ], 500);
+        }
+
+        $incidencia = Incidencia::create([
+            'usuario_id' => $request->user()->id,
+            'ciudad_id' => $request->ciudad_id,
+            'tipo_incidencia_id' => $request->tipo_incidencia_id,
+            'subtipo_incidencia_id' => $request->subtipo_incidencia_id,
+            'estado_incidencia_id' => $estadoPendiente->id,
+            'titulo' => $request->titulo,
+            'descripcion' => $request->descripcion,
+            'prioridad' => $request->prioridad,
+            'latitud' => $request->latitud,
+            'longitud' => $request->longitud,
+            'direccion' => $request->direccion,
+        ]);
+
+        HistorialEstado::create([
+            'incidencia_id' => $incidencia->id,
+            'estado_anterior_id' => null,
+            'estado_nuevo_id' => $estadoPendiente->id,
+            'usuario_id' => $request->user()->id,
+            'observacion' => 'Incidencia registrada',
+        ]);
+
+        return response()->json(
+            $incidencia->load([
+                'usuario',
+                'ciudad',
+                'tipo',
+                'subtipo',
+                'estado'
+            ]),
+            201
+        );
     }
-
-    $incidencia = Incidencia::create([
-        'usuario_id' => $request->user()->id,
-        'ciudad_id' => $request->ciudad_id,
-        'tipo_incidencia_id' => $request->tipo_incidencia_id,
-        'subtipo_incidencia_id' => $request->subtipo_incidencia_id,
-        'estado_incidencia_id' => $estadoPendiente->id,
-        'titulo' => $request->titulo,
-        'descripcion' => $request->descripcion,
-        'prioridad' => $request->prioridad,
-        'latitud' => $request->latitud,
-        'longitud' => $request->longitud,
-        'direccion' => $request->direccion,
-    ]);
-
-    HistorialEstado::create([
-        'incidencia_id' => $incidencia->id,
-        'estado_anterior_id' => null,
-        'estado_nuevo_id' => $estadoPendiente->id,
-        'usuario_id' => $request->user()->id,
-        'observacion' => 'Incidencia registrada',
-    ]);
-
-    return response()->json(
-        $incidencia->load([
-            'usuario',
-            'ciudad',
-            'tipo',
-            'subtipo',
-            'estado'
-        ]),
-        201
-    );
-}
 
     public function show($id)
     {
