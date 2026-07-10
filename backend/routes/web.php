@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IncidenciaController;
+use App\Http\Controllers\UsuarioController;
 
 Route::get('/login', function () {
     return view('login');
@@ -22,10 +23,18 @@ Route::get('/incidencias/{id}', [IncidenciaController::class, 'vistaShow'])
 Route::get('/incidencias/{id}/editar', [IncidenciaController::class, 'vistaEdit'])
     ->name('incidencias.edit');
 
-    use App\Http\Controllers\UsuarioController;
+Route::get('/usuarios', function () {
+    return view('usuarios.index');
+})->name('usuarios.index');
 
-Route::get('/usuarios', [UsuarioController::class, 'vistaIndex'])
-    ->name('usuarios.index');
+Route::get('/usuarios/crear', function () {
+    return view('usuarios.create');
+})->name('usuarios.create');
 
-Route::get('/usuarios/create', [UsuarioController::class, 'create'])
-    ->name('usuarios.create');
+Route::get('/usuarios/{id}', function () {
+    return view('usuarios.show');
+})->name('usuarios.show');
+
+Route::get('/usuarios/{id}/editar', function () {
+    return view('usuarios.edit');
+})->name('usuarios.edit');   
