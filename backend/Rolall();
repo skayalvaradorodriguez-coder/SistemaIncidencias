@@ -1,0 +1,17 @@
+[90m= [39m[34;4mIlluminate\Database\Eloquent\Collection[39;24m {#7610
+    [34mall[39m: [
+      [34;4mApp\Models\User[39;24m {#7612
+        [34mid[39m: [35m1[39m,
+        [34mrol_id[39m: [35m1[39m,
+        [34mname[39m: [32m"[39m[32mAdmin[39m[32m"[39m,
+        [34mapellido[39m: [32m"[39m[32mSistema[39m[32m"[39m,
+        [34memail[39m: [32m"[39m[32madmin@incidencias.com[39m[32m"[39m,
+        [34memail_verified_at[39m: [36mnull[39m,
+        #[33mpassword[39m: [32m"[39m\$[32m2y[39m\$[32m12[39m\$[32m63wdkU1AETg/y8s9BeL.zuW3emTlYgOwh4CYYic8zxuYJQm4BGBQO[39m[32m"[39m,
+        [34mactivo[39m: [36mtrue[39m,
+        #[33mremember_token[39m: [36mnull[39m,
+        [34mcreated_at[39m: [32m"[39m[32m2026-07-10 03:57:45[39m[32m"[39m,
+        [34mupdated_at[39m: [32m"[39m[32m2026-07-10 03:57:45[39m[32m"[39m,
+      },
+    ],
+  }

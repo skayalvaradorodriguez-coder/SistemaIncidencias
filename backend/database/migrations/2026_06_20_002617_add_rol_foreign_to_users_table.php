@@ -7,18 +7,16 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     public function up(): void
-    {
-        Schema::table('users', function (Blueprint $table) {
-            $table->unsignedBigInteger('rol_id')->nullable()->after('id');
-            $table->string('apellido', 100)->after('name');
-            $table->boolean('activo')->default(true)->after('password');
+{
+    Schema::table('users', function (Blueprint $table) {
 
-            $table->foreign('rol_id')
-                  ->references('id')
-                  ->on('roles')
-                  ->onDelete('set null');
-        });
-    }
+        $table->foreign('rol_id')
+              ->references('id')
+              ->on('roles')
+              ->onDelete('set null');
+
+    });
+}
 
     public function down(): void
     {
