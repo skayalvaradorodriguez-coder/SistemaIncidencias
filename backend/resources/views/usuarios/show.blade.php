@@ -1,100 +1,148 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html lang="es">
 
-@section('title', 'Detalle de Usuario')
+<head>
 
-@section('content')
+<meta charset="UTF-8">
 
-<div class="container-fluid">
+<title>Detalle Usuario</title>
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<script src="/js/auth.js"></script>
 
-        <h1>Detalle del Usuario</h1>
+<style>
 
-        <a href="{{ route('usuarios.index') }}" class="btn btn-secondary">
-            Volver
-        </a>
+body{
+    font-family:Arial;
+    margin:40px;
+}
 
-    </div>
+table{
+    border-collapse:collapse;
+    width:500px;
+}
 
-    <div class="card">
+th,td{
+    border:1px solid #ccc;
+    padding:10px;
+    text-align:left;
+}
 
-        <div class="card-header">
-            <h3 class="card-title">Información del usuario</h3>
-        </div>
+button{
+    padding:10px 18px;
+    margin-top:20px;
+}
 
-        <div class="card-body">
+a{
+    text-decoration:none;
+}
 
-            <table class="table table-bordered">
+</style>
 
-                <tr>
-                    <th width="200">ID</th>
-                    <td id="id"></td>
-                </tr>
+</head>
 
-                <tr>
-                    <th>Nombre</th>
-                    <td id="name"></td>
-                </tr>
+<body>
 
-                <tr>
-                    <th>Apellido</th>
-                    <td id="apellido"></td>
-                </tr>
+<h2>Detalle del Usuario</h2>
 
-                <tr>
-                    <th>Email</th>
-                    <td id="email"></td>
-                </tr>
+<table>
 
-                <tr>
-                    <th>Rol</th>
-                    <td id="rol"></td>
-                </tr>
+<tr>
 
-                <tr>
-                    <th>Estado</th>
-                    <td id="activo"></td>
-                </tr>
+<th>ID</th>
 
-            </table>
+<td id="id"></td>
 
-            <a id="btnEditar" class="btn btn-warning">
-                Editar
-            </a>
+</tr>
 
-        </div>
+<tr>
 
-    </div>
+<th>Nombre</th>
 
-</div>
+<td id="name"></td>
 
-@endsection
+</tr>
 
-@section('scripts')
+<tr>
+
+<th>Apellido</th>
+
+<td id="apellido"></td>
+
+</tr>
+
+<tr>
+
+<th>Email</th>
+
+<td id="email"></td>
+
+</tr>
+
+<tr>
+
+<th>Rol</th>
+
+<td id="rol"></td>
+
+</tr>
+
+<tr>
+
+<th>Estado</th>
+
+<td id="activo"></td>
+
+</tr>
+
+</table>
+
+<br>
+
+<a id="editar">
+
+<button>
+
+Editar
+
+</button>
+
+</a>
+
+<a href="/usuarios">
+
+<button>
+
+Volver
+
+</button>
+
+</a>
 
 <script>
 
-const id = window.location.pathname.split('/').pop();
+requireAuth();
+
+const id=window.location.pathname.split('/')[2];
 
 async function cargarUsuario(){
 
-    const response = await authFetch('/api/usuarios/'+id);
+const respuesta=await authFetch('/api/usuarios/'+id);
 
-    const usuario = await response.json();
+const usuario=await respuesta.json();
 
-    document.getElementById('id').textContent = usuario.id;
-    document.getElementById('name').textContent = usuario.name;
-    document.getElementById('apellido').textContent = usuario.apellido;
-    document.getElementById('email').textContent = usuario.email;
-    document.getElementById('rol').textContent = usuario.rol?.nombre ?? '';
+document.getElementById('id').textContent=usuario.id;
 
-    document.getElementById('activo').innerHTML =
-        usuario.activo
-        ? '<span class="badge badge-success">Activo</span>'
-        : '<span class="badge badge-danger">Inactivo</span>';
+document.getElementById('name').textContent=usuario.name;
 
-    document.getElementById('btnEditar').href =
-        '/usuarios/'+usuario.id+'/editar';
+document.getElementById('apellido').textContent=usuario.apellido;
+
+document.getElementById('email').textContent=usuario.email;
+
+document.getElementById('rol').textContent=usuario.rol ? usuario.rol.nombre : '';
+
+document.getElementById('activo').textContent=usuario.activo ? 'Activo' : 'Inactivo';
+
+document.getElementById('editar').href='/usuarios/'+usuario.id+'/editar';
 
 }
 
@@ -102,4 +150,6 @@ cargarUsuario();
 
 </script>
 
-@endsection
+</body>
+
+</html>
