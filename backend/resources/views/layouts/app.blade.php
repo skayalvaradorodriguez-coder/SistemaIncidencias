@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -40,40 +41,49 @@
         </a>
 
         <div class="sidebar">
+
             <nav class="mt-2">
+
                 <ul class="nav nav-pills nav-sidebar flex-column">
 
                     <li class="nav-item">
-                        <a href="/" class="nav-link">
+                        <a href="/"
+                           class="nav-link {{ request()->is('/') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-tachometer-alt"></i>
                             <p>Dashboard</p>
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a href="{{ route('incidencias.index') }}" class="nav-link">
+                        <a href="{{ route('incidencias.index') }}"
+                           class="nav-link {{ request()->is('incidencias*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-exclamation-triangle"></i>
                             <p>Incidencias</p>
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a href="#" class="nav-link">
+                        <a href="{{ route('usuarios.index') }}"
+                           class="nav-link {{ request()->is('usuarios*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-users"></i>
                             <p>Usuarios</p>
                         </a>
                     </li>
 
                 </ul>
+
             </nav>
+
         </div>
 
     </aside>
 
     <div class="content-wrapper">
+
         <section class="content pt-3">
             @yield('content')
         </section>
+
     </div>
 
     <footer class="main-footer">

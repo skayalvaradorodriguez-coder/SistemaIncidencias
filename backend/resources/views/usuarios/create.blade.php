@@ -1,95 +1,142 @@
-<!DOCTYPE html>
-<html lang="es">
+@extends('layouts.app')
 
-<head>
-    <meta charset="UTF-8">
-    <title>Crear Usuario</title>
+@section('title', 'Nuevo Usuario')
 
-    <script src="/js/auth.js"></script>
+@section('content')
 
-    <style>
+<div class="container-fluid">
 
-        body{
-            font-family: Arial;
-            margin:40px;
-        }
+    <div class="row mb-2">
+        <div class="col-sm-6">
+            <h1>Nuevo Usuario</h1>
+        </div>
+    </div>
 
-        input,select{
-            display:block;
-            width:300px;
-            margin-bottom:15px;
-            padding:8px;
-        }
+    <div id="alerta"></div>
 
-        button{
-            padding:10px 18px;
-            cursor:pointer;
-        }
+    <div class="card card-dark">
 
-    </style>
+        <div class="card-header">
+            <h3 class="card-title">
+                Registrar nuevo usuario
+            </h3>
+        </div>
 
-</head>
+        <form id="formUsuario">
 
-<body>
+            <div class="card-body">
 
-<h2>Nuevo Usuario</h2>
+                <div class="form-group">
+                    <label>Nombre</label>
 
-<form id="formUsuario">
+                    <input
+                        type="text"
+                        id="name"
+                        class="form-control"
+                        placeholder="Ingrese el nombre"
+                        required>
+                </div>
 
-    <input
-        type="text"
-        id="name"
-        placeholder="Nombre"
-        required
-    >
+                <div class="form-group">
+                    <label>Apellido</label>
 
-    <input
-        type="text"
-        id="apellido"
-        placeholder="Apellido"
-        required
-    >
+                    <input
+                        type="text"
+                        id="apellido"
+                        class="form-control"
+                        placeholder="Ingrese el apellido"
+                        required>
+                </div>
 
-    <input
-        type="email"
-        id="email"
-        placeholder="Correo"
-        required
-    >
+                <div class="form-group">
+                    <label>Correo electrónico</label>
 
-    <input
-        type="password"
-        id="password"
-        placeholder="Contraseña"
-        required
-    >
+                    <input
+                        type="email"
+                        id="email"
+                        class="form-control"
+                        placeholder="correo@ejemplo.com"
+                        required>
+                </div>
 
-    <input
-        type="number"
-        id="rol_id"
-        placeholder="Rol ID"
-        required
-    >
+                <div class="form-group">
+                    <label>Contraseña</label>
 
-    <select id="activo">
+                    <input
+                        type="password"
+                        id="password"
+                        class="form-control"
+                        placeholder="********"
+                        required>
+                </div>
 
-        <option value="1">Activo</option>
+                <div class="form-group">
+                    <label>Rol</label>
 
-        <option value="0">Inactivo</option>
+                    <select
+                        id="rol_id"
+                        class="form-control">
 
-    </select>
+                        <option value="1">Administrador</option>
+                        <option value="2">Técnico</option>
+                        <option value="3">Usuario</option>
 
-    <button type="submit">
-        Guardar Usuario
-    </button>
+                    </select>
 
-</form>
+                </div>
 
-<br>
+                <div class="form-group">
 
-<a href="/usuarios">
-    Volver
-</a>
+                    <label>Estado</label>
+
+                    <select
+                        id="activo"
+                        class="form-control">
+
+                        <option value="1">
+                            Activo
+                        </option>
+
+                        <option value="0">
+                            Inactivo
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+            <div class="card-footer">
+
+                <button
+                    type="submit"
+                    class="btn btn-primary">
+
+                    <i class="fas fa-save"></i>
+                    Guardar Usuario
+
+                </button>
+
+                <a
+                    href="{{ route('usuarios.index') }}"
+                    class="btn btn-secondary">
+
+                    Cancelar
+
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+@endsection
+
+@section('scripts')
 
 <script>
 
@@ -97,52 +144,70 @@ requireAuth();
 
 document
 .getElementById('formUsuario')
-.addEventListener('submit',async(e)=>{
+.addEventListener('submit', async function(e){
 
-e.preventDefault();
+    e.preventDefault();
 
-const datos={
+    const datos = {
 
-name:document.getElementById('name').value,
+        name: document.getElementById('name').value,
 
-apellido:document.getElementById('apellido').value,
+        apellido: document.getElementById('apellido').value,
 
-email:document.getElementById('email').value,
+        email: document.getElementById('email').value,
 
-password:document.getElementById('password').value,
+        password: document.getElementById('password').value,
 
-rol_id:document.getElementById('rol_id').value,
+        rol_id: document.getElementById('rol_id').value,
 
-activo:document.getElementById('activo').value
+        activo: document.getElementById('activo').value
 
-};
+    };
 
-const respuesta=await authFetch('/api/usuarios',{
+    const respuesta = await authFetch('/api/usuarios',{
 
-method:'POST',
+        method:'POST',
 
-body:JSON.stringify(datos)
+        body:JSON.stringify(datos)
 
-});
+    });
 
-if(respuesta.ok){
+    if(respuesta.ok){
 
-alert('Usuario creado correctamente');
+        document.getElementById('alerta').innerHTML=`
 
-window.location='/usuarios';
+            <div class="alert alert-success">
 
-}else{
+                Usuario creado correctamente.
 
-const error=await respuesta.json();
+            </div>
 
-alert(JSON.stringify(error));
+        `;
 
-}
+        setTimeout(()=>{
+
+            window.location='{{ route("usuarios.index") }}';
+
+        },1200);
+
+    }else{
+
+        const error=await respuesta.json();
+
+        document.getElementById('alerta').innerHTML=`
+
+            <div class="alert alert-danger">
+
+                ${JSON.stringify(error)}
+
+            </div>
+
+        `;
+
+    }
 
 });
 
 </script>
 
-</body>
-
-</html>
+@endsection
