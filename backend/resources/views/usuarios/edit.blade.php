@@ -1,172 +1,192 @@
-<!DOCTYPE html>
-<html lang="es">
+@extends('layouts.app')
 
-<head>
+@section('title', 'Editar Usuario')
 
-<meta charset="UTF-8">
+@section('content')
 
-<title>Editar Usuario</title>
+<div class="container-fluid">
 
-<script src="/js/auth.js"></script>
+    <div class="row justify-content-center">
 
-<style>
+        <div class="col-md-8">
 
-body{
-    font-family:Arial;
-    margin:40px;
-}
+            <div class="card card-warning">
 
-input,select{
-    display:block;
-    width:300px;
-    padding:8px;
-    margin-bottom:15px;
-}
+                <div class="card-header">
+                    <h3 class="card-title">
+                        Editar Usuario
+                    </h3>
+                </div>
 
-button{
-    padding:10px 20px;
-}
+                <form id="formEditar">
 
-</style>
+                    <div class="card-body">
 
-</head>
+                        <div class="form-group">
+                            <label>Nombre</label>
+                            <input
+                                type="text"
+                                id="name"
+                                class="form-control"
+                                required>
+                        </div>
 
-<body>
+                        <div class="form-group">
+                            <label>Apellido</label>
+                            <input
+                                type="text"
+                                id="apellido"
+                                class="form-control"
+                                required>
+                        </div>
 
-<h2>Editar Usuario</h2>
+                        <div class="form-group">
+                            <label>Correo electrónico</label>
+                            <input
+                                type="email"
+                                id="email"
+                                class="form-control"
+                                required>
+                        </div>
 
-<form id="formEditar">
+                        <div class="form-group">
+                            <label>Nueva contraseña</label>
+                            <input
+                                type="password"
+                                id="password"
+                                class="form-control"
+                                placeholder="Dejar en blanco para no cambiarla">
+                        </div>
 
-<input
-type="text"
-id="name"
-required
->
+                        <div class="form-group">
+                            <label>Rol</label>
+                            <select
+                                id="rol_id"
+                                class="form-control">
 
-<input
-type="text"
-id="apellido"
-required
->
+                                <option value="1">Administrador</option>
+                                <option value="2">Técnico</option>
+                                <option value="3">Usuario</option>
 
-<input
-type="email"
-id="email"
-required
->
+                            </select>
+                        </div>
 
-<input
-type="password"
-id="password"
-placeholder="Nueva contraseña (opcional)"
->
+                        <div class="form-group">
+                            <label>Estado</label>
 
-<input
-type="number"
-id="rol_id"
-required
->
+                            <select
+                                id="activo"
+                                class="form-control">
 
-<select id="activo">
+                                <option value="1">Activo</option>
+                                <option value="0">Inactivo</option>
 
-<option value="1">Activo</option>
+                            </select>
 
-<option value="0">Inactivo</option>
+                        </div>
 
-</select>
+                    </div>
 
-<button type="submit">
+                    <div class="card-footer">
 
-Actualizar
+                        <button
+                            type="submit"
+                            class="btn btn-warning">
 
-</button>
+                            <i class="fas fa-save"></i>
+                            Actualizar
 
-</form>
+                        </button>
 
-<br>
+                        <a
+                            href="{{ route('usuarios.index') }}"
+                            class="btn btn-secondary">
 
-<a href="/usuarios">
+                            Cancelar
 
-Volver
+                        </a>
 
-</a>
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+@endsection
+
+@section('scripts')
 
 <script>
 
 requireAuth();
 
-const id=window.location.pathname.split('/')[2];
+const id = window.location.pathname.split('/')[2];
 
 async function cargarUsuario(){
 
-const respuesta=await authFetch('/api/usuarios/'+id);
+    const respuesta = await authFetch('/api/usuarios/' + id);
 
-const usuario=await respuesta.json();
+    const usuario = await respuesta.json();
 
-document.getElementById('name').value=usuario.name;
-
-document.getElementById('apellido').value=usuario.apellido;
-
-document.getElementById('email').value=usuario.email;
-
-document.getElementById('rol_id').value=usuario.rol_id;
-
-document.getElementById('activo').value=usuario.activo?1:0;
+    document.getElementById('name').value = usuario.name;
+    document.getElementById('apellido').value = usuario.apellido;
+    document.getElementById('email').value = usuario.email;
+    document.getElementById('rol_id').value = usuario.rol_id;
+    document.getElementById('activo').value = usuario.activo ? 1 : 0;
 
 }
 
 cargarUsuario();
 
-document.getElementById('formEditar').addEventListener('submit',async(e)=>{
+document.getElementById('formEditar').addEventListener('submit', async function(e){
 
-e.preventDefault();
+    e.preventDefault();
 
-const datos={
+    const datos = {
 
-name:document.getElementById('name').value,
+        name: document.getElementById('name').value,
+        apellido: document.getElementById('apellido').value,
+        email: document.getElementById('email').value,
+        rol_id: document.getElementById('rol_id').value,
+        activo: document.getElementById('activo').value
 
-apellido:document.getElementById('apellido').value,
+    };
 
-email:document.getElementById('email').value,
+    const password = document.getElementById('password').value;
 
-rol_id:document.getElementById('rol_id').value,
+    if(password !== ""){
+        datos.password = password;
+    }
 
-activo:document.getElementById('activo').value
+    const respuesta = await authFetch('/api/usuarios/' + id, {
 
-};
+        method: 'PUT',
+        body: JSON.stringify(datos)
 
-const password=document.getElementById('password').value;
+    });
 
-if(password!=""){
+    if(respuesta.ok){
 
-datos.password=password;
+        alert('Usuario actualizado correctamente');
 
-}
+        window.location = '/usuarios';
 
-const respuesta=await authFetch('/api/usuarios/'+id,{
+    }else{
 
-method:'PUT',
+        const error = await respuesta.json();
 
-body:JSON.stringify(datos)
+        alert(error.message ?? 'No se pudo actualizar');
 
-});
-
-if(respuesta.ok){
-
-alert("Usuario actualizado");
-
-window.location="/usuarios";
-
-}else{
-
-alert("No se pudo actualizar");
-
-}
+    }
 
 });
 
 </script>
 
-</body>
-
-</html>
+@endsection
