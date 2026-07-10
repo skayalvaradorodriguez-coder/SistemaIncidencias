@@ -21,3 +21,11 @@ Route::get('/incidencias/{id}', [IncidenciaController::class, 'vistaShow'])
 
 Route::get('/incidencias/{id}/editar', [IncidenciaController::class, 'vistaEdit'])
     ->name('incidencias.edit');
+
+    use App\Http\Controllers\UsuarioController;
+
+Route::get('/usuarios', [UsuarioController::class, 'vistaIndex'])
+    ->name('usuarios.index');
+
+Route::get('/usuarios/create', [UsuarioController::class, 'create'])
+    ->name('usuarios.create');
