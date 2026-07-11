@@ -1,148 +1,111 @@
-<!DOCTYPE html>
-<html lang="es">
+@extends('layouts.app')
 
-<head>
+@section('title', 'Detalle del Usuario')
 
-<meta charset="UTF-8">
+@section('content')
 
-<title>Detalle Usuario</title>
+<div class="container-fluid">
 
-<script src="/js/auth.js"></script>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Detalle del Usuario</h1>
 
-<style>
+        <a href="{{ route('usuarios.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Volver
+        </a>
+    </div>
 
-body{
-    font-family:Arial;
-    margin:40px;
-}
+    <div class="card card-primary">
 
-table{
-    border-collapse:collapse;
-    width:500px;
-}
+        <div class="card-header">
+            <h3 class="card-title">
+                Información del Usuario
+            </h3>
+        </div>
 
-th,td{
-    border:1px solid #ccc;
-    padding:10px;
-    text-align:left;
-}
+        <div class="card-body">
 
-button{
-    padding:10px 18px;
-    margin-top:20px;
-}
+            <table class="table table-bordered">
 
-a{
-    text-decoration:none;
-}
+                <tr>
+                    <th width="200">ID</th>
+                    <td id="id"></td>
+                </tr>
 
-</style>
+                <tr>
+                    <th>Nombre</th>
+                    <td id="name"></td>
+                </tr>
 
-</head>
+                <tr>
+                    <th>Apellido</th>
+                    <td id="apellido"></td>
+                </tr>
 
-<body>
+                <tr>
+                    <th>Correo Electrónico</th>
+                    <td id="email"></td>
+                </tr>
 
-<h2>Detalle del Usuario</h2>
+                <tr>
+                    <th>Rol</th>
+                    <td id="rol"></td>
+                </tr>
 
-<table>
+                <tr>
+                    <th>Estado</th>
+                    <td id="activo"></td>
+                </tr>
 
-<tr>
+            </table>
 
-<th>ID</th>
+        </div>
 
-<td id="id"></td>
+        <div class="card-footer">
 
-</tr>
+            <a id="editar" class="btn btn-warning">
+                <i class="fas fa-edit"></i>
+                Editar
+            </a>
 
-<tr>
+            <a href="{{ route('usuarios.index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                Volver
+            </a>
 
-<th>Nombre</th>
+        </div>
 
-<td id="name"></td>
+    </div>
 
-</tr>
+</div>
 
-<tr>
+@endsection
 
-<th>Apellido</th>
-
-<td id="apellido"></td>
-
-</tr>
-
-<tr>
-
-<th>Email</th>
-
-<td id="email"></td>
-
-</tr>
-
-<tr>
-
-<th>Rol</th>
-
-<td id="rol"></td>
-
-</tr>
-
-<tr>
-
-<th>Estado</th>
-
-<td id="activo"></td>
-
-</tr>
-
-</table>
-
-<br>
-
-<a id="editar">
-
-<button>
-
-Editar
-
-</button>
-
-</a>
-
-<a href="/usuarios">
-
-<button>
-
-Volver
-
-</button>
-
-</a>
+@section('scripts')
 
 <script>
 
 requireAuth();
 
-const id=window.location.pathname.split('/')[2];
+const id = window.location.pathname.split('/')[2];
 
-async function cargarUsuario(){
+async function cargarUsuario() {
 
-const respuesta=await authFetch('/api/usuarios/'+id);
+    const respuesta = await authFetch('/api/usuarios/' + id);
 
-const usuario=await respuesta.json();
+    const usuario = await respuesta.json();
 
-document.getElementById('id').textContent=usuario.id;
+    document.getElementById('id').textContent = usuario.id;
+    document.getElementById('name').textContent = usuario.name;
+    document.getElementById('apellido').textContent = usuario.apellido;
+    document.getElementById('email').textContent = usuario.email;
+    document.getElementById('rol').textContent = usuario.rol ? usuario.rol.nombre : '';
 
-document.getElementById('name').textContent=usuario.name;
+    document.getElementById('activo').innerHTML =
+        usuario.activo
+        ? '<span class="badge badge-success">Activo</span>'
+        : '<span class="badge badge-danger">Inactivo</span>';
 
-document.getElementById('apellido').textContent=usuario.apellido;
-
-document.getElementById('email').textContent=usuario.email;
-
-document.getElementById('rol').textContent=usuario.rol ? usuario.rol.nombre : '';
-
-document.getElementById('activo').textContent=usuario.activo ? 'Activo' : 'Inactivo';
-
-document.getElementById('editar').href='/usuarios/'+usuario.id+'/editar';
+    document.getElementById('editar').href = '/usuarios/' + usuario.id + '/editar';
 
 }
 
@@ -150,6 +113,4 @@ cargarUsuario();
 
 </script>
 
-</body>
-
-</html>
+@endsection
