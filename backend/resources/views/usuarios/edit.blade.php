@@ -64,9 +64,9 @@
                                 id="rol_id"
                                 class="form-control">
 
-                                <option value="1">Administrador</option>
-                                <option value="2">Técnico</option>
-                                <option value="3">Usuario</option>
+                                <option value="2">Administrador</option>
+                                <option value="3">Responsable</option>
+                                <option value="4">Ciudadano</option>
 
                             </select>
                         </div>

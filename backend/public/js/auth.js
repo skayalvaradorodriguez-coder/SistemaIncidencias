@@ -64,33 +64,18 @@ function requireAuth() {
 }
 
 function esAdministrador() {
-
     const user = getUser();
-
-    return user &&
-           user.rol &&
-           user.rol.nombre === "Administrador";
-
+    return user && user.rol && user.rol.nombre === "Administrador";
 }
 
-function esTecnico() {
-
+function esResponsable() {
     const user = getUser();
-
-    return user &&
-           user.rol &&
-           user.rol.nombre === "Técnico";
-
+    return user && user.rol && user.rol.nombre === "Responsable";
 }
 
-function esUsuario() {
-
+function esCiudadano() {
     const user = getUser();
-
-    return user &&
-           user.rol &&
-           user.rol.nombre === "Usuario";
-
+    return user && user.rol && user.rol.nombre === "Ciudadano";
 }
 
 function requireRole(rolesPermitidos){
