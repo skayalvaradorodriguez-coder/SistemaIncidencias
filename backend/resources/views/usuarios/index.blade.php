@@ -58,7 +58,10 @@
 
 <script>
 
+requireRole(["Administrador"]);
+
 async function cargarUsuarios(){
+    
 
     const response = await authFetch('/api/usuarios');
 

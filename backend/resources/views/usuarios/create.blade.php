@@ -66,8 +66,15 @@
                         type="password"
                         id="password"
                         class="form-control"
-                        placeholder="********"
+                        placeholder="Ingrese una contraseña (mínimo 6 caracteres)"
+                        minlength="6"
+                        maxlength="50"
                         required>
+
+                    <small class="form-text text-muted">
+                        La contraseña debe tener al menos 6 caracteres.
+                    </small>
+
                 </div>
 
                 <div class="form-group">
@@ -75,7 +82,8 @@
 
                     <select
                         id="rol_id"
-                        class="form-control">
+                        class="form-control"
+                        required>
 
                         <option value="1">Administrador</option>
                         <option value="2">Técnico</option>
@@ -91,15 +99,11 @@
 
                     <select
                         id="activo"
-                        class="form-control">
+                        class="form-control"
+                        required>
 
-                        <option value="1">
-                            Activo
-                        </option>
-
-                        <option value="0">
-                            Inactivo
-                        </option>
+                        <option value="1">Activo</option>
+                        <option value="0">Inactivo</option>
 
                     </select>
 
@@ -111,6 +115,7 @@
 
                 <button
                     type="submit"
+                    id="btnGuardar"
                     class="btn btn-primary">
 
                     <i class="fas fa-save"></i>
@@ -140,13 +145,19 @@
 
 <script>
 
-requireAuth();
+requireRole(["Administrador"]);
 
 document
 .getElementById('formUsuario')
 .addEventListener('submit', async function(e){
 
     e.preventDefault();
+
+    document.getElementById('alerta').innerHTML = '';
+
+    const boton = document.getElementById('btnGuardar');
+
+    boton.disabled = true;
 
     const datos = {
 
@@ -164,47 +175,87 @@ document
 
     };
 
-    const respuesta = await authFetch('/api/usuarios',{
+    try{
 
-        method:'POST',
+        const respuesta = await authFetch('/api/usuarios',{
 
-        body:JSON.stringify(datos)
+            method:'POST',
 
-    });
+            body:JSON.stringify(datos)
 
-    if(respuesta.ok){
+        });
 
-        document.getElementById('alerta').innerHTML=`
+        if(respuesta.ok){
 
-            <div class="alert alert-success">
+            document.getElementById('alerta').innerHTML = `
 
-                Usuario creado correctamente.
+                <div class="alert alert-success">
 
-            </div>
+                    <i class="fas fa-check-circle"></i>
 
-        `;
+                    Usuario creado correctamente.
 
-        setTimeout(()=>{
+                </div>
 
-            window.location='{{ route("usuarios.index") }}';
+            `;
 
-        },1200);
+            document.getElementById('formUsuario').reset();
 
-    }else{
+            setTimeout(()=>{
 
-        const error=await respuesta.json();
+                window.location='{{ route("usuarios.index") }}';
 
-        document.getElementById('alerta').innerHTML=`
+            },1200);
+
+        }else{
+
+            const error = await respuesta.json();
+
+            let mensaje = '';
+
+            if(error.errors){
+
+                mensaje = Object.values(error.errors)
+                                .flat()
+                                .join('<br>');
+
+            }else{
+
+                mensaje = error.message;
+
+            }
+
+            document.getElementById('alerta').innerHTML = `
+
+                <div class="alert alert-danger">
+
+                    <i class="fas fa-exclamation-circle"></i>
+
+                    ${mensaje}
+
+                </div>
+
+            `;
+
+        }
+
+    }catch(error){
+
+        document.getElementById('alerta').innerHTML = `
 
             <div class="alert alert-danger">
 
-                ${JSON.stringify(error)}
+                <i class="fas fa-times-circle"></i>
+
+                Ocurrió un error al comunicarse con el servidor.
 
             </div>
 
         `;
 
     }
+
+    boton.disabled = false;
 
 });
 

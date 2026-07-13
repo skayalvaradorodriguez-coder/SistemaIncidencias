@@ -62,3 +62,56 @@ function requireAuth() {
         window.location.href = '/login';
     }
 }
+
+function esAdministrador() {
+
+    const user = getUser();
+
+    return user &&
+           user.rol &&
+           user.rol.nombre === "Administrador";
+
+}
+
+function esTecnico() {
+
+    const user = getUser();
+
+    return user &&
+           user.rol &&
+           user.rol.nombre === "Técnico";
+
+}
+
+function esUsuario() {
+
+    const user = getUser();
+
+    return user &&
+           user.rol &&
+           user.rol.nombre === "Usuario";
+
+}
+
+function requireRole(rolesPermitidos){
+
+    requireAuth();
+
+    const user = getUser();
+
+    if(!user){
+
+        window.location = "/login";
+        return;
+
+    }
+
+    if(!rolesPermitidos.includes(user.rol.nombre)){
+
+        alert("No tiene permisos para acceder a esta página.");
+
+        window.location = "/";
+
+    }
+
+}

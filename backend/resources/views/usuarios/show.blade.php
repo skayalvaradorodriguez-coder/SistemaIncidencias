@@ -84,7 +84,7 @@
 
 <script>
 
-requireAuth();
+requireRole(["Administrador"]);
 
 const id = window.location.pathname.split('/')[2];
 
