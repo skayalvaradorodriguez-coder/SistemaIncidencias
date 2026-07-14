@@ -2,6 +2,13 @@
 
 @section('title', 'Detalle de Incidencia')
 
+@section('styles')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+    #mapa { height: 320px; border-radius: 4px; z-index: 1; }
+</style>
+@endsection
+
 @section('content')
 
 <div class="container-fluid">
@@ -43,6 +50,13 @@
                 </div>
 
             </div>
+
+            @if($incidencia->latitud && $incidencia->longitud)
+                <div class="mb-3">
+                    <p><strong>Ubicación:</strong></p>
+                    <div id="mapa"></div>
+                </div>
+            @endif
 
             <a href="{{ route('incidencias.edit', $incidencia->id) }}" class="btn btn-warning">
                 <i class="fas fa-edit"></i> Editar
@@ -236,7 +250,23 @@
 
 @section('scripts')
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+@if($incidencia->latitud && $incidencia->longitud)
+    const mapaDetalle = L.map('mapa', { scrollWheelZoom: false })
+        .setView([{{ $incidencia->latitud }}, {{ $incidencia->longitud }}], 16);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(mapaDetalle);
+
+    L.marker([{{ $incidencia->latitud }}, {{ $incidencia->longitud }}])
+        .addTo(mapaDetalle)
+        .bindPopup(@json($incidencia->titulo))
+        .openPopup();
+@endif
+
 document.getElementById('formEstado').addEventListener('submit', async function (e) {
     e.preventDefault();
 

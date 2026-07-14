@@ -2,6 +2,13 @@
 
 @section('title', 'Nueva Incidencia')
 
+@section('styles')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+    #mapa { height: 380px; border-radius: 4px; z-index: 1; }
+</style>
+@endsection
+
 @section('content')
 
 <div class="container-fluid">
@@ -85,18 +92,29 @@
                     <input type="text" id="direccion" class="form-control" placeholder="Dirección aproximada">
                 </div>
 
+                <div class="form-group">
+                    <label>Ubicación en el mapa</label>
+                    <small class="form-text text-muted mb-2">
+                        Haga clic en el mapa para marcar el punto exacto de la incidencia, o use su ubicación actual.
+                    </small>
+                    <div id="mapa"></div>
+                    <button type="button" id="btnMiUbicacion" class="btn btn-info btn-sm mt-2">
+                        <i class="fas fa-location-arrow"></i> Usar mi ubicación
+                    </button>
+                </div>
+
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
                             <label>Latitud</label>
-                            <input type="text" id="latitud" class="form-control">
+                            <input type="text" id="latitud" class="form-control" readonly>
                         </div>
                     </div>
 
                     <div class="col-md-6">
                         <div class="form-group">
                             <label>Longitud</label>
-                            <input type="text" id="longitud" class="form-control">
+                            <input type="text" id="longitud" class="form-control" readonly>
                         </div>
                     </div>
                 </div>
@@ -120,7 +138,53 @@
 
 @section('scripts')
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+    // ================== MAPA ==================
+    const mapa = L.map('mapa').setView([-2.2276, -80.8585], 12);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(mapa);
+
+    let marcador = null;
+
+    function setCoords(lat, lng) {
+        document.getElementById('latitud').value = lat.toFixed(6);
+        document.getElementById('longitud').value = lng.toFixed(6);
+    }
+
+    function colocarMarcador(lat, lng) {
+        if (marcador) {
+            marcador.setLatLng([lat, lng]);
+        } else {
+            marcador = L.marker([lat, lng], { draggable: true }).addTo(mapa);
+            marcador.on('dragend', e => {
+                const p = e.target.getLatLng();
+                setCoords(p.lat, p.lng);
+            });
+        }
+        setCoords(lat, lng);
+    }
+
+    mapa.on('click', e => colocarMarcador(e.latlng.lat, e.latlng.lng));
+
+    document.getElementById('btnMiUbicacion').addEventListener('click', () => {
+        if (!navigator.geolocation) {
+            alert('Su navegador no soporta geolocalización.');
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(
+            pos => {
+                colocarMarcador(pos.coords.latitude, pos.coords.longitude);
+                mapa.setView([pos.coords.latitude, pos.coords.longitude], 16);
+            },
+            () => alert('No se pudo obtener su ubicación. Marque el punto manualmente en el mapa.')
+        );
+    });
+
+    // ================== COMBOS ==================
     const paises = @json($paises);
     const tipos = @json($tipos);
 
@@ -172,7 +236,7 @@
         }
     });
 
-    // Guardar incidencia
+    // ================== GUARDAR ==================
     document.getElementById('formIncidencia').addEventListener('submit', async function (e) {
         e.preventDefault();
 

@@ -51,7 +51,7 @@ class IncidenciaController extends Controller
         );
     }
 
-        public function store(Request $request)
+    public function store(Request $request)
     {
         $request->validate([
             'titulo' => 'required|string|max:200',
@@ -109,6 +109,9 @@ class IncidenciaController extends Controller
             'observacion' => 'Incidencia registrada',
         ]);
 
+        // Notifica a administradores y responsables sobre la nueva incidencia
+        $this->notificaciones->notificarNuevaIncidencia($incidencia, $request->user()->id);
+
         return response()->json(
             $incidencia->load([
                 'usuario',
@@ -148,8 +151,8 @@ class IncidenciaController extends Controller
             'ciudad_id' => 'required|exists:ciudades,id',
             'tipo_incidencia_id' => 'nullable|exists:tipos_incidencia,id',
             'subtipo_incidencia_id' => 'nullable|exists:subtipos_incidencia,id',
-            'latitud' => 'nullable|numeric',
-            'longitud' => 'nullable|numeric',
+            'latitud' => 'nullable|numeric|between:-90,90',
+            'longitud' => 'nullable|numeric|between:-180,180',
             'direccion' => 'nullable|string|max:255',
         ]);
 

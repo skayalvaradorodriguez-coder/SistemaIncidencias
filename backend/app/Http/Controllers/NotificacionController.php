@@ -16,10 +16,14 @@ class NotificacionController extends Controller
         return response()->json($notificaciones);
     }
 
-    public function marcarLeida($id)
+    public function marcarLeida(Request $request, $id)
     {
-        $notificacion = Notificacion::findOrFail($id);
+        // Solo permite marcar notificaciones propias (control de acceso a nivel de datos)
+        $notificacion = Notificacion::where('usuario_id', $request->user()->id)
+            ->findOrFail($id);
+
         $notificacion->update(['leida' => true]);
+
         return response()->json($notificacion);
     }
 

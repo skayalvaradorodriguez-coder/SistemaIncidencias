@@ -2,6 +2,13 @@
 
 @section('title', 'Editar Incidencia')
 
+@section('styles')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+    #mapa { height: 380px; border-radius: 4px; z-index: 1; }
+</style>
+@endsection
+
 @section('content')
 
 <div class="container-fluid">
@@ -84,6 +91,32 @@
                     <input type="text" id="direccion" class="form-control" value="{{ $incidencia->direccion }}">
                 </div>
 
+                <div class="form-group">
+                    <label>Ubicación en el mapa</label>
+                    <small class="form-text text-muted mb-2">
+                        Haga clic en el mapa o arrastre el marcador para actualizar la ubicación.
+                    </small>
+                    <div id="mapa"></div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Latitud</label>
+                            <input type="text" id="latitud" class="form-control" readonly
+                                   value="{{ $incidencia->latitud }}">
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Longitud</label>
+                            <input type="text" id="longitud" class="form-control" readonly
+                                   value="{{ $incidencia->longitud }}">
+                        </div>
+                    </div>
+                </div>
+
                 <a href="{{ route('incidencias.show', $incidencia->id) }}" class="btn btn-secondary">Cancelar</a>
                 <button type="submit" id="btnActualizar" class="btn btn-primary">Guardar Cambios</button>
 
@@ -97,7 +130,49 @@
 @endsection
 
 @section('scripts')
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+    // ================== MAPA ==================
+    const latInicial = {{ $incidencia->latitud ?? 'null' }};
+    const lngInicial = {{ $incidencia->longitud ?? 'null' }};
+
+    const mapa = L.map('mapa').setView(
+        latInicial !== null ? [latInicial, lngInicial] : [-2.2276, -80.8585],
+        latInicial !== null ? 16 : 12
+    );
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(mapa);
+
+    let marcador = null;
+
+    function setCoords(lat, lng) {
+        document.getElementById('latitud').value = lat.toFixed(6);
+        document.getElementById('longitud').value = lng.toFixed(6);
+    }
+
+    function colocarMarcador(lat, lng) {
+        if (marcador) {
+            marcador.setLatLng([lat, lng]);
+        } else {
+            marcador = L.marker([lat, lng], { draggable: true }).addTo(mapa);
+            marcador.on('dragend', e => {
+                const p = e.target.getLatLng();
+                setCoords(p.lat, p.lng);
+            });
+        }
+        setCoords(lat, lng);
+    }
+
+    if (latInicial !== null && lngInicial !== null) {
+        colocarMarcador(latInicial, lngInicial);
+    }
+
+    mapa.on('click', e => colocarMarcador(e.latlng.lat, e.latlng.lng));
+
+    // ================== COMBOS ==================
     const paises = @json($paises);
     const tipos = @json($tipos);
 
@@ -172,6 +247,7 @@
         cargarSubtipos(this.value);
     });
 
+    // ================== GUARDAR ==================
     document.getElementById('formEditar').addEventListener('submit', async function (e) {
         e.preventDefault();
 
@@ -186,6 +262,8 @@
             subtipo_incidencia_id: subtipoSelect.value,
             prioridad: document.getElementById('prioridad').value,
             direccion: document.getElementById('direccion').value,
+            latitud: document.getElementById('latitud').value || null,
+            longitud: document.getElementById('longitud').value || null,
         };
 
         try {

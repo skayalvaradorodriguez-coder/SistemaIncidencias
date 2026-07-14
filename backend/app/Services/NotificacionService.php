@@ -4,12 +4,14 @@ namespace App\Services;
 
 use App\Models\Incidencia;
 use App\Models\Notificacion;
+use App\Models\User;
 
 /**
  * Centraliza la creación de notificaciones del sistema.
  *
  * Se dispara ante los eventos definidos en el alcance del proyecto:
- * cambios de estado, asignación de responsables y nuevos comentarios.
+ * registro de incidencias, cambios de estado, asignación de responsables
+ * y nuevos comentarios.
  */
 class NotificacionService
 {
@@ -55,6 +57,26 @@ class NotificacionService
         return array_values(array_unique($ids));
     }
 
+    /**
+     * Notifica a administradores y responsables activos cuando se
+     * registra una nueva incidencia en el sistema.
+     */
+    public function notificarNuevaIncidencia(Incidencia $incidencia, int $usuarioCreaId): void
+    {
+        $gestores = User::whereHas('rol', fn ($q) => $q->whereIn('nombre', ['Administrador', 'Responsable']))
+            ->where('activo', true)
+            ->pluck('id')
+            ->all();
+
+        $this->crearParaVarios(
+            $gestores,
+            'Nueva incidencia #' . $incidencia->id,
+            "Se registró la incidencia \"{$incidencia->titulo}\" con prioridad {$incidencia->prioridad}.",
+            $incidencia->id,
+            $usuarioCreaId
+        );
+    }
+
     public function notificarCambioEstado(Incidencia $incidencia, string $estadoAnteriorNombre, string $estadoNuevoNombre, int $usuarioQueCambiaId): void
     {
         $this->crearParaVarios(
@@ -71,7 +93,8 @@ class NotificacionService
         $this->crear(
             $usuarioAsignadoId,
             'Nueva asignación en incidencia #' . $incidencia->id,
-            "Fuiste asignado como {$rol} en la incidencia \"{$incidencia->titulo}\".",
+            "Fuiste asignado como {$rol} en la incidencia \"{$incidencia->titulo}\"."
+            ,
             $incidencia->id
         );
     }
