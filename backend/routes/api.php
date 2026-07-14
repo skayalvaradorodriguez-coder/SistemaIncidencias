@@ -10,6 +10,7 @@ use App\Http\Controllers\TipoController;
 use App\Http\Controllers\UbicacionController;
 use App\Http\Controllers\EstadoController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\AsignacionController;
 
 // Rutas públicas
 Route::post('/login', [AuthController::class, 'login']);
@@ -39,6 +40,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/incidencias/{id}', [IncidenciaController::class, 'update']);
     Route::delete('/incidencias/{id}', [IncidenciaController::class, 'destroy']);
     Route::post('/incidencias/{id}/estado', [IncidenciaController::class, 'cambiarEstado']);
+
+    // Asignaciones de responsables
+    Route::get('/incidencias/{id}/asignaciones', [AsignacionController::class, 'index']);
+    Route::post('/incidencias/{id}/asignaciones', [AsignacionController::class, 'store']);
+    Route::put('/asignaciones/{id}', [AsignacionController::class, 'update']);
+    Route::delete('/asignaciones/{id}', [AsignacionController::class, 'destroy']);
 
     // Comentarios
     Route::get('/incidencias/{id}/comentarios', [ComentarioController::class, 'index']);

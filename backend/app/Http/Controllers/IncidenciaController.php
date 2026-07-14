@@ -8,9 +8,18 @@ use App\Models\HistorialEstado;
 use App\Models\EstadoIncidencia;
 use App\Models\Pais;
 use App\Models\TipoIncidencia;
+use App\Models\User;
+use App\Services\NotificacionService;
 
 class IncidenciaController extends Controller
 {
+    protected NotificacionService $notificaciones;
+
+    public function __construct(NotificacionService $notificaciones)
+    {
+        $this->notificaciones = $notificaciones;
+    }
+
     public function index(Request $request)
     {
         $query = Incidencia::with([
@@ -176,8 +185,9 @@ class IncidenciaController extends Controller
             'observacion' => 'nullable|string'
         ]);
 
-        $incidencia = Incidencia::findOrFail($id);
+        $incidencia = Incidencia::with('estado')->findOrFail($id);
 
+        $estadoAnterior = $incidencia->estado;
         $estadoAnteriorId = $incidencia->estado_incidencia_id;
 
         if ($estadoAnteriorId == $request->estado_incidencia_id) {
@@ -185,6 +195,8 @@ class IncidenciaController extends Controller
                 'message' => 'La incidencia ya se encuentra en ese estado.'
             ], 422);
         }
+
+        $estadoNuevo = EstadoIncidencia::findOrFail($request->estado_incidencia_id);
 
         $incidencia->update([
             'estado_incidencia_id' => $request->estado_incidencia_id
@@ -197,6 +209,13 @@ class IncidenciaController extends Controller
             'usuario_id' => $request->user()->id,
             'observacion' => $request->observacion ?? 'Cambio de estado',
         ]);
+
+        $this->notificaciones->notificarCambioEstado(
+            $incidencia,
+            $estadoAnterior->nombre ?? 'Sin estado',
+            $estadoNuevo->nombre,
+            $request->user()->id
+        );
 
         return response()->json(
             $incidencia->load([
@@ -256,7 +275,9 @@ class IncidenciaController extends Controller
 
         $estados = EstadoIncidencia::all();
 
-        return view('incidencias.show', compact('incidencia', 'estados'));
+        $usuarios = User::where('activo', true)->orderBy('name')->get();
+
+        return view('incidencias.show', compact('incidencia', 'estados', 'usuarios'));
     }
 
     public function vistaEdit($id)

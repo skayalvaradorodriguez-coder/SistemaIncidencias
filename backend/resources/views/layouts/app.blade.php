@@ -37,6 +37,19 @@
 
         <ul class="navbar-nav ml-auto">
 
+            <li class="nav-item dropdown">
+                <a class="nav-link" data-toggle="dropdown" href="#" id="btnNotificaciones">
+                    <i class="far fa-bell"></i>
+                    <span class="badge badge-danger navbar-badge d-none" id="badgeNotificaciones">0</span>
+                </a>
+
+                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right" id="listaNotificaciones" style="min-width: 320px; max-height: 400px; overflow-y: auto;">
+                    <span class="dropdown-item dropdown-header">Notificaciones</span>
+                    <div class="dropdown-divider"></div>
+                    <span class="dropdown-item text-center text-muted" id="sinNotificaciones">Sin notificaciones</span>
+                </div>
+            </li>
+
             <li class="nav-item">
                 <span id="usuarioLogueado" class="nav-link"></span>
             </li>
@@ -167,6 +180,67 @@ if(usuario){
 
     }
 
+}
+
+async function cargarNotificaciones(){
+
+    try{
+
+        const response = await authFetch('/api/notificaciones');
+
+        if(!response.ok) return;
+
+        const notificaciones = await response.json();
+
+        const noLeidas = notificaciones.filter(n => !n.leida);
+
+        const badge = document.getElementById('badgeNotificaciones');
+
+        if(noLeidas.length > 0){
+            badge.textContent = noLeidas.length;
+            badge.classList.remove('d-none');
+        }else{
+            badge.classList.add('d-none');
+        }
+
+        const lista = document.getElementById('listaNotificaciones');
+
+        lista.innerHTML = '<span class="dropdown-item dropdown-header">Notificaciones</span><div class="dropdown-divider"></div>';
+
+        if(notificaciones.length === 0){
+            lista.innerHTML += '<span class="dropdown-item text-center text-muted">Sin notificaciones</span>';
+            return;
+        }
+
+        notificaciones.slice(0, 10).forEach(n => {
+
+            const item = document.createElement('a');
+            item.href = n.incidencia_id ? `/incidencias/${n.incidencia_id}` : '#';
+            item.className = 'dropdown-item' + (n.leida ? '' : ' font-weight-bold');
+            item.innerHTML = `<i class="fas fa-info-circle mr-2"></i> ${n.titulo}<br><small class="text-muted">${n.mensaje}</small>`;
+
+            item.addEventListener('click', async function(){
+                if(!n.leida){
+                    try{
+                        await authFetch(`/api/notificaciones/${n.id}/leer`, { method: 'PUT' });
+                    }catch(error){
+                        console.log(error);
+                    }
+                }
+            });
+
+            lista.appendChild(item);
+            lista.appendChild(document.createElement('div')).className = 'dropdown-divider';
+        });
+
+    }catch(error){
+        console.log(error);
+    }
+}
+
+if(usuario){
+    cargarNotificaciones();
+    setInterval(cargarNotificaciones, 30000);
 }
 
 async function cerrarSesion(){

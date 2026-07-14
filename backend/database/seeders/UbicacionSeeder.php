@@ -9,24 +9,28 @@ class UbicacionSeeder extends Seeder
 {
     public function run(): void
     {
-        $paisId = DB::table('paises')->insertGetId([
-            'nombre' => 'Ecuador',
-            'codigo' => 'EC',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        DB::table('paises')->updateOrInsert(
+            ['codigo' => 'EC'],
+            ['nombre' => 'Ecuador', 'updated_at' => now(), 'created_at' => now()]
+        );
+        $paisId = DB::table('paises')->where('codigo', 'EC')->value('id');
 
-        $provinciaId = DB::table('provincias')->insertGetId([
-            'pais_id' => $paisId,
-            'nombre' => 'Santa Elena',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        DB::table('provincias')->updateOrInsert(
+            ['pais_id' => $paisId, 'nombre' => 'Santa Elena'],
+            ['updated_at' => now(), 'created_at' => now()]
+        );
+        $provinciaId = DB::table('provincias')
+            ->where('pais_id', $paisId)
+            ->where('nombre', 'Santa Elena')
+            ->value('id');
 
-        DB::table('ciudades')->insert([
-            ['provincia_id' => $provinciaId, 'nombre' => 'La Libertad', 'created_at' => now(), 'updated_at' => now()],
-            ['provincia_id' => $provinciaId, 'nombre' => 'Santa Elena', 'created_at' => now(), 'updated_at' => now()],
-            ['provincia_id' => $provinciaId, 'nombre' => 'Salinas', 'created_at' => now(), 'updated_at' => now()],
-        ]);
+        $ciudades = ['La Libertad', 'Santa Elena', 'Salinas'];
+
+        foreach ($ciudades as $ciudad) {
+            DB::table('ciudades')->updateOrInsert(
+                ['provincia_id' => $provinciaId, 'nombre' => $ciudad],
+                ['updated_at' => now(), 'created_at' => now()]
+            );
+        }
     }
 }

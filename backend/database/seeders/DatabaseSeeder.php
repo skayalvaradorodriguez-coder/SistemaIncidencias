@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             UbicacionSeeder::class,
             TiposIncidenciaSeeder::class,
             AdminSeeder::class,
+            DemoUsersSeeder::class,
         ]);
     }
 }

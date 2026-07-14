@@ -123,6 +123,76 @@
 
     <div class="card mt-3">
         <div class="card-header">
+            <h3 class="card-title">Responsables asignados</h3>
+        </div>
+
+        <div class="card-body">
+
+            <div id="alertAsignacion" class="alert d-none"></div>
+
+            <form id="formAsignacion" class="form-row align-items-end mb-3">
+
+                <div class="form-group col-md-6">
+                    <label>Usuario</label>
+                    <select id="asignacion_usuario_id" class="form-control" required>
+                        <option value="">Seleccione un usuario...</option>
+                        @foreach($usuarios as $u)
+                            <option value="{{ $u->id }}">{{ $u->name }} {{ $u->apellido }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="form-group col-md-4">
+                    <label>Rol</label>
+                    <select id="asignacion_rol" class="form-control" required>
+                        <option value="Responsable">Responsable</option>
+                        <option value="Apoyo">Apoyo</option>
+                    </select>
+                </div>
+
+                <div class="form-group col-md-2">
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <i class="fas fa-user-plus"></i> Asignar
+                    </button>
+                </div>
+
+            </form>
+
+            <table class="table table-sm table-bordered" id="tablaAsignaciones">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Rol</th>
+                        <th>Fecha de asignación</th>
+                        <th></th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @forelse($incidencia->asignaciones as $a)
+                        <tr data-id="{{ $a->id }}">
+                            <td>{{ $a->usuario->name ?? 'N/A' }} {{ $a->usuario->apellido ?? '' }}</td>
+                            <td><span class="badge badge-{{ $a->rol === 'Responsable' ? 'primary' : 'secondary' }}">{{ $a->rol }}</span></td>
+                            <td>{{ $a->fecha_asignacion ? \Carbon\Carbon::parse($a->fecha_asignacion)->format('d/m/Y H:i') : '-' }}</td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-danger btn-quitar-asignacion" data-id="{{ $a->id }}">
+                                    <i class="fas fa-user-minus"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr id="sinAsignaciones">
+                            <td colspan="4" class="text-center">Sin responsables asignados.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+    <div class="card mt-3">
+        <div class="card-header">
             <h3 class="card-title">Comentarios</h3>
         </div>
 
@@ -234,6 +304,68 @@ document.getElementById('formComentario').addEventListener('submit', async funct
         alertComentario.classList.remove('d-none');
         alertComentario.classList.add('alert-danger');
     }
+});
+
+document.getElementById('formAsignacion').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const alertAsignacion = document.getElementById('alertAsignacion');
+    alertAsignacion.className = 'alert d-none';
+
+    const payload = {
+        usuario_id: document.getElementById('asignacion_usuario_id').value,
+        rol: document.getElementById('asignacion_rol').value
+    };
+
+    if (!payload.usuario_id) {
+        alertAsignacion.textContent = 'Debe seleccionar un usuario.';
+        alertAsignacion.classList.remove('d-none');
+        alertAsignacion.classList.add('alert-danger');
+        return;
+    }
+
+    try {
+        const response = await authFetch('/api/incidencias/{{ $incidencia->id }}/asignaciones', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            alertAsignacion.textContent = data.message || 'No se pudo asignar el usuario';
+            alertAsignacion.classList.remove('d-none');
+            alertAsignacion.classList.add('alert-danger');
+            return;
+        }
+
+        location.reload();
+
+    } catch (error) {
+        alertAsignacion.textContent = 'Error de conexión con el servidor';
+        alertAsignacion.classList.remove('d-none');
+        alertAsignacion.classList.add('alert-danger');
+    }
+});
+
+document.querySelectorAll('.btn-quitar-asignacion').forEach(btn => {
+    btn.addEventListener('click', async function () {
+        if (!confirm('¿Quitar a este usuario de la incidencia?')) return;
+
+        const id = this.dataset.id;
+
+        try {
+            const response = await authFetch(`/api/asignaciones/${id}`, { method: 'DELETE' });
+
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('No se pudo quitar la asignación');
+            }
+        } catch (error) {
+            alert('Error de conexión');
+        }
+    });
 });
 </script>
 

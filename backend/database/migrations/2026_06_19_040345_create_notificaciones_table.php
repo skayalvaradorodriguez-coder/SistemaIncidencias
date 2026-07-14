@@ -15,6 +15,12 @@ return new class extends Migration
                   ->constrained('users')
                   ->onDelete('cascade');
 
+            // Incidencia que originó la notificación (opcional, para enlazar desde el front)
+            $table->foreignId('incidencia_id')
+                  ->nullable()
+                  ->constrained('incidencias')
+                  ->onDelete('cascade');
+
             $table->string('titulo', 200);
 
             $table->text('mensaje');

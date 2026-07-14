@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Asignacion extends Model
 {
     protected $table = 'asignaciones';
-    protected $fillable = ['incidencia_id', 'usuario_id', 'fecha_asignacion'];
+    protected $fillable = ['incidencia_id', 'usuario_id', 'rol', 'fecha_asignacion'];
 
     public function incidencia()
     {

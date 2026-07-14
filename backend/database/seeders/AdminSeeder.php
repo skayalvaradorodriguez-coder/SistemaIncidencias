@@ -12,15 +12,17 @@ class AdminSeeder extends Seeder
     {
         $rolAdmin = DB::table('roles')->where('nombre', 'Administrador')->first();
 
-        DB::table('users')->insert([
-            'rol_id' => $rolAdmin->id,
-            'name' => 'Administrador',
-            'apellido' => 'Sistema',
-            'email' => 'admin@incidencias.com',
-            'password' => Hash::make('Admin123!'),
-            'activo' => true,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        DB::table('users')->updateOrInsert(
+            ['email' => 'admin@incidencias.com'],
+            [
+                'rol_id' => $rolAdmin->id,
+                'name' => 'Administrador',
+                'apellido' => 'Sistema',
+                'password' => Hash::make('Admin123!'),
+                'activo' => true,
+                'updated_at' => now(),
+                'created_at' => now(),
+            ]
+        );
     }
 }

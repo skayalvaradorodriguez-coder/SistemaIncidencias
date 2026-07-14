@@ -15,6 +15,11 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database/scripts:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U incidencias_user -d incidencias_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     networks:
       - incidencias_network
 
@@ -28,8 +33,11 @@ services:
     working_dir: /var/www/html
     volumes:
       - ./backend:/var/www/html
+    environment:
+      DB_SEED: "true"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - incidencias_network
 
