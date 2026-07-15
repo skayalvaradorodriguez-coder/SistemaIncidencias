@@ -38,13 +38,42 @@ class DashboardController extends Controller
         ->limit(5)
         ->get();
 
+        // Incidencias georreferenciadas para el mapa general
+        $conUbicacion = Incidencia::with(['estado', 'tipo'])
+            ->whereNotNull('latitud')
+            ->whereNotNull('longitud')
+            ->get([
+                'id',
+                'titulo',
+                'prioridad',
+                'latitud',
+                'longitud',
+                'estado_incidencia_id',
+                'tipo_incidencia_id',
+            ]);
+
+        // Conteo por tipo de incidencia (para gráfico de barras)
+        $porTipo = Incidencia::selectRaw('tipos_incidencia.nombre, count(*) as total')
+            ->join('tipos_incidencia', 'tipos_incidencia.id', '=', 'incidencias.tipo_incidencia_id')
+            ->groupBy('tipos_incidencia.nombre')
+            ->orderByDesc('total')
+            ->get();
+
+        // Conteo por prioridad (para gráfico)
+        $porPrioridad = Incidencia::selectRaw('prioridad, count(*) as total')
+            ->groupBy('prioridad')
+            ->get();
+
         return view('dashboard', compact(
             'totalIncidencias',
             'totalUsuarios',
             'pendientes',
             'enProceso',
             'resueltas',
-            'recientes'
+            'recientes',
+            'conUbicacion',
+            'porTipo',
+            'porPrioridad'
         ));
     }
 

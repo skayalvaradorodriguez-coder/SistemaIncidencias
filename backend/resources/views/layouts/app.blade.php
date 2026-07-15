@@ -17,6 +17,98 @@
     <link rel="stylesheet" href="{{ asset('plugins/overlayScrollbars/css/OverlayScrollbars.min.css') }}">
     <link rel="stylesheet" href="{{ asset('dist/css/adminlte.min.css') }}">
 
+    <style>
+        /* ===== Notificaciones ===== */
+        #listaNotificaciones {
+            min-width: 360px;
+            max-width: 360px;
+            max-height: 420px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 0;
+        }
+
+        #listaNotificaciones .notif-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 14px;
+            white-space: normal;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            text-decoration: none;
+        }
+
+        #listaNotificaciones .notif-item:last-child {
+            border-bottom: none;
+        }
+
+        #listaNotificaciones .notif-item.no-leida {
+            background: rgba(0, 123, 255, 0.10);
+            border-left: 3px solid #007bff;
+        }
+
+        #listaNotificaciones .notif-icono {
+            flex-shrink: 0;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        #listaNotificaciones .notif-titulo {
+            font-size: 0.85rem;
+            font-weight: 600;
+            line-height: 1.25;
+            margin-bottom: 2px;
+        }
+
+        #listaNotificaciones .notif-mensaje {
+            font-size: 0.78rem;
+            line-height: 1.3;
+            opacity: 0.75;
+            margin-bottom: 2px;
+        }
+
+        #listaNotificaciones .notif-tiempo {
+            font-size: 0.7rem;
+            opacity: 0.55;
+        }
+
+        #listaNotificaciones .notif-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 14px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+            position: sticky;
+            top: 0;
+            background: inherit;
+            z-index: 2;
+        }
+
+        #listaNotificaciones .notif-header a {
+            font-size: 0.72rem;
+            font-weight: 400;
+            text-transform: none;
+            letter-spacing: 0;
+            cursor: pointer;
+        }
+
+        #listaNotificaciones .notif-vacio {
+            padding: 28px 14px;
+            text-align: center;
+            opacity: 0.6;
+            font-size: 0.85rem;
+        }
+    </style>
+
     @yield('styles')
 </head>
 
@@ -45,11 +137,7 @@
                     <span class="badge badge-danger navbar-badge d-none" id="badgeNotificaciones">0</span>
                 </a>
 
-                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right" id="listaNotificaciones" style="min-width: 320px; max-height: 400px; overflow-y: auto;">
-                    <span class="dropdown-item dropdown-header">Notificaciones</span>
-                    <div class="dropdown-divider"></div>
-                    <span class="dropdown-item text-center text-muted" id="sinNotificaciones">Sin notificaciones</span>
-                </div>
+                <div class="dropdown-menu dropdown-menu-right" id="listaNotificaciones"></div>
             </li>
 
             <li class="nav-item">
@@ -184,6 +272,44 @@ if(usuario){
 
 }
 
+// Devuelve icono y color según el tipo de notificación
+function estiloNotificacion(titulo){
+
+    if(titulo.includes('Nueva incidencia')){
+        return { icono: 'fa-exclamation-triangle', color: '#ffc107' };
+    }
+    if(titulo.includes('Cambio de estado')){
+        return { icono: 'fa-sync-alt', color: '#28a745' };
+    }
+    if(titulo.includes('asignación') || titulo.includes('asignacion')){
+        return { icono: 'fa-user-plus', color: '#007bff' };
+    }
+    if(titulo.includes('comentario')){
+        return { icono: 'fa-comment', color: '#17a2b8' };
+    }
+    return { icono: 'fa-info-circle', color: '#6c757d' };
+}
+
+// Convierte una fecha a texto relativo en español
+function tiempoRelativo(fecha){
+
+    const segundos = Math.floor((new Date() - new Date(fecha)) / 1000);
+
+    if(segundos < 60) return 'Hace un momento';
+
+    const minutos = Math.floor(segundos / 60);
+    if(minutos < 60) return `Hace ${minutos} min`;
+
+    const horas = Math.floor(minutos / 60);
+    if(horas < 24) return `Hace ${horas} h`;
+
+    const dias = Math.floor(horas / 24);
+    if(dias === 1) return 'Ayer';
+    if(dias < 7) return `Hace ${dias} días`;
+
+    return new Date(fecha).toLocaleDateString('es-EC', { day: '2-digit', month: 'short' });
+}
+
 async function cargarNotificaciones(){
 
     try{
@@ -199,7 +325,7 @@ async function cargarNotificaciones(){
         const badge = document.getElementById('badgeNotificaciones');
 
         if(noLeidas.length > 0){
-            badge.textContent = noLeidas.length;
+            badge.textContent = noLeidas.length > 9 ? '9+' : noLeidas.length;
             badge.classList.remove('d-none');
         }else{
             badge.classList.add('d-none');
@@ -207,19 +333,38 @@ async function cargarNotificaciones(){
 
         const lista = document.getElementById('listaNotificaciones');
 
-        lista.innerHTML = '<span class="dropdown-item dropdown-header">Notificaciones</span><div class="dropdown-divider"></div>';
+        let html = `
+            <div class="notif-header">
+                <span>Notificaciones</span>
+                ${noLeidas.length > 0 ? '<a id="btnMarcarTodas" class="text-primary">Marcar todas como leídas</a>' : ''}
+            </div>
+        `;
 
         if(notificaciones.length === 0){
-            lista.innerHTML += '<span class="dropdown-item text-center text-muted">Sin notificaciones</span>';
+            html += '<div class="notif-vacio"><i class="far fa-bell-slash d-block mb-2" style="font-size:1.5rem;"></i>No tienes notificaciones</div>';
+            lista.innerHTML = html;
             return;
         }
 
+        lista.innerHTML = html;
+
         notificaciones.slice(0, 10).forEach(n => {
+
+            const estilo = estiloNotificacion(n.titulo);
 
             const item = document.createElement('a');
             item.href = n.incidencia_id ? `/incidencias/${n.incidencia_id}` : '#';
-            item.className = 'dropdown-item' + (n.leida ? '' : ' font-weight-bold');
-            item.innerHTML = `<i class="fas fa-info-circle mr-2"></i> ${n.titulo}<br><small class="text-muted">${n.mensaje}</small>`;
+            item.className = 'notif-item text-reset' + (n.leida ? '' : ' no-leida');
+            item.innerHTML = `
+                <div class="notif-icono" style="background:${estilo.color}22; color:${estilo.color};">
+                    <i class="fas ${estilo.icono}"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="notif-titulo">${n.titulo}</div>
+                    <div class="notif-mensaje">${n.mensaje}</div>
+                    <div class="notif-tiempo"><i class="far fa-clock mr-1"></i>${tiempoRelativo(n.created_at)}</div>
+                </div>
+            `;
 
             item.addEventListener('click', async function(){
                 if(!n.leida){
@@ -232,8 +377,22 @@ async function cargarNotificaciones(){
             });
 
             lista.appendChild(item);
-            lista.appendChild(document.createElement('div')).className = 'dropdown-divider';
         });
+
+        const btnTodas = document.getElementById('btnMarcarTodas');
+
+        if(btnTodas){
+            btnTodas.addEventListener('click', async function(e){
+                e.stopPropagation();
+                e.preventDefault();
+                try{
+                    await authFetch('/api/notificaciones/leer-todas', { method: 'PUT' });
+                    cargarNotificaciones();
+                }catch(error){
+                    console.log(error);
+                }
+            });
+        }
 
     }catch(error){
         console.log(error);
