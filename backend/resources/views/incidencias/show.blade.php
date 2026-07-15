@@ -6,6 +6,65 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
     #mapa { height: 320px; border-radius: 4px; z-index: 1; }
+
+    /* ===== Chat de seguimiento ===== */
+    #chatVentana {
+        height: 380px;
+        overflow-y: auto;
+        padding: 15px;
+        background: rgba(0, 0, 0, 0.15);
+        border-radius: 6px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .chat-burbuja {
+        max-width: 75%;
+        padding: 8px 14px;
+        border-radius: 14px;
+        font-size: 0.9rem;
+        line-height: 1.35;
+        word-wrap: break-word;
+    }
+
+    .chat-propio {
+        align-self: flex-end;
+        background: #007bff;
+        color: #fff;
+        border-bottom-right-radius: 4px;
+    }
+
+    .chat-ajeno {
+        align-self: flex-start;
+        background: #3f474e;
+        color: #e9ecef;
+        border-bottom-left-radius: 4px;
+    }
+
+    .chat-autor {
+        font-size: 0.72rem;
+        font-weight: 600;
+        opacity: 0.85;
+        margin-bottom: 2px;
+    }
+
+    .chat-hora {
+        font-size: 0.68rem;
+        opacity: 0.6;
+        text-align: right;
+        margin-top: 3px;
+    }
+
+    .chat-vacio {
+        margin: auto;
+        text-align: center;
+        opacity: 0.5;
+    }
+
+    #chatInput {
+        resize: none;
+    }
 </style>
 @endsection
 
@@ -19,7 +78,6 @@
     </div>
 
     <div id="alertEstado" class="alert d-none"></div>
-    <div id="alertComentario" class="alert d-none"></div>
 
     <div class="card">
         <div class="card-header">
@@ -64,7 +122,7 @@
         </div>
     </div>
 
-    <div class="card mt-3">
+    <div class="card mt-3" id="cardCambiarEstado">
         <div class="card-header">
             <h3 class="card-title">Cambiar Estado</h3>
         </div>
@@ -205,41 +263,43 @@
         </div>
     </div>
 
+    <!-- Chat de seguimiento -->
     <div class="card mt-3">
         <div class="card-header">
-            <h3 class="card-title">Comentarios</h3>
+            <h3 class="card-title">
+                <i class="fas fa-comments mr-2"></i>
+                Conversación de seguimiento
+            </h3>
+            <div class="card-tools">
+                <span class="badge badge-info" id="chatContador">0 mensajes</span>
+            </div>
         </div>
 
         <div class="card-body">
 
-            <form id="formComentario" class="mb-3">
-                <div class="form-group">
-                    <label>Nuevo Comentario</label>
-                    <textarea
-                        id="comentario"
-                        class="form-control"
-                        rows="2"
-                        placeholder="Escriba un comentario sobre la incidencia"></textarea>
+            <div id="alertComentario" class="alert d-none"></div>
+
+            <div id="chatVentana">
+                <div class="chat-vacio">
+                    <i class="far fa-comment-dots d-block mb-2" style="font-size:2rem;"></i>
+                    Cargando conversación...
                 </div>
+            </div>
 
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-comment"></i> Guardar Comentario
-                </button>
+            <form id="formComentario" class="mt-3">
+                <div class="input-group">
+                    <textarea
+                        id="chatInput"
+                        class="form-control"
+                        rows="1"
+                        placeholder="Escribe un mensaje... (Enter para enviar)"></textarea>
+                    <div class="input-group-append">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
             </form>
-
-            <hr>
-
-            @forelse($incidencia->comentarios as $c)
-                <p>
-                    <strong>{{ $c->usuario->name ?? 'N/A' }}:</strong>
-                    {{ $c->comentario }}
-                    <small class="text-muted">
-                        ({{ $c->created_at->format('d/m/Y H:i') }})
-                    </small>
-                </p>
-            @empty
-                <p class="text-muted">Sin comentarios aún.</p>
-            @endforelse
 
         </div>
     </div>
@@ -267,6 +327,140 @@
         .openPopup();
 @endif
 
+// ================== CHAT DE SEGUIMIENTO ==================
+const INCIDENCIA_ID = {{ $incidencia->id }};
+const USUARIO_ACTUAL = getUser();
+
+// Oculta controles de gestión a usuarios con rol Ciudadano
+if (typeof esCiudadano === 'function' && esCiudadano()) {
+    document.getElementById('cardCambiarEstado')?.remove();
+    document.getElementById('formAsignacion')?.remove();
+    document.querySelectorAll('.btn-quitar-asignacion').forEach(b => b.remove());
+}
+
+// Evita inyección de HTML en los mensajes (protección XSS)
+function escapeHtml(texto) {
+    const div = document.createElement('div');
+    div.textContent = texto;
+    return div.innerHTML;
+}
+
+function horaMensaje(fecha) {
+    const f = new Date(fecha);
+    const hoy = new Date();
+    const esHoy = f.toDateString() === hoy.toDateString();
+    const hora = f.toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' });
+    return esHoy ? hora : f.toLocaleDateString('es-EC', { day: '2-digit', month: 'short' }) + ' ' + hora;
+}
+
+let totalMensajesPrevio = 0;
+
+async function cargarChat(forzarScroll = false) {
+
+    try {
+        const response = await authFetch(`/api/incidencias/${INCIDENCIA_ID}/comentarios`);
+
+        if (!response.ok) return;
+
+        const comentarios = await response.json();
+
+        if (comentarios.length === totalMensajesPrevio && !forzarScroll) return;
+
+        const ventana = document.getElementById('chatVentana');
+        const estabaAbajo = ventana.scrollHeight - ventana.scrollTop - ventana.clientHeight < 60;
+
+        document.getElementById('chatContador').textContent =
+            comentarios.length + (comentarios.length === 1 ? ' mensaje' : ' mensajes');
+
+        if (comentarios.length === 0) {
+            ventana.innerHTML = `
+                <div class="chat-vacio">
+                    <i class="far fa-comment-dots d-block mb-2" style="font-size:2rem;"></i>
+                    Aún no hay mensajes. ¡Escribe el primero!
+                </div>`;
+            totalMensajesPrevio = 0;
+            return;
+        }
+
+        ventana.innerHTML = '';
+
+        comentarios.forEach(c => {
+            const esPropio = USUARIO_ACTUAL && c.usuario_id === USUARIO_ACTUAL.id;
+
+            const burbuja = document.createElement('div');
+            burbuja.className = 'chat-burbuja ' + (esPropio ? 'chat-propio' : 'chat-ajeno');
+            burbuja.innerHTML = `
+                ${esPropio ? '' : `<div class="chat-autor">${escapeHtml(c.usuario ? c.usuario.name : 'Usuario')}</div>`}
+                <div>${escapeHtml(c.comentario)}</div>
+                <div class="chat-hora">${horaMensaje(c.created_at)}</div>
+            `;
+            ventana.appendChild(burbuja);
+        });
+
+        const hayNuevos = comentarios.length > totalMensajesPrevio;
+        totalMensajesPrevio = comentarios.length;
+
+        if (forzarScroll || (hayNuevos && estabaAbajo)) {
+            ventana.scrollTop = ventana.scrollHeight;
+        }
+
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+async function enviarMensaje() {
+
+    const input = document.getElementById('chatInput');
+    const alertComentario = document.getElementById('alertComentario');
+    alertComentario.className = 'alert d-none';
+
+    const texto = input.value.trim();
+
+    if (!texto) return;
+
+    try {
+        const response = await authFetch(`/api/incidencias/${INCIDENCIA_ID}/comentarios`, {
+            method: 'POST',
+            body: JSON.stringify({ comentario: texto })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            alertComentario.textContent = data.message || 'No se pudo enviar el mensaje';
+            alertComentario.classList.remove('d-none');
+            alertComentario.classList.add('alert-danger');
+            return;
+        }
+
+        input.value = '';
+        await cargarChat(true);
+
+    } catch (error) {
+        alertComentario.textContent = 'Error de conexión con el servidor';
+        alertComentario.classList.remove('d-none');
+        alertComentario.classList.add('alert-danger');
+    }
+}
+
+document.getElementById('formComentario').addEventListener('submit', function (e) {
+    e.preventDefault();
+    enviarMensaje();
+});
+
+// Enter envía, Shift+Enter hace salto de línea
+document.getElementById('chatInput').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        enviarMensaje();
+    }
+});
+
+cargarChat(true);
+setInterval(cargarChat, 10000);
+
+// ================== CAMBIO DE ESTADO ==================
 document.getElementById('formEstado').addEventListener('submit', async function (e) {
     e.preventDefault();
 
@@ -302,40 +496,7 @@ document.getElementById('formEstado').addEventListener('submit', async function 
     }
 });
 
-document.getElementById('formComentario').addEventListener('submit', async function (e) {
-    e.preventDefault();
-
-    const alertComentario = document.getElementById('alertComentario');
-    alertComentario.className = 'alert d-none';
-
-    const payload = {
-        comentario: document.getElementById('comentario').value
-    };
-
-    try {
-        const response = await authFetch('/api/incidencias/{{ $incidencia->id }}/comentarios', {
-            method: 'POST',
-            body: JSON.stringify(payload)
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            alertComentario.textContent = data.message || 'No se pudo guardar el comentario';
-            alertComentario.classList.remove('d-none');
-            alertComentario.classList.add('alert-danger');
-            return;
-        }
-
-        location.reload();
-
-    } catch (error) {
-        alertComentario.textContent = 'Error de conexión con el servidor';
-        alertComentario.classList.remove('d-none');
-        alertComentario.classList.add('alert-danger');
-    }
-});
-
+// ================== ASIGNACIONES ==================
 document.getElementById('formAsignacion').addEventListener('submit', async function (e) {
     e.preventDefault();
 

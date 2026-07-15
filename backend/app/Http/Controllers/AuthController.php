@@ -51,7 +51,16 @@ class AuthController extends Controller
             'name' => 'required|string|max:100',
             'apellido' => 'required|string|max:100',
             'email' => 'required|email|unique:users',
-            'password' => 'required|min:6'
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'max:50',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/',
+            ],
+        ], [
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.regex' => 'La contraseña debe incluir al menos una mayúscula, una minúscula y un número.',
         ]);
 
         $user = User::create([
