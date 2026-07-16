@@ -12,13 +12,12 @@ BASE_URL="http://nginx"
 EMAIL="admin@incidencias.com"
 PASSWORD="Admin123!"
 
-# Valores temporales para verificar que la prueba funcione.
-TOTAL_SECUENCIAL=5
-CONCURRENTES=2
-RONDAS=2
+TOTAL_SECUENCIAL=50
+CONCURRENTES=10
+RONDAS=5
 
 CONNECT_TIMEOUT=5
-MAX_TIME=15
+MAX_TIME=30
 
 echo "======================================================"
 echo " PRUEBA DE CARGA - Sistema de Incidencias"
@@ -55,14 +54,15 @@ echo ""
 echo "[2/3] Prueba secuencial: $TOTAL_SECUENCIAL peticiones a GET /api/incidencias"
 
 TIEMPOS_FILE=$(mktemp)
-OK=0
-ERRORES=0
 
 limpiar_archivos() {
     rm -f "$TIEMPOS_FILE"
 }
 
 trap limpiar_archivos EXIT
+
+OK=0
+ERRORES=0
 
 INICIO=$(date +%s.%N)
 
@@ -100,7 +100,7 @@ for i in $(seq 1 "$TOTAL_SECUENCIAL"); do
 done
 
 FIN=$(date +%s.%N)
-DURACION=$(echo "$FIN - $INICIO" | bc)
+DURACION=$(awk -v f="$FIN" -v i="$INICIO" 'BEGIN { printf "%.2f", f - i }')
 
 PROMEDIO=$(awk '
     NF > 0 {
@@ -119,11 +119,7 @@ PROMEDIO=$(awk '
 MINIMO=$(sort -n "$TIEMPOS_FILE" | head -1)
 MAXIMO=$(sort -n "$TIEMPOS_FILE" | tail -1)
 
-if [ "$(echo "$DURACION > 0" | bc)" -eq 1 ]; then
-    RPS=$(echo "scale=2; $TOTAL_SECUENCIAL / $DURACION" | bc)
-else
-    RPS="0.00"
-fi
+RPS=$(awk -v t="$TOTAL_SECUENCIAL" -v d="$DURACION" 'BEGIN { if (d > 0) printf "%.2f", t / d; else printf "0.00" }')
 
 echo ""
 echo "Resumen secuencial:"
@@ -187,14 +183,10 @@ for ronda in $(seq 1 "$RONDAS"); do
 done
 
 FIN=$(date +%s.%N)
-DURACION=$(echo "$FIN - $INICIO" | bc)
+DURACION=$(awk -v f="$FIN" -v i="$INICIO" 'BEGIN { printf "%.2f", f - i }')
 TOTAL_CONC=$((RONDAS * CONCURRENTES))
 
-if [ "$(echo "$DURACION > 0" | bc)" -eq 1 ]; then
-    RPS_CONC=$(echo "scale=2; $TOTAL_CONC / $DURACION" | bc)
-else
-    RPS_CONC="0.00"
-fi
+RPS_CONC=$(awk -v t="$TOTAL_CONC" -v d="$DURACION" 'BEGIN { if (d > 0) printf "%.2f", t / d; else printf "0.00" }')
 
 echo ""
 echo "======================================================"
