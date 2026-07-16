@@ -18,6 +18,36 @@
     <link rel="stylesheet" href="{{ asset('dist/css/adminlte.min.css') }}">
 
     <style>
+        /* ===== Barra lateral con el degradado del login ===== */
+        .main-sidebar {
+            background: linear-gradient(180deg, #1e3a8a 0%, #1d4ed8 60%, #0ea5e9 140%) !important;
+        }
+
+        .main-sidebar .brand-link {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .nav-sidebar .nav-header {
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 0.72rem;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .nav-sidebar .nav-link:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
+        }
+
+        .nav-sidebar .nav-link.active {
+            background: rgba(255, 255, 255, 0.22) !important;
+            color: #fff !important;
+            box-shadow: none !important;
+        }
+
         /* ===== Notificaciones ===== */
         #listaNotificaciones {
             min-width: 360px;
@@ -159,11 +189,9 @@
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
 
         <a href="/" class="brand-link">
-
             <span class="brand-text font-weight-light">
-                Sistema Incidencias
+                <i class="fas fa-map-marked-alt mr-2"></i>Sistema Incidencias
             </span>
-
         </a>
 
         <div class="sidebar">
@@ -172,51 +200,47 @@
 
                 <ul class="nav nav-pills nav-sidebar flex-column">
 
-                    <!-- Dashboard -->
+                    <li class="nav-header">GENERAL</li>
 
                     <li class="nav-item">
-
-                        <a href="/"
-                           class="nav-link {{ request()->is('/') ? 'active' : '' }}">
-
+                        <a href="/" class="nav-link {{ request()->is('/') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-home"></i>
-
                             <p>Dashboard</p>
-
                         </a>
-
                     </li>
 
-                    <!-- Incidencias -->
-
                     <li class="nav-item">
-
                         <a href="{{ route('incidencias.index') }}"
                            class="nav-link {{ request()->is('incidencias*') ? 'active' : '' }}">
-
                             <i class="nav-icon fas fa-exclamation-triangle"></i>
-
                             <p>Incidencias</p>
-
                         </a>
-
                     </li>
 
-                    <!-- Usuarios (solo Administrador) -->
+                    <li class="nav-item">
+                        <a href="{{ route('incidencias.mis') }}"
+                           class="nav-link {{ request()->is('mis-reportes') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-clipboard-list"></i>
+                            <p>Mis Reportes</p>
+                        </a>
+                    </li>
 
-                    <li class="nav-item"
-                        id="menuUsuarios"
-                        style="display:none;">
+                    <li class="nav-header" id="headerGestion" style="display:none;">GESTIÓN</li>
 
+                    <li class="nav-item" id="menuTablero" style="display:none;">
+                        <a href="{{ route('incidencias.tablero') }}"
+                           class="nav-link {{ request()->is('tablero') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-columns"></i>
+                            <p>Tablero Kanban</p>
+                        </a>
+                    </li>
+
+                    <li class="nav-item" id="menuUsuarios" style="display:none;">
                         <a href="{{ route('usuarios.index') }}"
                            class="nav-link {{ request()->is('usuarios*') ? 'active' : '' }}">
-
                             <i class="nav-icon fas fa-users"></i>
-
                             <p>Usuarios</p>
-
                         </a>
-
                     </li>
 
                 </ul>
@@ -263,11 +287,16 @@ if(usuario){
     document.getElementById('usuarioLogueado').innerHTML =
         `<i class="fas fa-user"></i> ${usuario.name} (${usuario.rol.nombre})`;
 
-    // SOLO ADMINISTRADOR VE EL MENÚ DE USUARIOS
-    if(usuario.rol.nombre === "Administrador"){
+    // Menús según rol
+    const rolNombre = usuario.rol.nombre;
 
+    if(rolNombre === "Administrador" || rolNombre === "Responsable"){
+        document.getElementById("headerGestion").style.display = "block";
+        document.getElementById("menuTablero").style.display = "block";
+    }
+
+    if(rolNombre === "Administrador"){
         document.getElementById("menuUsuarios").style.display = "block";
-
     }
 
 }

@@ -161,35 +161,35 @@
 
     <div class="card mt-3">
         <div class="card-header">
-            <h3 class="card-title">Historial de Estados</h3>
+            <h3 class="card-title">
+                <i class="fas fa-history mr-2"></i>Historial de Estados
+            </h3>
         </div>
 
-        <div class="card-body table-responsive">
-            <table class="table table-sm table-bordered">
-                <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Estado Nuevo</th>
-                        <th>Observación</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @forelse($incidencia->historial as $h)
-                        <tr>
-                            <td>{{ $h->created_at->format('d/m/Y H:i') }}</td>
-                            <td>{{ $h->estadoNuevo->nombre ?? 'N/A' }}</td>
-                            <td>{{ $h->observacion ?? '-' }}</td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="3" class="text-center">
-                                Sin historial registrado.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+        <div class="card-body">
+            @forelse($incidencia->historial->sortByDesc('created_at') as $h)
+                <div class="d-flex mb-3">
+                    <div class="mr-3 text-center" style="min-width: 42px;">
+                        <span class="badge badge-{{ $h->estadoNuevo->color ?? 'secondary' }} p-2"
+                              style="border-radius: 50%;">
+                            <i class="fas fa-flag"></i>
+                        </span>
+                    </div>
+                    <div class="flex-grow-1 pb-3" style="border-bottom: 1px solid rgba(255,255,255,0.08);">
+                        <div class="d-flex justify-content-between">
+                            <strong>{{ $h->estadoNuevo->nombre ?? 'N/A' }}</strong>
+                            <small class="text-muted">
+                                <i class="far fa-clock mr-1"></i>{{ $h->created_at->format('d/m/Y H:i') }}
+                            </small>
+                        </div>
+                        <div class="text-muted" style="font-size: 0.86rem;">
+                            {{ $h->observacion ?? 'Sin observación' }}
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <p class="text-muted text-center mb-0">Sin historial registrado.</p>
+            @endforelse
         </div>
     </div>
 

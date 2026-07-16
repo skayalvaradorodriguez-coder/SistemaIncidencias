@@ -11,6 +11,12 @@ Route::get('/login', function () {
 
 Route::get('/', [DashboardController::class, 'index']);
 
+Route::get('/tablero', [IncidenciaController::class, 'vistaTablero'])
+    ->name('incidencias.tablero');
+
+Route::get('/mis-reportes', [IncidenciaController::class, 'vistaMisReportes'])
+    ->name('incidencias.mis');
+
 Route::get('/incidencias', [IncidenciaController::class, 'vistaIndex'])
     ->name('incidencias.index');
 
@@ -37,4 +43,4 @@ Route::get('/usuarios/{id}', function () {
 
 Route::get('/usuarios/{id}/editar', function () {
     return view('usuarios.edit');
-})->name('usuarios.edit');   
+})->name('usuarios.edit');

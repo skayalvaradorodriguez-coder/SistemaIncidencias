@@ -6,11 +6,11 @@ use Illuminate\Http\Request;
 use App\Models\Incidencia;
 use App\Models\HistorialEstado;
 use App\Models\EstadoIncidencia;
+use App\Models\Ciudad;
 use App\Models\Pais;
 use App\Models\TipoIncidencia;
 use App\Models\User;
 use App\Services\NotificacionService;
-use App\Models\Ciudad;
 
 class IncidenciaController extends Controller
 {
@@ -298,5 +298,15 @@ class IncidenciaController extends Controller
             'paises',
             'tipos'
         ));
+    }
+
+    public function vistaTablero()
+    {
+        return view('incidencias.tablero');
+    }
+
+    public function vistaMisReportes()
+    {
+        return view('incidencias.mis-reportes');
     }
 }

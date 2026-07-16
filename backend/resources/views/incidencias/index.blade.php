@@ -86,6 +86,9 @@
         <div class="card-header">
             <h3 class="card-title">Listado de incidencias registradas</h3>
             <div class="card-tools">
+                <button type="button" id="btnExportar" class="btn btn-sm btn-success mr-2">
+                    <i class="fas fa-file-csv mr-1"></i>Exportar CSV
+                </button>
                 <span class="badge badge-info" id="contadorResultados">Cargando...</span>
             </div>
         </div>
@@ -102,13 +105,14 @@
                         <th>Prioridad</th>
                         <th>Usuario</th>
                         <th>Fecha</th>
+                        <th>Antigüedad</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
 
                 <tbody id="tablaIncidencias">
                     <tr>
-                        <td colspan="9" class="text-center">
+                        <td colspan="10" class="text-center">
                             <i class="fas fa-spinner fa-spin mr-2"></i>Cargando incidencias...
                         </td>
                     </tr>
@@ -126,10 +130,23 @@
 const usuarioActual = getUser();
 const esAdmin = usuarioActual && usuarioActual.rol && usuarioActual.rol.nombre === 'Administrador';
 
+let incidenciasVisibles = [];
+
 function escaparHtml(texto) {
     const div = document.createElement('div');
     div.textContent = texto ?? '';
     return div.innerHTML;
+}
+
+function badgeAntiguedad(inc) {
+    const dias = Math.floor((new Date() - new Date(inc.created_at)) / 86400000);
+    const resuelta = inc.estado && (inc.estado.nombre === 'Resuelto' || inc.estado.nombre === 'Rechazado');
+    const texto = dias === 0 ? 'Hoy' : (dias === 1 ? '1 día' : dias + ' días');
+
+    if (resuelta) return `<span class="badge badge-secondary">${texto}</span>`;
+    if (dias >= 7) return `<span class="badge badge-danger" title="Atención: lleva ${dias} días sin resolverse"><i class="fas fa-exclamation-circle mr-1"></i>${texto}</span>`;
+    if (dias >= 3) return `<span class="badge badge-warning">${texto}</span>`;
+    return `<span class="badge badge-success">${texto}</span>`;
 }
 
 async function cargarIncidencias() {
@@ -153,7 +170,7 @@ async function cargarIncidencias() {
         const response = await authFetch('/api/incidencias?' + params.toString());
 
         if (!response.ok) {
-            tabla.innerHTML = '<tr><td colspan="9" class="text-center text-danger">Error al cargar las incidencias.</td></tr>';
+            tabla.innerHTML = '<tr><td colspan="10" class="text-center text-danger">Error al cargar las incidencias.</td></tr>';
             return;
         }
 
@@ -169,10 +186,12 @@ async function cargarIncidencias() {
             );
         }
 
+        incidenciasVisibles = incidencias;
+
         contador.textContent = incidencias.length + (incidencias.length === 1 ? ' resultado' : ' resultados');
 
         if (incidencias.length === 0) {
-            tabla.innerHTML = '<tr><td colspan="9" class="text-center">No se encontraron incidencias con los filtros aplicados.</td></tr>';
+            tabla.innerHTML = '<tr><td colspan="10" class="text-center">No se encontraron incidencias con los filtros aplicados.</td></tr>';
             return;
         }
 
@@ -202,6 +221,7 @@ async function cargarIncidencias() {
                 <td>${escaparHtml(inc.prioridad)}</td>
                 <td>${escaparHtml(inc.usuario ? inc.usuario.name : 'Sin usuario')}</td>
                 <td>${fecha}</td>
+                <td>${badgeAntiguedad(inc)}</td>
                 <td>
                     <a href="/incidencias/${inc.id}" class="btn btn-sm btn-info">
                         <i class="fas fa-eye"></i>
@@ -218,7 +238,7 @@ async function cargarIncidencias() {
         activarBotonesEliminar();
 
     } catch (error) {
-        tabla.innerHTML = '<tr><td colspan="9" class="text-center text-danger">Error de conexión con el servidor.</td></tr>';
+        tabla.innerHTML = '<tr><td colspan="10" class="text-center text-danger">Error de conexión con el servidor.</td></tr>';
     }
 }
 
@@ -263,6 +283,33 @@ document.getElementById('btnLimpiar').addEventListener('click', function () {
     document.getElementById('filtroPrioridad').value = '';
     document.getElementById('filtroCiudad').value = '';
     cargarIncidencias();
+});
+
+document.getElementById('btnExportar').addEventListener('click', function () {
+    if (incidenciasVisibles.length === 0) {
+        alert('No hay datos para exportar.');
+        return;
+    }
+
+    const encabezado = ['ID', 'Titulo', 'Ciudad', 'Tipo', 'Estado', 'Prioridad', 'Usuario', 'Fecha'];
+
+    const filas = incidenciasVisibles.map(inc => [
+        inc.id,
+        '"' + (inc.titulo || '').replace(/"/g, '""') + '"',
+        inc.ciudad ? inc.ciudad.nombre : '',
+        inc.tipo ? inc.tipo.nombre : '',
+        inc.estado ? inc.estado.nombre : '',
+        inc.prioridad,
+        inc.usuario ? inc.usuario.name : '',
+        new Date(inc.created_at).toLocaleDateString('es-EC')
+    ].join(','));
+
+    const csv = '\uFEFF' + encabezado.join(',') + '\n' + filas.join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const enlace = document.createElement('a');
+    enlace.href = URL.createObjectURL(blob);
+    enlace.download = 'incidencias_' + new Date().toISOString().slice(0, 10) + '.csv';
+    enlace.click();
 });
 
 cargarIncidencias();
