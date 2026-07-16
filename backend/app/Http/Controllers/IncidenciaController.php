@@ -64,6 +64,7 @@ class IncidenciaController extends Controller
             'latitud' => 'nullable|numeric|between:-90,90',
             'longitud' => 'nullable|numeric|between:-180,180',
             'direccion' => 'nullable|string|max:255',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
         ], [
             'titulo.required' => 'El título es obligatorio.',
             'titulo.max' => 'El título no debe superar los 200 caracteres.',
@@ -78,6 +79,10 @@ class IncidenciaController extends Controller
 
             'longitud.numeric' => 'La longitud debe ser un valor numérico.',
             'longitud.between' => 'La longitud debe estar entre -180 y 180.',
+
+            'foto.image' => 'El archivo debe ser una imagen.',
+            'foto.mimes' => 'La foto debe ser JPG, PNG o WEBP.',
+            'foto.max' => 'La foto no debe superar los 4 MB.',
         ]);
 
         $estadoPendiente = EstadoIncidencia::where('nombre', 'Pendiente')->first();
@@ -86,6 +91,12 @@ class IncidenciaController extends Controller
             return response()->json([
                 'message' => 'No existe el estado Pendiente en la base de datos.'
             ], 500);
+        }
+
+        $rutaFoto = null;
+
+        if ($request->hasFile('foto')) {
+            $rutaFoto = $request->file('foto')->store('incidencias', 'public');
         }
 
         $incidencia = Incidencia::create([
@@ -100,6 +111,7 @@ class IncidenciaController extends Controller
             'latitud' => $request->latitud,
             'longitud' => $request->longitud,
             'direccion' => $request->direccion,
+            'foto' => $rutaFoto,
         ]);
 
         HistorialEstado::create([

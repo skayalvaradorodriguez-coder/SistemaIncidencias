@@ -109,6 +109,17 @@
 
             </div>
 
+            @if($incidencia->foto)
+                <div class="mb-3">
+                    <p><strong>Fotografía:</strong></p>
+                    <a href="{{ asset('storage/' . $incidencia->foto) }}" target="_blank">
+                        <img src="{{ asset('storage/' . $incidencia->foto) }}"
+                             class="img-fluid rounded" style="max-height: 350px;"
+                             alt="Fotografía de la incidencia">
+                    </a>
+                </div>
+            @endif
+
             @if($incidencia->latitud && $incidencia->longitud)
                 <div class="mb-3">
                     <p><strong>Ubicación:</strong></p>

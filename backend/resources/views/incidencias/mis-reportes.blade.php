@@ -25,9 +25,14 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>Mis Reportes</h1>
 
-        <a href="{{ route('incidencias.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Reportar Incidencia
-        </a>
+        <div>
+            <button type="button" id="btnPdf" class="btn btn-danger mr-2">
+                <i class="fas fa-file-pdf"></i> Descargar PDF
+            </button>
+            <a href="{{ route('incidencias.create') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Reportar Incidencia
+            </a>
+        </div>
     </div>
 
     <p class="text-muted">Aquí puedes ver el avance de todas las incidencias que has reportado.</p>
@@ -59,6 +64,8 @@ const PROGRESO = {
     'Rechazado': 100
 };
 
+let misIncidencias = [];
+
 function escaparHtml(texto) {
     const div = document.createElement('div');
     div.textContent = texto ?? '';
@@ -80,6 +87,8 @@ async function cargarMisReportes() {
 
         const todas = await response.json();
         const mias = todas.filter(i => i.usuario_id === usuario.id);
+
+        misIncidencias = mias;
 
         if (mias.length === 0) {
             contenedor.innerHTML = `
@@ -146,6 +155,76 @@ async function cargarMisReportes() {
         contenedor.innerHTML = '<div class="col-12 text-danger">Error de conexión con el servidor.</div>';
     }
 }
+
+document.getElementById('btnPdf').addEventListener('click', function () {
+
+    if (misIncidencias.length === 0) {
+        alert('No tienes incidencias para incluir en el reporte.');
+        return;
+    }
+
+    const u = getUser();
+    const hoy = new Date().toLocaleDateString('es-EC', { day: '2-digit', month: 'long', year: 'numeric' });
+
+    const filas = misIncidencias.map(inc => `
+        <tr>
+            <td>#${inc.id}</td>
+            <td>${escaparHtml(inc.titulo)}</td>
+            <td>${escaparHtml(inc.ciudad ? inc.ciudad.nombre : 'N/A')}</td>
+            <td>${escaparHtml(inc.tipo ? inc.tipo.nombre : 'N/A')}</td>
+            <td>${escaparHtml(inc.estado ? inc.estado.nombre : 'N/A')}</td>
+            <td>${inc.prioridad}</td>
+            <td>${new Date(inc.created_at).toLocaleDateString('es-EC')}</td>
+        </tr>
+    `).join('');
+
+    const ventana = window.open('', '_blank');
+    ventana.document.write(`
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="utf-8">
+            <title>Reporte de Incidencias - ${escaparHtml(u.name)}</title>
+            <style>
+                body { font-family: 'Segoe UI', Arial, sans-serif; color: #212529; margin: 40px; }
+                .encabezado { border-bottom: 3px solid #1d4ed8; padding-bottom: 12px; margin-bottom: 20px; }
+                .encabezado h1 { margin: 0; font-size: 1.4rem; color: #1e3a8a; }
+                .encabezado p { margin: 4px 0 0; font-size: 0.85rem; color: #555; }
+                table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+                th { background: #1e3a8a; color: #fff; padding: 8px; text-align: left; }
+                td { padding: 7px 8px; border-bottom: 1px solid #ddd; }
+                tr:nth-child(even) td { background: #f4f6fb; }
+                .pie { margin-top: 24px; font-size: 0.75rem; color: #888; text-align: center; }
+                @media print { .no-imprimir { display: none; } }
+            </style>
+        </head>
+        <body>
+            <div class="encabezado">
+                <h1>Sistema de Gestión de Incidencias Georreferenciadas</h1>
+                <p><strong>Reporte de incidencias del ciudadano:</strong> ${escaparHtml(u.name)} ${escaparHtml(u.apellido || '')} (${escaparHtml(u.email)})</p>
+                <p><strong>Fecha de emisión:</strong> ${hoy} &nbsp;|&nbsp; <strong>Total de reportes:</strong> ${misIncidencias.length}</p>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>N.º</th><th>Título</th><th>Ciudad</th><th>Tipo</th>
+                        <th>Estado</th><th>Prioridad</th><th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>${filas}</tbody>
+            </table>
+
+            <div class="pie">
+                Documento generado automáticamente por el Sistema de Gestión de Incidencias — UPSE, Carrera de Software.
+            </div>
+
+            <script>window.onload = () => window.print();<\/script>
+        </body>
+        </html>
+    `);
+    ventana.document.close();
+});
 
 cargarMisReportes();
 </script>

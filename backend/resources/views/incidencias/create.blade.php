@@ -93,6 +93,17 @@
                 </div>
 
                 <div class="form-group">
+                    <label>Fotografía de la incidencia <span class="text-muted">(opcional)</span></label>
+                    <div class="custom-file">
+                        <input type="file" id="foto" class="custom-file-input"
+                               accept="image/jpeg,image/png,image/webp" capture="environment">
+                        <label class="custom-file-label" for="foto" id="fotoLabel">Tomar foto o elegir archivo...</label>
+                    </div>
+                    <small class="form-text text-muted">JPG, PNG o WEBP. Máximo 4 MB. En el celular se abrirá la cámara.</small>
+                    <img id="fotoPreview" class="img-fluid rounded mt-2 d-none" style="max-height: 220px;">
+                </div>
+
+                <div class="form-group">
                     <label>Ubicación en el mapa</label>
                     <small class="form-text text-muted mb-2">
                         Haga clic en el mapa para marcar el punto exacto de la incidencia, o use su ubicación actual.
@@ -236,6 +247,23 @@
         }
     });
 
+    // ================== FOTO (vista previa) ==================
+    document.getElementById('foto').addEventListener('change', function () {
+        const archivo = this.files[0];
+        const preview = document.getElementById('fotoPreview');
+        const etiqueta = document.getElementById('fotoLabel');
+
+        if (!archivo) {
+            preview.classList.add('d-none');
+            etiqueta.textContent = 'Tomar foto o elegir archivo...';
+            return;
+        }
+
+        etiqueta.textContent = archivo.name;
+        preview.src = URL.createObjectURL(archivo);
+        preview.classList.remove('d-none');
+    });
+
     // ================== GUARDAR ==================
     document.getElementById('formIncidencia').addEventListener('submit', async function (e) {
         e.preventDefault();
@@ -243,22 +271,34 @@
         const alertBox = document.getElementById('alertBox');
         alertBox.className = 'alert d-none';
 
-        const payload = {
-            titulo: document.getElementById('titulo').value,
-            descripcion: document.getElementById('descripcion').value,
-            ciudad_id: ciudadSelect.value,
-            tipo_incidencia_id: tipoSelect.value,
-            subtipo_incidencia_id: subtipoSelect.value,
-            prioridad: document.getElementById('prioridad').value,
-            direccion: document.getElementById('direccion').value,
-            latitud: document.getElementById('latitud').value || null,
-            longitud: document.getElementById('longitud').value || null,
-        };
+        const formData = new FormData();
+        formData.append('titulo', document.getElementById('titulo').value);
+        formData.append('descripcion', document.getElementById('descripcion').value);
+        formData.append('ciudad_id', ciudadSelect.value);
+        formData.append('tipo_incidencia_id', tipoSelect.value);
+        formData.append('subtipo_incidencia_id', subtipoSelect.value);
+        formData.append('prioridad', document.getElementById('prioridad').value);
+        formData.append('direccion', document.getElementById('direccion').value);
+
+        if (document.getElementById('latitud').value) {
+            formData.append('latitud', document.getElementById('latitud').value);
+            formData.append('longitud', document.getElementById('longitud').value);
+        }
+
+        const archivoFoto = document.getElementById('foto').files[0];
+        if (archivoFoto) {
+            formData.append('foto', archivoFoto);
+        }
 
         try {
-            const response = await authFetch('/api/incidencias', {
+            // Se usa fetch directo: FormData define su propio Content-Type (multipart)
+            const response = await fetch('/api/incidencias', {
                 method: 'POST',
-                body: JSON.stringify(payload)
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                    'Accept': 'application/json'
+                },
+                body: formData
             });
 
             const data = await response.json();
