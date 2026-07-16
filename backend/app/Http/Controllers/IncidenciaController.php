@@ -10,6 +10,7 @@ use App\Models\Pais;
 use App\Models\TipoIncidencia;
 use App\Models\User;
 use App\Services\NotificacionService;
+use App\Models\Ciudad;
 
 class IncidenciaController extends Controller
 {
@@ -241,17 +242,13 @@ class IncidenciaController extends Controller
 
     public function vistaIndex()
     {
-        $incidencias = Incidencia::with([
-            'usuario',
-            'ciudad',
-            'tipo',
-            'subtipo',
-            'estado'
-        ])
-        ->orderBy('created_at', 'desc')
-        ->get();
+        $estados = EstadoIncidencia::all();
 
-        return view('incidencias.index', compact('incidencias'));
+        $tipos = TipoIncidencia::all();
+
+        $ciudades = Ciudad::orderBy('nombre')->get();
+
+        return view('incidencias.index', compact('estados', 'tipos', 'ciudades'));
     }
 
     public function vistaCreate()
