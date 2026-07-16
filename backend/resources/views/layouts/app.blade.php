@@ -243,6 +243,24 @@
                         </a>
                     </li>
 
+                    <li class="nav-header">CUENTA</li>
+
+                    <li class="nav-item">
+                        <a href="{{ route('emergencias') }}"
+                           class="nav-link {{ request()->is('emergencias') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-phone-alt"></i>
+                            <p>Emergencias</p>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="{{ route('perfil') }}"
+                           class="nav-link {{ request()->is('perfil') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-user-circle"></i>
+                            <p>Mi Perfil</p>
+                        </a>
+                    </li>
+
                 </ul>
 
             </nav>

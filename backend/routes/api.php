@@ -21,9 +21,10 @@ Route::middleware('throttle:5,1')->group(function () {
 // Rutas protegidas (requieren token válido)
 Route::middleware('auth:sanctum')->group(function () {
 
-    // Auth
+    // Auth y perfil
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
+    Route::put('/perfil', [AuthController::class, 'actualizarPerfil']);
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'api']);
