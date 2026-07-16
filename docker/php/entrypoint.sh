@@ -3,8 +3,6 @@ set -e
 
 cd /var/www/html
 
-# El código llega por bind-mount, así que las dependencias se instalan
-# aquí (no en el build de la imagen) para que no queden ocultas por el volumen.
 if [ ! -d "vendor" ] || [ ! -f "vendor/autoload.php" ]; then
     echo "[entrypoint] Instalando dependencias de Composer..."
     composer install --no-interaction --prefer-dist --optimize-autoloader
@@ -15,27 +13,24 @@ if [ ! -f ".env" ]; then
     cp .env.example .env
 fi
 
-if ! grep -q "^APP_KEY=base64" .env; then
+if ! grep -q "^APP_KEY=base64:" .env; then
     echo "[entrypoint] Generando APP_KEY..."
     php artisan key:generate --force
 fi
 
-echo "[entrypoint] Esperando a que la base de datos (${DB_HOST:-postgres}) esté disponible..."
-until php artisan db:show > /dev/null 2>&1; do
-    sleep 2
-done
-echo "[entrypoint] Base de datos disponible."
+echo "[entrypoint] PostgreSQL listo según el healthcheck de Docker."
 
 echo "[entrypoint] Ejecutando migraciones..."
 php artisan migrate --force
 
-if [ "${DB_SEED:-true}" = "true" ]; then
+if [ "${DB_SEED:-false}" = "true" ]; then
     echo "[entrypoint] Ejecutando seeders..."
-    php artisan db:seed --force || true
+    php artisan db:seed --force
 fi
 
-php artisan storage:link || true
+php artisan storage:link >/dev/null 2>&1 || true
+php artisan optimize:clear
 php artisan config:cache
 
-echo "[entrypoint] Listo. Iniciando php-fpm..."
-exec php-fpm
+echo "[entrypoint] Listo. Iniciando PHP-FPM..."
+exec "$@"
