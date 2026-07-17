@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict EG8jcaniE07I1WVYQVdQUXMHqK0cXs7XCaDNFO3ah39kNYTjWYqE5nO6x0wEtUk
+\restrict d1lCH9sUldQ3FF1iKnYAqnfbeQmrll8WJm8mNs3YQ3GT8deHrf2JHwKpm0QOq93
 
 -- Dumped from database version 15.18 (Debian 15.18-1.pgdg13+1)
 -- Dumped by pg_dump version 15.18 (Debian 15.18-1.pgdg13+1)
@@ -316,7 +316,7 @@ CREATE TABLE public.incidencias (
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
     fecha_resolucion timestamp without time zone,
-    CONSTRAINT incidencias_prioridad_check CHECK (((prioridad)::text = ANY ((ARRAY['Baja'::character varying, 'Media'::character varying, 'Alta'::character varying, 'Crítica'::character varying])::text[])))
+    CONSTRAINT incidencias_prioridad_check CHECK (((prioridad)::text = ANY (ARRAY[('Baja'::character varying)::text, ('Media'::character varying)::text, ('Alta'::character varying)::text, ('Crítica'::character varying)::text])))
 );
 
 
@@ -954,8 +954,8 @@ COPY public.asignaciones (id, incidencia_id, usuario_id, fecha_asignacion, creat
 COPY public.cache (key, value, expiration) FROM stdin;
 laravel-cache-748d8fb071be83587f9ba1027754a83167b697b3:timer	i:1784171318;	1784171318
 laravel-cache-748d8fb071be83587f9ba1027754a83167b697b3	i:1;	1784171318
-laravel-cache-b7ad7f2b04bd98f199a2b8c016e37e66c831b866:timer	i:1784171858;	1784171858
-laravel-cache-b7ad7f2b04bd98f199a2b8c016e37e66c831b866	i:1;	1784171858
+laravel-cache-b7ad7f2b04bd98f199a2b8c016e37e66c831b866:timer	i:1784264145;	1784264145
+laravel-cache-b7ad7f2b04bd98f199a2b8c016e37e66c831b866	i:2;	1784264145
 \.
 
 
@@ -1105,6 +1105,7 @@ COPY public.migrations (id, migration, batch) FROM stdin;
 18	2026_07_14_221422_add_incidencia_id_to_notificaciones_table	6
 19	2026_07_15_031134_add_columnas_faltantes_to_asignaciones_table	7
 20	2026_07_15_195224_crear_vistas_y_trigger_sql	8
+21	2026_07_16_171607_add_foto_to_incidencias_table	9
 \.
 
 
@@ -1211,6 +1212,7 @@ COPY public.personal_access_tokens (id, tokenable_type, tokenable_id, name, toke
 66	App\\Models\\User	1	auth_token	8d8922c55ae4252dfd960dc9659f9842a55228274342dccf185b5bfe25ce85f0	["*"]	\N	\N	2026-07-16 00:52:35	2026-07-16 00:52:35
 61	App\\Models\\User	1	auth_token	8359df8a686d989057813d6f9ab1dbb8693af6496bf4a2e803236163bf4a4b97	["*"]	2026-07-15 21:15:34	\N	2026-07-15 21:04:04	2026-07-15 21:15:34
 62	App\\Models\\User	1	auth_token	8aa87074619fe183a5a16f48fcecd97cd754cebb0e16cd67b85b2614202417a3	["*"]	\N	\N	2026-07-15 21:31:24	2026-07-15 21:31:24
+73	App\\Models\\User	1	auth_token	39aeafd888f3ed46ec248868fb4387ebff3882d7927928d9886ac9d0234b25fb	["*"]	2026-07-17 04:59:52	\N	2026-07-17 04:55:43	2026-07-17 04:59:52
 \.
 
 
@@ -1239,18 +1241,7 @@ COPY public.roles (id, nombre, descripcion, created_at, updated_at) FROM stdin;
 --
 
 COPY public.sessions (id, user_id, ip_address, user_agent, payload, last_activity) FROM stdin;
-teq8EE4rGzes4MevcfIHWteaffcDpsYrrMivqT1A	\N	172.18.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36	eyJfdG9rZW4iOiJNZzNxd3huSDNQY3k0cGdVY3JBQzJ3OGxvcXNHTDBwbXRNRE1WcXI0IiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL2xvY2FsaG9zdDo4MDgwIiwicm91dGUiOm51bGx9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19	1784142503
-5AmQ5POm8cwREgECxTmFTyEoRaOqVoTsO7b3TGob	\N	172.18.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36	eyJfdG9rZW4iOiIzbElINk9oM2tQOGxiNnBUWDlNcVRnVko1eE5ueXBqNHgxM29NMGN1IiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL2xvY2FsaG9zdDo4MDgwIiwicm91dGUiOm51bGx9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19	1784142582
-4AMe3BBZsCoUGn3IMUR3y8LsiwU1tyagZayfHEke	\N	172.18.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36	eyJfdG9rZW4iOiIyeUZUdGd1WllpQk1yVGlhakZSUEVubXpCWXlJdVQzVXROSDNDMTM3IiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL2xvY2FsaG9zdDo4MDgwIiwicm91dGUiOm51bGx9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19	1784151483
-uYDRaPpUjnucuJwLHmBM9kebWvhH2KevuUPVleY4	\N	172.18.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36	eyJfdG9rZW4iOiJtaTZUQjBBanVyNkFLV3AyeHhnRWNHNGE1dGFIRlh6SlQxemdSa2NrIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL2xvY2FsaG9zdDo4MDgwIiwicm91dGUiOm51bGx9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19	1784161618
-sJt0O8M2RkIg3Dz3d6ULqye3NMMDyHcw3E2J9pwU	\N	172.18.0.3	curl/8.14.1	eyJfdG9rZW4iOiJjaWlXZUhkTG42c055ZVZUcWg4T2pJd2t4cGxUcU5Oam5neTZkVzBQIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL25naW54Iiwicm91dGUiOm51bGx9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19	1784163286
-dcUuxobo6fP1EwE8HX03XcLfQaIrFS8Es4ggB19t	\N	172.18.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36	eyJfdG9rZW4iOiJOQVYxV0xkQ0U4WFpQY0szNTU3enFsMDZSQVUxeWptdVZRZE1EQTgxIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL2xvY2FsaG9zdDo4MDgwIiwicm91dGUiOm51bGx9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19	1784098160
-t7uu3PT47hSuFSxGn4qFV7Wr1xPiFXPePiK6kfYZ	\N	172.18.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36	eyJfdG9rZW4iOiIyWlhCS2RIUFN4UGhnNFBMQndhM0VoTlVNd1NxaHJqTkZRQXY5ZHdCIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL2xvY2FsaG9zdDo4MDgwIiwicm91dGUiOm51bGx9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19	1784142503
-4cT8DpTsovoM5j3CBT9sCr1JU3Nx11Gjhe682U79	\N	172.18.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36	eyJfdG9rZW4iOiJRWjdFc1hyY2VKS3I4MTk5OTQ5NE1iUjJ3bnFGbjkxYlJWTUVQRWNvIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL2xvY2FsaG9zdDo4MDgwIiwicm91dGUiOm51bGx9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19	1784143268
-FnpvfkGZwKtwRhJr5twmVQoPhr5DKc5AEneM9d6j	\N	172.18.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36	eyJfdG9rZW4iOiJyWExYbXF4a1VXZk1hN0E4Q1JCa05hT3EwRFcwNzFYU0VpUllQaXFIIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL2xvY2FsaG9zdDo4MDgwIiwicm91dGUiOm51bGx9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19	1784171801
-I7eNRGaRj4CUZOMx50rJzirwdK6UPIRInYMwFSUz	\N	172.18.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36	eyJfdG9rZW4iOiI2RGNQczBqb0x2QWIwS1Q4ZjNlNzJvYVRWZEtsU2htSk42VHJ5TXlYIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL2xvY2FsaG9zdDo4MDgwIiwicm91dGUiOm51bGx9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19	1784095597
-c0JEKw7Yx5QMw6G60nF0XNsZagFY4EX1lh651kdF	\N	172.18.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36	eyJfdG9rZW4iOiJEVE8wZjl0akpmNWFkZml4VGlYYkVmN1lFSXNhTGoyOHJYeEFJaUJZIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL2xvY2FsaG9zdDo4MDgwXC9pbmNpZGVuY2lhc1wvMzkiLCJyb3V0ZSI6ImluY2lkZW5jaWFzLnNob3cifSwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==	1784085303
-w95fA9HHizPyBPS1oKWW7fiD1apJjq5J6NqQ9BOH	\N	172.18.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36	eyJfdG9rZW4iOiJ2QjJlWG9sa1d5YklPbWx3c1VpYUxUT2pvbGRxQ2V3UlF6ZGdkYlUzIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL2xvY2FsaG9zdDo4MDgwXC9sb2dpbiIsInJvdXRlIjoibG9naW4ifSwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==	1784087358
+kGbEcoW5Z79cSNKTlFnUwwX4KeSfekrEPUmmo968	\N	172.18.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36	eyJfdG9rZW4iOiJVeGoyOWFLZ1Fmc244T3lhbWx0TFREQ0w1dkdvSkRYNTlMeVlXWkJRIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL2xvY2FsaG9zdDo4MDgwXC9pbmNpZGVuY2lhcyIsInJvdXRlIjoiaW5jaWRlbmNpYXMuaW5kZXgifSwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==	1784264208
 \.
 
 
@@ -1367,7 +1358,7 @@ SELECT pg_catalog.setval('public.jobs_id_seq', 1, false);
 -- Name: migrations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: incidencias_user
 --
 
-SELECT pg_catalog.setval('public.migrations_id_seq', 20, true);
+SELECT pg_catalog.setval('public.migrations_id_seq', 21, true);
 
 
 --
@@ -1388,7 +1379,7 @@ SELECT pg_catalog.setval('public.paises_id_seq', 1, true);
 -- Name: personal_access_tokens_id_seq; Type: SEQUENCE SET; Schema: public; Owner: incidencias_user
 --
 
-SELECT pg_catalog.setval('public.personal_access_tokens_id_seq', 71, true);
+SELECT pg_catalog.setval('public.personal_access_tokens_id_seq', 73, true);
 
 
 --
@@ -1909,5 +1900,5 @@ ALTER TABLE ONLY public.users
 -- PostgreSQL database dump complete
 --
 
-\unrestrict EG8jcaniE07I1WVYQVdQUXMHqK0cXs7XCaDNFO3ah39kNYTjWYqE5nO6x0wEtUk
+\unrestrict d1lCH9sUldQ3FF1iKnYAqnfbeQmrll8WJm8mNs3YQ3GT8deHrf2JHwKpm0QOq93
 
