@@ -1,7 +1,4 @@
-version: '3.8'
-
 services:
-  # Base de datos PostgreSQL
   postgres:
     image: postgres:15
     container_name: incidencias_db
@@ -22,8 +19,6 @@ services:
       retries: 10
     networks:
       - incidencias_network
-
-  # Backend Laravel
   backend:
     build:
       context: ./docker/php
@@ -33,6 +28,8 @@ services:
     working_dir: /var/www/html
     volumes:
       - ./backend:/var/www/html
+      - vendor_data:/var/www/html/vendor
+      - framework_cache:/var/www/html/storage/framework
     environment:
       DB_SEED: "true"
     depends_on:
@@ -40,8 +37,6 @@ services:
         condition: service_healthy
     networks:
       - incidencias_network
-
-  # Servidor Nginx
   nginx:
     image: nginx:alpine
     container_name: incidencias_nginx
@@ -55,10 +50,10 @@ services:
       - backend
     networks:
       - incidencias_network
-
 volumes:
   postgres_data:
-
+  vendor_data:
+  framework_cache:
 networks:
   incidencias_network:
     driver: bridge
