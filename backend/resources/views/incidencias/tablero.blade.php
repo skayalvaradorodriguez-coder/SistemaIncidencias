@@ -45,6 +45,7 @@
     }
 
     .tarjeta {
+        position: relative;
         background: #343a40;
         border-radius: 6px;
         border-left: 4px solid var(--color-columna, #6c757d);
@@ -67,6 +68,7 @@
         font-weight: 600;
         font-size: 0.88rem;
         margin-bottom: 6px;
+        padding-right: 28px;
     }
 
     .tarjeta-meta {
@@ -75,6 +77,27 @@
         align-items: center;
         font-size: 0.75rem;
         opacity: 0.8;
+    }
+
+    .btn-mover {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: rgba(255, 255, 255, 0.12);
+        border: none;
+        color: #fff;
+        border-radius: 50%;
+        width: 26px;
+        height: 26px;
+        font-size: 0.72rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+    .btn-mover:hover {
+        background: rgba(255, 255, 255, 0.25);
     }
 
     .prioridad-pill {
@@ -95,6 +118,88 @@
         font-size: 0.8rem;
         padding: 20px 0;
     }
+
+    .ayuda-escritorio { display: inline; }
+    .ayuda-movil { display: none; }
+
+    /* ===== Selector de estado (alternativa táctil) ===== */
+    #capaEstado {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        display: none;
+        align-items: flex-end;
+        justify-content: center;
+        z-index: 2000;
+    }
+
+    #capaEstado.visible {
+        display: flex;
+    }
+
+    .panel-estado {
+        background: #2b3035;
+        width: 100%;
+        max-width: 460px;
+        border-radius: 14px 14px 0 0;
+        padding: 18px 18px 24px;
+        box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.5);
+    }
+
+    .panel-estado h5 {
+        font-size: 0.95rem;
+        margin-bottom: 4px;
+    }
+
+    .panel-estado .panel-sub {
+        font-size: 0.78rem;
+        opacity: 0.6;
+        margin-bottom: 14px;
+    }
+
+    .opcion-estado {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        background: rgba(255, 255, 255, 0.06);
+        border: none;
+        border-left: 4px solid var(--color-opcion, #6c757d);
+        color: #fff;
+        text-align: left;
+        padding: 12px 14px;
+        border-radius: 6px;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+    }
+
+    .opcion-estado:disabled {
+        opacity: 0.4;
+    }
+
+    @media (max-width: 768px) {
+        .tablero {
+            flex-direction: column;
+            overflow-x: visible;
+        }
+
+        .columna {
+            width: 100%;
+            min-width: 0;
+        }
+
+        .columna-cuerpo {
+            max-height: 340px;
+            overflow-y: auto;
+        }
+
+        .tarjeta {
+            cursor: default;
+        }
+
+        .ayuda-escritorio { display: none; }
+        .ayuda-movil { display: inline; }
+    }
 </style>
 @endsection
 
@@ -102,11 +207,12 @@
 
 <div class="container-fluid">
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
         <h1>Tablero Kanban</h1>
         <span class="text-muted">
             <i class="fas fa-hand-paper mr-1"></i>
-            Arrastra una tarjeta a otra columna para cambiar su estado
+            <span class="ayuda-escritorio">Arrastra una tarjeta a otra columna para cambiar su estado</span>
+            <span class="ayuda-movil">Toca el botón <i class="fas fa-exchange-alt"></i> de una tarjeta para cambiar su estado</span>
         </span>
     </div>
 
@@ -118,6 +224,15 @@
         </div>
     </div>
 
+</div>
+
+<div id="capaEstado">
+    <div class="panel-estado">
+        <h5 id="panelTitulo">Cambiar estado</h5>
+        <div class="panel-sub" id="panelSub"></div>
+        <div id="panelOpciones"></div>
+        <button type="button" class="btn btn-secondary btn-block mt-2" id="btnCerrarPanel">Cancelar</button>
+    </div>
 </div>
 
 @endsection
@@ -134,12 +249,60 @@ const COLORES = {
 };
 
 let incidenciaArrastrada = null;
+let estadosDisponibles = [];
 
 function escaparHtml(texto) {
     const div = document.createElement('div');
     div.textContent = texto ?? '';
     return div.innerHTML;
 }
+
+function abrirPanelEstado(incidencia) {
+
+    const capa = document.getElementById('capaEstado');
+    const opciones = document.getElementById('panelOpciones');
+
+    document.getElementById('panelSub').textContent =
+        '#' + incidencia.id + ' · ' + incidencia.titulo;
+
+    opciones.innerHTML = '';
+
+    estadosDisponibles.forEach(estado => {
+
+        const color = COLORES[estado.color] || '#6c757d';
+        const esActual = estado.id === incidencia.estado_incidencia_id;
+
+        const boton = document.createElement('button');
+        boton.type = 'button';
+        boton.className = 'opcion-estado';
+        boton.style.setProperty('--color-opcion', color);
+        boton.disabled = esActual;
+        boton.innerHTML = `
+            <i class="fas fa-flag" style="color:${color};"></i>
+            <span>${escaparHtml(estado.nombre)}</span>
+            ${esActual ? '<span class="ml-auto" style="font-size:0.72rem; opacity:0.7;">Estado actual</span>' : ''}
+        `;
+
+        boton.addEventListener('click', async function () {
+            cerrarPanelEstado();
+            await moverIncidencia(incidencia.id, estado.id, estado.nombre);
+        });
+
+        opciones.appendChild(boton);
+    });
+
+    capa.classList.add('visible');
+}
+
+function cerrarPanelEstado() {
+    document.getElementById('capaEstado').classList.remove('visible');
+}
+
+document.getElementById('btnCerrarPanel').addEventListener('click', cerrarPanelEstado);
+
+document.getElementById('capaEstado').addEventListener('click', function (e) {
+    if (e.target === this) cerrarPanelEstado();
+});
 
 async function cargarTablero() {
 
@@ -158,6 +321,8 @@ async function cargarTablero() {
 
         const estados = await resEstados.json();
         const incidencias = await resIncidencias.json();
+
+        estadosDisponibles = estados;
 
         tablero.innerHTML = '';
 
@@ -194,12 +359,20 @@ async function cargarTablero() {
                 tarjeta.dataset.id = inc.id;
 
                 tarjeta.innerHTML = `
+                    <button type="button" class="btn-mover" title="Cambiar estado">
+                        <i class="fas fa-exchange-alt"></i>
+                    </button>
                     <div class="tarjeta-titulo">#${inc.id} · ${escaparHtml(inc.titulo)}</div>
                     <div class="tarjeta-meta">
                         <span><i class="fas fa-map-marker-alt mr-1"></i>${escaparHtml(inc.ciudad ? inc.ciudad.nombre : 'N/A')}</span>
                         <span class="prioridad-pill prioridad-${inc.prioridad}">${inc.prioridad}</span>
                     </div>
                 `;
+
+                tarjeta.querySelector('.btn-mover').addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    abrirPanelEstado(inc);
+                });
 
                 tarjeta.addEventListener('dragstart', () => {
                     incidenciaArrastrada = inc.id;
@@ -265,7 +438,6 @@ async function moverIncidencia(id, estadoId, estadoNombre) {
 
         const data = await response.json();
 
-        // 422 = misma columna; se ignora en silencio
         if (response.status !== 422) {
             alerta.textContent = data.message || 'No se pudo mover la incidencia';
             alerta.classList.remove('d-none');
