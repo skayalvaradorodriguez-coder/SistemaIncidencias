@@ -164,8 +164,32 @@ document.getElementById('btnPdf').addEventListener('click', function () {
     }
 
     const u = getUser();
-    const hoy = new Date().toLocaleDateString('es-EC', { day: '2-digit', month: 'long', year: 'numeric' });
+    const ahora = new Date();
+    const fechaEmision = ahora.toLocaleDateString('es-EC', { day: '2-digit', month: 'long', year: 'numeric' });
+    const horaEmision = ahora.toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' });
+    const referencia = `RPT-${ahora.getFullYear()}${String(ahora.getMonth() + 1).padStart(2, '0')}${String(ahora.getDate()).padStart(2, '0')}-${u.id}`;
 
+    // ---------- Resumen ejecutivo: conteos por estado y prioridad ----------
+    const conteoEstados = {};
+    const conteoPrioridad = { 'Baja': 0, 'Media': 0, 'Alta': 0, 'Crítica': 0 };
+
+    misIncidencias.forEach(inc => {
+        const est = inc.estado ? inc.estado.nombre : 'Sin estado';
+        conteoEstados[est] = (conteoEstados[est] || 0) + 1;
+        if (conteoPrioridad[inc.prioridad] !== undefined) conteoPrioridad[inc.prioridad]++;
+    });
+
+    const chipsEstado = Object.entries(conteoEstados).map(([nombre, cantidad]) => `
+        <span class="chip">${escaparHtml(nombre)}: <strong>${cantidad}</strong></span>
+    `).join('');
+
+    const chipsPrioridad = Object.entries(conteoPrioridad)
+        .filter(([, cantidad]) => cantidad > 0)
+        .map(([nombre, cantidad]) => `
+            <span class="chip chip-prioridad-${nombre.toLowerCase()}">${nombre}: <strong>${cantidad}</strong></span>
+        `).join('');
+
+    // ---------- Tabla resumen ----------
     const filas = misIncidencias.map(inc => `
         <tr>
             <td>#${inc.id}</td>
@@ -173,9 +197,39 @@ document.getElementById('btnPdf').addEventListener('click', function () {
             <td>${escaparHtml(inc.ciudad ? inc.ciudad.nombre : 'N/A')}</td>
             <td>${escaparHtml(inc.tipo ? inc.tipo.nombre : 'N/A')}</td>
             <td>${escaparHtml(inc.estado ? inc.estado.nombre : 'N/A')}</td>
-            <td>${inc.prioridad}</td>
+            <td><span class="etiqueta-prioridad etiqueta-${inc.prioridad.toLowerCase()}">${inc.prioridad}</span></td>
             <td>${new Date(inc.created_at).toLocaleDateString('es-EC')}</td>
         </tr>
+    `).join('');
+
+    // ---------- Fichas detalladas por incidencia ----------
+    const fichas = misIncidencias.map((inc, i) => `
+        <div class="ficha">
+            <div class="ficha-cabecera">
+                <h3>#${inc.id} · ${escaparHtml(inc.titulo)}</h3>
+                <span class="etiqueta-prioridad etiqueta-${inc.prioridad.toLowerCase()}">${inc.prioridad}</span>
+            </div>
+            <table class="ficha-datos">
+                <tr>
+                    <td><strong>Estado</strong></td>
+                    <td>${escaparHtml(inc.estado ? inc.estado.nombre : 'N/A')}</td>
+                    <td><strong>Fecha de reporte</strong></td>
+                    <td>${new Date(inc.created_at).toLocaleDateString('es-EC')}</td>
+                </tr>
+                <tr>
+                    <td><strong>Ciudad</strong></td>
+                    <td>${escaparHtml(inc.ciudad ? inc.ciudad.nombre : 'N/A')}</td>
+                    <td><strong>Tipo / Subtipo</strong></td>
+                    <td>${escaparHtml(inc.tipo ? inc.tipo.nombre : 'N/A')}${inc.subtipo ? ' / ' + escaparHtml(inc.subtipo.nombre) : ''}</td>
+                </tr>
+                <tr>
+                    <td><strong>Dirección</strong></td>
+                    <td colspan="3">${escaparHtml(inc.direccion || 'No especificada')}</td>
+                </tr>
+            </table>
+            <p class="ficha-descripcion"><strong>Descripción:</strong> ${escaparHtml(inc.descripcion || 'Sin descripción registrada.')}</p>
+        </div>
+        ${i < misIncidencias.length - 1 ? '<div class="separador"></div>' : ''}
     `).join('');
 
     const ventana = window.open('', '_blank');
@@ -186,26 +240,218 @@ document.getElementById('btnPdf').addEventListener('click', function () {
             <meta charset="utf-8">
             <title>Reporte de Incidencias - ${escaparHtml(u.name)}</title>
             <style>
-                body { font-family: 'Segoe UI', Arial, sans-serif; color: #212529; margin: 40px; }
-                .encabezado { border-bottom: 3px solid #1d4ed8; padding-bottom: 12px; margin-bottom: 20px; }
-                .encabezado h1 { margin: 0; font-size: 1.4rem; color: #1e3a8a; }
-                .encabezado p { margin: 4px 0 0; font-size: 0.85rem; color: #555; }
-                table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-                th { background: #1e3a8a; color: #fff; padding: 8px; text-align: left; }
-                td { padding: 7px 8px; border-bottom: 1px solid #ddd; }
-                tr:nth-child(even) td { background: #f4f6fb; }
-                .pie { margin-top: 24px; font-size: 0.75rem; color: #888; text-align: center; }
-                @media print { .no-imprimir { display: none; } }
+                @page { margin: 22mm 16mm; }
+
+                * { box-sizing: border-box; }
+
+                body {
+                    font-family: 'Segoe UI', Arial, sans-serif;
+                    color: #1f2937;
+                    margin: 0;
+                    font-size: 13px;
+                    line-height: 1.5;
+                }
+
+                /* ---------- Encabezado / letterhead ---------- */
+                .franja-superior {
+                    height: 6px;
+                    background: linear-gradient(90deg, #1e3a8a, #1d4ed8, #3b82f6);
+                }
+
+                .encabezado {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-start;
+                    padding: 18px 0 14px;
+                    border-bottom: 2px solid #1e3a8a;
+                    margin-bottom: 18px;
+                }
+
+                .encabezado .institucion {
+                    font-size: 0.72rem;
+                    text-transform: uppercase;
+                    letter-spacing: 0.06em;
+                    color: #64748b;
+                    margin: 0 0 2px;
+                }
+
+                .encabezado h1 {
+                    margin: 0 0 6px;
+                    font-size: 1.35rem;
+                    color: #1e3a8a;
+                }
+
+                .encabezado .subtitulo {
+                    margin: 0;
+                    font-size: 0.88rem;
+                    color: #334155;
+                }
+
+                .encabezado .meta-derecha {
+                    text-align: right;
+                    font-size: 0.76rem;
+                    color: #475569;
+                    white-space: nowrap;
+                }
+
+                .encabezado .meta-derecha .referencia {
+                    display: inline-block;
+                    background: #eef2ff;
+                    color: #1e3a8a;
+                    font-weight: 600;
+                    padding: 3px 10px;
+                    border-radius: 4px;
+                    margin-bottom: 6px;
+                    font-size: 0.75rem;
+                }
+
+                /* ---------- Resumen ejecutivo ---------- */
+                .resumen {
+                    background: #f8fafc;
+                    border: 1px solid #e2e8f0;
+                    border-left: 4px solid #1d4ed8;
+                    border-radius: 6px;
+                    padding: 14px 18px;
+                    margin-bottom: 22px;
+                }
+
+                .resumen h2 {
+                    margin: 0 0 10px;
+                    font-size: 0.95rem;
+                    color: #1e3a8a;
+                }
+
+                .resumen .total-destacado {
+                    font-size: 1.6rem;
+                    font-weight: 700;
+                    color: #1e3a8a;
+                }
+
+                .resumen .total-destacado small {
+                    display: block;
+                    font-size: 0.7rem;
+                    font-weight: 400;
+                    color: #64748b;
+                    text-transform: uppercase;
+                }
+
+                .resumen-grid { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; }
+                .resumen-bloque { flex: 1; min-width: 200px; }
+                .resumen-bloque p { margin: 0 0 6px; font-size: 0.72rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; }
+
+                .chip {
+                    display: inline-block;
+                    background: #fff;
+                    border: 1px solid #cbd5e1;
+                    border-radius: 20px;
+                    padding: 3px 10px;
+                    margin: 0 6px 6px 0;
+                    font-size: 0.74rem;
+                    color: #334155;
+                }
+
+                .chip-prioridad-baja { border-color: #86efac; color: #166534; }
+                .chip-prioridad-media { border-color: #fde68a; color: #92400e; }
+                .chip-prioridad-alta { border-color: #fdba74; color: #9a3412; }
+                .chip-prioridad-crítica { border-color: #fca5a5; color: #991b1b; }
+
+                /* ---------- Tabla resumen ---------- */
+                h2.titulo-seccion {
+                    font-size: 0.95rem;
+                    color: #1e3a8a;
+                    border-bottom: 1px solid #e2e8f0;
+                    padding-bottom: 6px;
+                    margin: 26px 0 10px;
+                }
+
+                table.tabla-resumen { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+                table.tabla-resumen th {
+                    background: #1e3a8a; color: #fff; padding: 8px; text-align: left;
+                    font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.03em;
+                }
+                table.tabla-resumen td { padding: 7px 8px; border-bottom: 1px solid #e2e8f0; }
+                table.tabla-resumen tr:nth-child(even) td { background: #f8fafc; }
+
+                .etiqueta-prioridad {
+                    display: inline-block;
+                    padding: 2px 9px;
+                    border-radius: 10px;
+                    font-size: 0.7rem;
+                    font-weight: 600;
+                    color: #fff;
+                }
+                .etiqueta-baja { background: #22c55e; }
+                .etiqueta-media { background: #eab308; }
+                .etiqueta-alta { background: #f97316; }
+                .etiqueta-crítica { background: #dc2626; }
+
+                /* ---------- Fichas detalladas ---------- */
+                .ficha { margin-bottom: 14px; page-break-inside: avoid; }
+                .ficha-cabecera {
+                    display: flex; justify-content: space-between; align-items: center;
+                    margin-bottom: 8px;
+                }
+                .ficha-cabecera h3 { margin: 0; font-size: 0.92rem; color: #1e293b; }
+
+                table.ficha-datos { width: 100%; border-collapse: collapse; font-size: 0.76rem; margin-bottom: 8px; }
+                table.ficha-datos td { padding: 4px 6px; vertical-align: top; color: #334155; }
+                table.ficha-datos td:nth-child(1), table.ficha-datos td:nth-child(3) { width: 110px; color: #64748b; }
+
+                .ficha-descripcion { font-size: 0.8rem; color: #334155; margin: 0; background: #f8fafc; padding: 8px 10px; border-radius: 4px; }
+
+                .separador { border-top: 1px dashed #cbd5e1; margin: 14px 0; }
+
+                /* ---------- Pie de página ---------- */
+                .pie {
+                    margin-top: 30px;
+                    padding-top: 10px;
+                    border-top: 1px solid #e2e8f0;
+                    font-size: 0.68rem;
+                    color: #94a3b8;
+                    text-align: center;
+                }
+
+                @media print {
+                    .no-imprimir { display: none; }
+                    .ficha { page-break-inside: avoid; }
+                }
             </style>
         </head>
         <body>
+            <div class="franja-superior"></div>
+
             <div class="encabezado">
-                <h1>Sistema de Gestión de Incidencias Georreferenciadas</h1>
-                <p><strong>Reporte de incidencias del ciudadano:</strong> ${escaparHtml(u.name)} ${escaparHtml(u.apellido || '')} (${escaparHtml(u.email)})</p>
-                <p><strong>Fecha de emisión:</strong> ${hoy} &nbsp;|&nbsp; <strong>Total de reportes:</strong> ${misIncidencias.length}</p>
+                <div>
+                    <p class="institucion">UPSE · Carrera de Software</p>
+                    <h1>Sistema de Gestión de Incidencias Georreferenciadas</h1>
+                    <p class="subtitulo">Reporte de incidencias reportadas por: <strong>${escaparHtml(u.name)} ${escaparHtml(u.apellido || '')}</strong> (${escaparHtml(u.email)})</p>
+                </div>
+                <div class="meta-derecha">
+                    <span class="referencia">${referencia}</span><br>
+                    Emitido el ${fechaEmision}<br>
+                    a las ${horaEmision}
+                </div>
             </div>
 
-            <table>
+            <div class="resumen">
+                <h2>Resumen ejecutivo</h2>
+                <div class="resumen-grid">
+                    <div>
+                        <div class="total-destacado">${misIncidencias.length}<small>Incidencias reportadas</small></div>
+                    </div>
+                    <div class="resumen-bloque">
+                        <p>Por estado</p>
+                        ${chipsEstado}
+                    </div>
+                    <div class="resumen-bloque">
+                        <p>Por prioridad</p>
+                        ${chipsPrioridad}
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="titulo-seccion">Listado general</h2>
+            <table class="tabla-resumen">
                 <thead>
                     <tr>
                         <th>N.º</th><th>Título</th><th>Ciudad</th><th>Tipo</th>
@@ -215,8 +461,12 @@ document.getElementById('btnPdf').addEventListener('click', function () {
                 <tbody>${filas}</tbody>
             </table>
 
+            <h2 class="titulo-seccion">Detalle de cada incidencia</h2>
+            ${fichas}
+
             <div class="pie">
-                Documento generado automáticamente por el Sistema de Gestión de Incidencias — UPSE, Carrera de Software.
+                Documento generado automáticamente por el Sistema de Gestión de Incidencias Georreferenciadas — UPSE, Carrera de Software.<br>
+                Referencia del documento: ${referencia} &nbsp;|&nbsp; Este reporte refleja el estado de las incidencias al momento de su emisión.
             </div>
 
             <script>window.onload = () => window.print();<\/script>
