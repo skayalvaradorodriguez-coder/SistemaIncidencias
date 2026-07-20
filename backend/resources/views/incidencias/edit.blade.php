@@ -92,6 +92,23 @@
                 </div>
 
                 <div class="form-group">
+                    <label>Fotografía</label>
+                    <div id="fotoActualContenedor" class="mb-2">
+                        @if($incidencia->foto)
+                            <img id="fotoActual" src="{{ asset('storage/' . $incidencia->foto) }}"
+                                 class="img-fluid rounded d-block mb-2" style="max-height: 220px;"
+                                 alt="Fotografía actual de la incidencia">
+                        @else
+                            <p class="text-muted mb-2">Esta incidencia no tiene fotografía registrada.</p>
+                        @endif
+                    </div>
+                    <input type="file" id="foto" class="form-control-file" accept="image/png,image/jpeg,image/webp">
+                    <small class="form-text text-muted">
+                        Seleccione una imagen (JPG, PNG o WEBP, máx. 4 MB) solo si desea reemplazar la fotografía actual.
+                    </small>
+                </div>
+
+                <div class="form-group">
                     <label>Ubicación en el mapa</label>
                     <small class="form-text text-muted mb-2">
                         Haga clic en el mapa o arrastre el marcador para actualizar la ubicación.
@@ -254,22 +271,27 @@
         const alertBox = document.getElementById('alertBox');
         alertBox.className = 'alert d-none';
 
-        const payload = {
-            titulo: document.getElementById('titulo').value,
-            descripcion: document.getElementById('descripcion').value,
-            ciudad_id: ciudadSelect.value,
-            tipo_incidencia_id: tipoSelect.value,
-            subtipo_incidencia_id: subtipoSelect.value,
-            prioridad: document.getElementById('prioridad').value,
-            direccion: document.getElementById('direccion').value,
-            latitud: document.getElementById('latitud').value || null,
-            longitud: document.getElementById('longitud').value || null,
-        };
+        const formData = new FormData();
+        formData.append('_method', 'PUT');
+        formData.append('titulo', document.getElementById('titulo').value);
+        formData.append('descripcion', document.getElementById('descripcion').value);
+        formData.append('ciudad_id', ciudadSelect.value);
+        formData.append('tipo_incidencia_id', tipoSelect.value || '');
+        formData.append('subtipo_incidencia_id', subtipoSelect.value || '');
+        formData.append('prioridad', document.getElementById('prioridad').value);
+        formData.append('direccion', document.getElementById('direccion').value);
+        formData.append('latitud', document.getElementById('latitud').value || '');
+        formData.append('longitud', document.getElementById('longitud').value || '');
+
+        const inputFoto = document.getElementById('foto');
+        if (inputFoto.files && inputFoto.files[0]) {
+            formData.append('foto', inputFoto.files[0]);
+        }
 
         try {
             const response = await authFetch('/api/incidencias/{{ $incidencia->id }}', {
-                method: 'PUT',
-                body: JSON.stringify(payload)
+                method: 'POST',
+                body: formData
             });
 
             const data = await response.json();
