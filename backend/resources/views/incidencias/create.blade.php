@@ -6,6 +6,18 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
     #mapa { height: 380px; border-radius: 4px; z-index: 1; }
+
+    .obligatorio {
+        color: #dc3545;
+        font-weight: 700;
+        margin-left: 2px;
+    }
+
+    .leyenda-campos {
+        font-size: 0.85rem;
+        opacity: 0.75;
+        margin-bottom: 18px;
+    }
 </style>
 @endsection
 
@@ -24,20 +36,24 @@
 
         <div class="card-body">
 
+            <p class="leyenda-campos">
+                Los campos marcados con <span class="obligatorio">*</span> son obligatorios.
+            </p>
+
             <form id="formIncidencia">
 
                 <div class="form-group">
-                    <label>Título</label>
+                    <label>Título <span class="obligatorio">*</span></label>
                     <input type="text" id="titulo" class="form-control" placeholder="Ej: Bache en avenida principal">
                 </div>
 
                 <div class="form-group">
-                    <label>Descripción</label>
+                    <label>Descripción <span class="obligatorio">*</span></label>
                     <textarea id="descripcion" class="form-control" rows="3" placeholder="Describa la incidencia"></textarea>
                 </div>
 
                 <div class="form-group">
-                    <label>País</label>
+                    <label>País <span class="obligatorio">*</span></label>
                     <select id="pais_id" class="form-control">
                         <option value="">Seleccione...</option>
                         @foreach($paises as $pais)
@@ -47,21 +63,21 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Provincia</label>
+                    <label>Provincia <span class="obligatorio">*</span></label>
                     <select id="provincia_id" class="form-control">
                         <option value="">Seleccione...</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label>Ciudad</label>
+                    <label>Ciudad <span class="obligatorio">*</span></label>
                     <select id="ciudad_id" class="form-control">
                         <option value="">Seleccione...</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label>Tipo de Incidencia</label>
+                    <label>Tipo de Incidencia <span class="obligatorio">*</span></label>
                     <select id="tipo_incidencia_id" class="form-control">
                         <option value="">Seleccione...</option>
                         @foreach($tipos as $tipo)
@@ -71,14 +87,14 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Subtipo de Incidencia</label>
+                    <label>Subtipo de Incidencia <span class="obligatorio">*</span></label>
                     <select id="subtipo_incidencia_id" class="form-control">
                         <option value="">Seleccione...</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label>Prioridad</label>
+                    <label>Prioridad <span class="obligatorio">*</span></label>
                     <select id="prioridad" class="form-control">
                         <option value="Baja">Baja</option>
                         <option value="Media">Media</option>
@@ -88,7 +104,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Dirección</label>
+                    <label>Dirección <span class="text-muted">(opcional)</span></label>
                     <input type="text" id="direccion" class="form-control" placeholder="Dirección aproximada">
                 </div>
 
@@ -104,7 +120,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Ubicación en el mapa</label>
+                    <label>Ubicación en el mapa <span class="text-muted">(opcional)</span></label>
                     <small class="form-text text-muted mb-2">
                         Haga clic en el mapa para marcar el punto exacto de la incidencia, o use su ubicación actual.
                     </small>
