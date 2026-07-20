@@ -18,6 +18,17 @@
         opacity: 0.75;
         margin-bottom: 18px;
     }
+
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    textarea:-webkit-autofill,
+    select:-webkit-autofill {
+        -webkit-text-fill-color: #fff !important;
+        -webkit-box-shadow: 0 0 0 1000px #343a40 inset !important;
+        caret-color: #fff;
+        transition: background-color 9999s ease-in-out 0s;
+    }
 </style>
 @endsection
 
