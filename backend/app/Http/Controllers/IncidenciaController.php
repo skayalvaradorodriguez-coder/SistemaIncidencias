@@ -167,21 +167,34 @@ class IncidenciaController extends Controller
             'latitud' => 'nullable|numeric|between:-90,90',
             'longitud' => 'nullable|numeric|between:-180,180',
             'direccion' => 'nullable|string|max:255',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
+        ], [
+            'foto.image' => 'El archivo debe ser una imagen.',
+            'foto.mimes' => 'La foto debe ser JPG, PNG o WEBP.',
+            'foto.max' => 'La foto no debe superar los 4 MB.',
         ]);
 
-        $incidencia->update(
-            $request->only([
-                'titulo',
-                'descripcion',
-                'prioridad',
-                'ciudad_id',
-                'tipo_incidencia_id',
-                'subtipo_incidencia_id',
-                'direccion',
-                'latitud',
-                'longitud'
-            ])
-        );
+        $datos = $request->only([
+            'titulo',
+            'descripcion',
+            'prioridad',
+            'ciudad_id',
+            'tipo_incidencia_id',
+            'subtipo_incidencia_id',
+            'direccion',
+            'latitud',
+            'longitud'
+        ]);
+
+        if ($request->hasFile('foto')) {
+            // Eliminar la foto anterior del disco, si existía
+            if ($incidencia->foto) {
+                \Storage::disk('public')->delete($incidencia->foto);
+            }
+            $datos['foto'] = $request->file('foto')->store('incidencias', 'public');
+        }
+
+        $incidencia->update($datos);
 
         return response()->json(
             $incidencia->load([
