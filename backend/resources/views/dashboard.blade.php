@@ -25,15 +25,15 @@
         vertical-align: middle;
     }
 
-    .leyenda-pendiente::before { background: #ffc107; }
-    .leyenda-proceso::before   { background: #007bff; }
-    .leyenda-resuelto::before  { background: #28a745; }
+    .leyenda-pendiente::before { background: #C9A961; }
+    .leyenda-proceso::before   { background: #16233F; }
+    .leyenda-resuelto::before  { background: #2F7A4D; }
     .leyenda-otro::before      { background: #6c757d; }
 
     .small-box { cursor: pointer; }
 
     .btn-vista-mapa { font-size: 0.78rem; }
-    .btn-vista-mapa.activo { background: #007bff; color: #fff; }
+    .btn-vista-mapa.activo { background: #C9A961; color: #0A1128; border-color: #A9863F; }
 
     /* Leyenda del mapa de calor */
     .leyenda-calor {
@@ -65,6 +65,15 @@
     .solo-gestion .info-box .progress {
         margin: 6px 0;
     }
+
+        /* ===== Tarjetas de analítica (info-box) con paleta elite ===== */
+    .solo-gestion .bg-gradient-teal   { background: linear-gradient(135deg, #2F7A4D, #1F5636) !important; }
+    .solo-gestion .bg-gradient-indigo { background: linear-gradient(135deg, #1E2E52, #0A1128) !important; }
+    .solo-gestion .bg-gradient-info   { background: linear-gradient(135deg, #16233F, #101A33) !important; }
+    .solo-gestion .bg-gradient-orange { background: linear-gradient(135deg, #E3CD8F, #C9A961) !important; color: #0A1128 !important; }
+    .solo-gestion .bg-gradient-orange .info-box-icon,
+    .solo-gestion .bg-gradient-orange .info-box-content * { color: #0A1128 !important; }
+    .solo-gestion .info-box .progress-bar { background-color: #C9A961; }
 </style>
 @endsection
 
@@ -390,7 +399,6 @@
 <script src="{{ asset('plugins/chart.js/Chart.min.js') }}"></script>
 <script>
     // ================== CONTROL POR ROL ==================
-    // Muestra los paneles de gestión solo a Administrador y Responsable
     (function () {
         const usuario = getUser();
         const rol = usuario && usuario.rol ? usuario.rol.nombre : null;
@@ -402,13 +410,28 @@
         }
     })();
 
+    // ================== COLORES DEL TEMA ACTIVO ==================
+    // Se leen de las variables CSS (--text-muted / --border-subtle) para que
+    // las gráficas se vean bien tanto en modo oscuro como en modo claro.
+    const temaVars = getComputedStyle(document.documentElement);
+    const colorTexto = (temaVars.getPropertyValue('--text-muted') || '#9ca3af').trim();
+    const colorGrid = (temaVars.getPropertyValue('--border-subtle') || 'rgba(255,255,255,0.08)').trim();
+
+    // Paleta elite para las gráficas
+    const dorado = '#C9A961';
+    const doradoClaro = '#E3CD8F';
+    const doradoOscuro = '#A9863F';
+    const navy = '#16233F';
+    const navyOscuro = '#0A1128';
+    const verde = '#2F7A4D';
+
     // ================== MAPA GENERAL ==================
     const incidencias = @json($conUbicacion);
 
     const coloresEstado = {
-        'Pendiente': '#ffc107',
-        'En Proceso': '#007bff',
-        'Resuelto': '#28a745'
+        'Pendiente': dorado,
+        'En Proceso': navy,
+        'Resuelto': verde
     };
 
     let mapaGeneral = null;
@@ -458,7 +481,7 @@
             radius: 30,
             blur: 20,
             maxZoom: 15,
-            gradient: { 0.2: '#0dcaf0', 0.5: '#ffc107', 0.8: '#fd7e14', 1.0: '#dc3545' }
+            gradient: { 0.2: '#16233F', 0.5: '#C9A961', 0.8: '#E3CD8F', 1.0: '#dc3545' }
         });
 
         mapaGeneral.fitBounds(capaMarcadores.getBounds().pad(0.2));
@@ -494,9 +517,9 @@
             labels: ['Pendientes', 'En Proceso', 'Resueltas'],
             datasets: [{
                 data: [{{ $pendientes }}, {{ $enProceso }}, {{ $resueltas }}],
-                backgroundColor: ['#ffc107', '#007bff', '#28a745'],
+                backgroundColor: [dorado, navy, verde],
                 borderWidth: 2,
-                borderColor: '#343a40'
+                borderColor: 'rgba(0,0,0,0.05)'
             }]
         },
         options: {
@@ -504,7 +527,7 @@
             maintainAspectRatio: false,
             legend: {
                 position: 'bottom',
-                labels: { fontColor: '#c2c7d0', padding: 15 }
+                labels: { fontColor: colorTexto, padding: 15 }
             },
             cutoutPercentage: 60
         }
@@ -520,7 +543,7 @@
             datasets: [{
                 label: 'Incidencias',
                 data: porTipo.map(t => t.total),
-                backgroundColor: '#17a2b8',
+                backgroundColor: dorado,
                 borderRadius: 4
             }]
         },
@@ -533,12 +556,12 @@
                     ticks: {
                         beginAtZero: true,
                         stepSize: 1,
-                        fontColor: '#c2c7d0'
+                        fontColor: colorTexto
                     },
-                    gridLines: { color: 'rgba(255,255,255,0.08)' }
+                    gridLines: { color: colorGrid }
                 }],
                 xAxes: [{
-                    ticks: { fontColor: '#c2c7d0' },
+                    ticks: { fontColor: colorTexto },
                     gridLines: { display: false }
                 }]
             }
@@ -565,11 +588,11 @@
             datasets: [{
                 label: 'Incidencias registradas',
                 data: porMes.map(m => m.total),
-                borderColor: '#007bff',
-                backgroundColor: 'rgba(0, 123, 255, 0.15)',
+                borderColor: dorado,
+                backgroundColor: 'rgba(201, 169, 97, 0.15)',
                 fill: true,
                 lineTension: 0.3,
-                pointBackgroundColor: '#007bff',
+                pointBackgroundColor: dorado,
                 pointRadius: 5
             }]
         },
@@ -582,12 +605,12 @@
                     ticks: {
                         beginAtZero: true,
                         stepSize: 1,
-                        fontColor: '#c2c7d0'
+                        fontColor: colorTexto
                     },
-                    gridLines: { color: 'rgba(255,255,255,0.08)' }
+                    gridLines: { color: colorGrid }
                 }],
                 xAxes: [{
-                    ticks: { fontColor: '#c2c7d0' },
+                    ticks: { fontColor: colorTexto },
                     gridLines: { display: false }
                 }]
             }
@@ -604,7 +627,7 @@
             datasets: [{
                 label: 'Incidencias',
                 data: porCiudad.map(c => c.total),
-                backgroundColor: ['#dc3545', '#fd7e14', '#ffc107', '#20c997', '#0dcaf0'],
+                backgroundColor: [doradoClaro, dorado, doradoOscuro, navy, navyOscuro],
                 borderRadius: 4
             }]
         },
@@ -617,12 +640,12 @@
                     ticks: {
                         beginAtZero: true,
                         stepSize: 1,
-                        fontColor: '#c2c7d0'
+                        fontColor: colorTexto
                     },
-                    gridLines: { color: 'rgba(255,255,255,0.08)' }
+                    gridLines: { color: colorGrid }
                 }],
                 yAxes: [{
-                    ticks: { fontColor: '#c2c7d0' },
+                    ticks: { fontColor: colorTexto },
                     gridLines: { display: false }
                 }]
             }
