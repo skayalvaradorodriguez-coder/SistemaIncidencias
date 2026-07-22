@@ -255,7 +255,7 @@ document.getElementById('btnPdf').addEventListener('click', function () {
                 /* ---------- Encabezado / letterhead ---------- */
                 .franja-superior {
                     height: 6px;
-                    background: linear-gradient(90deg, #1e3a8a, #1d4ed8, #3b82f6);
+                    background: linear-gradient(90deg, #0A1128, #16233F, #E3CD8F);
                 }
 
                 .encabezado {
@@ -263,7 +263,7 @@ document.getElementById('btnPdf').addEventListener('click', function () {
                     justify-content: space-between;
                     align-items: flex-start;
                     padding: 18px 0 14px;
-                    border-bottom: 2px solid #1e3a8a;
+                    border-bottom: 2px solid #0A1128;
                     margin-bottom: 18px;
                 }
 
@@ -278,7 +278,7 @@ document.getElementById('btnPdf').addEventListener('click', function () {
                 .encabezado h1 {
                     margin: 0 0 6px;
                     font-size: 1.35rem;
-                    color: #1e3a8a;
+                    color: #0A1128;
                 }
 
                 .encabezado .subtitulo {
@@ -297,7 +297,7 @@ document.getElementById('btnPdf').addEventListener('click', function () {
                 .encabezado .meta-derecha .referencia {
                     display: inline-block;
                     background: #eef2ff;
-                    color: #1e3a8a;
+                    color: #0A1128;
                     font-weight: 600;
                     padding: 3px 10px;
                     border-radius: 4px;
@@ -309,7 +309,7 @@ document.getElementById('btnPdf').addEventListener('click', function () {
                 .resumen {
                     background: #f8fafc;
                     border: 1px solid #e2e8f0;
-                    border-left: 4px solid #1d4ed8;
+                    border-left: 4px solid #16233F;
                     border-radius: 6px;
                     padding: 14px 18px;
                     margin-bottom: 22px;
@@ -318,13 +318,13 @@ document.getElementById('btnPdf').addEventListener('click', function () {
                 .resumen h2 {
                     margin: 0 0 10px;
                     font-size: 0.95rem;
-                    color: #1e3a8a;
+                    color: #0A1128;
                 }
 
                 .resumen .total-destacado {
                     font-size: 1.6rem;
                     font-weight: 700;
-                    color: #1e3a8a;
+                    color: #0A1128;
                 }
 
                 .resumen .total-destacado small {
@@ -358,7 +358,7 @@ document.getElementById('btnPdf').addEventListener('click', function () {
                 /* ---------- Tabla resumen ---------- */
                 h2.titulo-seccion {
                     font-size: 0.95rem;
-                    color: #1e3a8a;
+                    color: #0A1128;
                     border-bottom: 1px solid #e2e8f0;
                     padding-bottom: 6px;
                     margin: 26px 0 10px;
@@ -366,7 +366,7 @@ document.getElementById('btnPdf').addEventListener('click', function () {
 
                 table.tabla-resumen { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
                 table.tabla-resumen th {
-                    background: #1e3a8a; color: #fff; padding: 8px; text-align: left;
+                    background: #0A1128; color: #fff; padding: 8px; text-align: left;
                     font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.03em;
                 }
                 table.tabla-resumen td { padding: 7px 8px; border-bottom: 1px solid #e2e8f0; }
