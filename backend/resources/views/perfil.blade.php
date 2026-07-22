@@ -5,7 +5,7 @@
 @section('styles')
 <style>
     .pagina-header {
-        background: linear-gradient(135deg, rgba(30,58,138,0.35) 0%, rgba(29,78,216,0.25) 45%, rgba(14,165,233,0.18) 100%);
+        background: linear-gradient(135deg, rgba(10,17,40,0.35) 0%, rgba(22,35,63,0.25) 45%, rgba(201,169,97,0.18) 100%);
         border: 1px solid var(--border-subtle);
         border-radius: 14px;
         padding: 18px 22px;
@@ -13,7 +13,7 @@
 
     .avatar-iniciales {
         width: 90px; height: 90px; border-radius: 50%;
-        background: linear-gradient(135deg, #1e3a8a, #0ea5e9);
+        background: linear-gradient(135deg, #0A1128, #C9A961);
         color: #fff; font-size: 2rem; font-weight: 700;
         display: flex; align-items: center; justify-content: center;
         margin: 0 auto 12px;
