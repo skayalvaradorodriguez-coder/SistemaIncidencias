@@ -30,10 +30,10 @@
            Paleta compartida con la pantalla de login
            ========================================================= */
         :root, [data-theme="dark"] {
-            --brand-900: #1e3a8a;
-            --brand-700: #1d4ed8;
-            --brand-400: #0ea5e9;
-            --brand-gradient: linear-gradient(135deg, var(--brand-900) 0%, var(--brand-700) 45%, var(--brand-400) 100%);
+            --brand-900: #0A1128;
+            --brand-700: #16233F;
+            --brand-400: #C9A961;
+            --brand-gradient: linear-gradient(135deg, var(--brand-900) 0%, var(--brand-700) 62%, var(--brand-400) 145%);
             --bg-app: #1f2937;      /* mismo fondo que el <body> del login */
             --bg-panel: #111827;    /* mismo tono de los paneles del login */
             --bg-card: #1a2333;     /* un peldaño más claro, para tarjetas/columnas */
@@ -47,10 +47,10 @@
 
         /* ===== Tema claro: mismos azules de marca, fondo/tarjetas claros ===== */
         [data-theme="light"] {
-            --brand-900: #1e3a8a;
-            --brand-700: #1d4ed8;
-            --brand-400: #0ea5e9;
-            --brand-gradient: linear-gradient(135deg, var(--brand-900) 0%, var(--brand-700) 45%, var(--brand-400) 100%);
+            --brand-900: #0A1128;
+            --brand-700: #16233F;
+            --brand-400: #C9A961;
+            --brand-gradient: linear-gradient(135deg, var(--brand-900) 0%, var(--brand-700) 62%, var(--brand-400) 145%);
             --bg-app: #f1f5f9;
             --bg-panel: #ffffff;
             --bg-card: #ffffff;
@@ -86,14 +86,14 @@
         }
 
         .main-sidebar .nav-sidebar .nav-link:hover {
-            background: rgba(255, 255, 255, 0.14) !important;
-            color: #fff !important;
+            background: rgba(201, 169, 97, 0.18) !important;
+            color: #E3CD8F !important;
         }
 
         .main-sidebar .nav-sidebar .nav-link.active {
-            background: rgba(255, 255, 255, 0.24) !important;
+            background: rgba(201, 169, 97, 0.26) !important;
             color: #fff !important;
-            box-shadow: none !important;
+            box-shadow: inset 3px 0 0 #C9A961 !important;
         }
 
         /* ===== Barra superior a juego con los paneles oscuros/claros del login ===== */
@@ -133,17 +133,19 @@
             border-radius: 12px 12px 0 0 !important;
         }
 
-        /* ===== Botones primarios con el mismo degradado del botón "Ingresar" ===== */
+        /* ===== Botones primarios: degradado dorado, acento de marca ===== */
         .btn-primary {
-            background: var(--brand-gradient);
-            border: none;
+            background: linear-gradient(to bottom, #E3CD8F, #C9A961);
+            border: 1px solid #A9863F;
+            color: #0A1128;
+            font-weight: 600;
         }
 
         .btn-primary:hover,
         .btn-primary:focus {
-            filter: brightness(1.08);
-            background: var(--brand-gradient);
-            border: none;
+            background: linear-gradient(to bottom, #C9A961, #A9863F);
+            border-color: #A9863F;
+            color: #0A1128;
         }
 
         /* ===== Tablas dentro de tarjetas ===== */
@@ -191,6 +193,26 @@
             color: var(--text-muted);
             border-top: 1px solid var(--border-subtle);
         }
+
+        /* ===== Tarjetas resumen del dashboard (small-box) ===== */
+        .small-box {
+            border-radius: 10px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+            overflow: hidden;
+        }
+        .small-box.bg-info    { background: linear-gradient(135deg, #16233F, #0A1128) !important; }
+        .small-box.bg-primary { background: linear-gradient(135deg, #1E2E52, #101A33) !important; }
+        .small-box.bg-warning {
+            background: linear-gradient(135deg, #E3CD8F, #C9A961) !important;
+            color: #0A1128 !important;
+        }
+        .small-box.bg-warning .icon,
+        .small-box.bg-warning h3,
+        .small-box.bg-warning p,
+        .small-box.bg-warning a { color: #0A1128 !important; }
+        .small-box.bg-success  { background: linear-gradient(135deg, #2F7A4D, #1F5636) !important; }
+        .small-box .icon { opacity: 0.25; }
+        .small-box-footer { background: rgba(0,0,0,0.15) !important; }
 
         .main-sidebar .brand-link {
             border-bottom: 1px solid rgba(255, 255, 255, 0.15);
