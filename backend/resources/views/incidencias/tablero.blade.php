@@ -12,12 +12,23 @@
         padding-bottom: 12px;
     }
 
+    .tablero-header-page {
+        background: linear-gradient(135deg, rgba(30,58,138,0.35) 0%, rgba(29,78,216,0.25) 45%, rgba(14,165,233,0.18) 100%);
+        border: 1px solid var(--border-subtle, rgba(255,255,255,0.08));
+        border-radius: 14px;
+        padding: 18px 22px;
+    }
+
     .columna {
         flex: 1;
-        min-width: 260px;
-        background: rgba(0, 0, 0, 0.15);
-        border-radius: 8px;
-        padding: 12px;
+        min-width: 270px;
+        background: var(--bg-card, #1a2333);
+        border: 1px solid var(--border-subtle, rgba(255,255,255,0.08));
+        border-top: 3px solid var(--color-columna, #6c757d);
+        border-radius: 14px;
+        padding: 14px;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.22);
+        transition: box-shadow 0.15s;
     }
 
     .columna-header {
@@ -25,10 +36,26 @@
         justify-content: space-between;
         align-items: center;
         font-weight: 700;
-        font-size: 0.95rem;
-        padding: 6px 8px 12px;
-        border-bottom: 3px solid var(--color-columna, #6c757d);
-        margin-bottom: 12px;
+        font-size: 0.92rem;
+        padding: 2px 2px 12px;
+        margin-bottom: 10px;
+        border-bottom: 1px solid var(--border-subtle, rgba(255,255,255,0.08));
+    }
+
+    .columna-header .titulo-columna {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .columna-header .titulo-columna::before {
+        content: '';
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--color-columna, #6c757d);
+        box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
+        flex-shrink: 0;
     }
 
     .columna-contador {
@@ -36,39 +63,59 @@
         color: #fff;
         border-radius: 12px;
         padding: 1px 10px;
-        font-size: 0.78rem;
+        font-size: 0.75rem;
+        font-weight: 700;
     }
 
     .columna.arrastre-encima {
         outline: 2px dashed var(--color-columna, #6c757d);
         outline-offset: -6px;
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-columna, #6c757d) 15%, transparent);
+    }
+
+    .columna-cuerpo {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
     }
 
     .tarjeta {
         position: relative;
-        background: #343a40;
-        border-radius: 6px;
+        background: var(--bg-card-tarjeta, #222f45);
+        border: 1px solid var(--border-subtle, rgba(255,255,255,0.06));
+        border-radius: 10px;
         border-left: 4px solid var(--color-columna, #6c757d);
-        padding: 10px 12px;
-        margin-bottom: 10px;
+        padding: 12px 14px;
         cursor: grab;
-        transition: transform 0.15s, box-shadow 0.15s;
+        transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
     }
 
     .tarjeta:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+        background: var(--bg-card-hover, #29344a);
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.4);
     }
 
     .tarjeta.arrastrando {
         opacity: 0.5;
     }
 
+    .tarjeta-id {
+        display: inline-block;
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: var(--text-muted, #9ca3af);
+        letter-spacing: 0.4px;
+        margin-bottom: 4px;
+    }
+
     .tarjeta-titulo {
         font-weight: 600;
         font-size: 0.88rem;
-        margin-bottom: 6px;
+        line-height: 1.3;
+        margin-bottom: 10px;
         padding-right: 28px;
+        color: var(--text-main, #f1f5f9);
     }
 
     .tarjeta-meta {
@@ -76,16 +123,16 @@
         justify-content: space-between;
         align-items: center;
         font-size: 0.75rem;
-        opacity: 0.8;
+        color: var(--text-muted, #9ca3af);
     }
 
     .btn-mover {
         position: absolute;
-        top: 8px;
-        right: 8px;
-        background: rgba(255, 255, 255, 0.12);
+        top: 10px;
+        right: 10px;
+        background: rgba(255, 255, 255, 0.08);
         border: none;
-        color: #fff;
+        color: var(--text-muted, #cbd5e1);
         border-radius: 50%;
         width: 26px;
         height: 26px;
@@ -94,35 +141,46 @@
         align-items: center;
         justify-content: center;
         cursor: pointer;
+        transition: background 0.15s, color 0.15s;
     }
 
     .btn-mover:hover {
-        background: rgba(255, 255, 255, 0.25);
+        background: var(--brand-400, #0ea5e9);
+        color: #fff;
     }
 
     .prioridad-pill {
-        border-radius: 10px;
-        padding: 1px 8px;
-        font-size: 0.7rem;
-        font-weight: 600;
+        border-radius: 20px;
+        padding: 2px 10px;
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.3px;
     }
 
-    .prioridad-Crítica { background: #dc3545; color: #fff; }
-    .prioridad-Alta    { background: #fd7e14; color: #fff; }
-    .prioridad-Media   { background: #ffc107; color: #212529; }
-    .prioridad-Baja    { background: #6c757d; color: #fff; }
+    .prioridad-Crítica { background: rgba(220,53,69,0.18); color: #ff6b7d; border: 1px solid rgba(220,53,69,0.4); }
+    .prioridad-Alta    { background: rgba(253,126,20,0.18); color: #ff9f4d; border: 1px solid rgba(253,126,20,0.4); }
+    .prioridad-Media   { background: rgba(255,193,7,0.18); color: #ffda6a; border: 1px solid rgba(255,193,7,0.4); }
+    .prioridad-Baja    { background: rgba(148,163,184,0.18); color: #cbd5e1; border: 1px solid rgba(148,163,184,0.4); }
 
     .columna-vacia {
         text-align: center;
-        opacity: 0.4;
+        color: var(--text-muted, #9ca3af);
         font-size: 0.8rem;
-        padding: 20px 0;
+        padding: 28px 0;
+        border: 1px dashed var(--border-subtle, rgba(255,255,255,0.1));
+        border-radius: 10px;
+    }
+
+    .columna-vacia i {
+        display: block;
+        font-size: 1.3rem;
+        margin-bottom: 6px;
+        opacity: 0.5;
     }
 
     .ayuda-escritorio { display: inline; }
     .ayuda-movil { display: none; }
 
-    /* ===== Selector de estado (alternativa táctil) ===== */
     #capaEstado {
         position: fixed;
         inset: 0;
@@ -138,7 +196,8 @@
     }
 
     .panel-estado {
-        background: #2b3035;
+        background: var(--bg-panel, #111827);
+        border-top: 1px solid var(--border-subtle, rgba(255,255,255,0.08));
         width: 100%;
         max-width: 460px;
         border-radius: 14px 14px 0 0;
@@ -207,13 +266,15 @@
 
 <div class="container-fluid">
 
-    <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
-        <h1>Tablero Kanban</h1>
-        <span class="text-muted">
-            <i class="fas fa-hand-paper mr-1"></i>
-            <span class="ayuda-escritorio">Arrastra una tarjeta a otra columna para cambiar su estado</span>
-            <span class="ayuda-movil">Toca el botón <i class="fas fa-exchange-alt"></i> de una tarjeta para cambiar su estado</span>
-        </span>
+    <div class="tablero-header-page d-flex justify-content-between align-items-center flex-wrap mb-4">
+        <div>
+            <h1 class="mb-1"><i class="fas fa-columns mr-2"></i>Tablero Kanban</h1>
+            <span class="text-muted" style="color:var(--text-muted) !important;">
+                <i class="fas fa-hand-paper mr-1"></i>
+                <span class="ayuda-escritorio">Arrastra una tarjeta a otra columna para cambiar su estado</span>
+                <span class="ayuda-movil">Toca el botón <i class="fas fa-exchange-alt"></i> de una tarjeta para cambiar su estado</span>
+            </span>
+        </div>
     </div>
 
     <div id="alertTablero" class="alert d-none"></div>
@@ -339,7 +400,7 @@ async function cargarTablero() {
 
             columna.innerHTML = `
                 <div class="columna-header">
-                    <span>${escaparHtml(estado.nombre)}</span>
+                    <span class="titulo-columna">${escaparHtml(estado.nombre)}</span>
                     <span class="columna-contador">${propias.length}</span>
                 </div>
                 <div class="columna-cuerpo"></div>
@@ -348,7 +409,7 @@ async function cargarTablero() {
             const cuerpo = columna.querySelector('.columna-cuerpo');
 
             if (propias.length === 0) {
-                cuerpo.innerHTML = '<div class="columna-vacia">Sin incidencias</div>';
+                cuerpo.innerHTML = '<div class="columna-vacia"><i class="fas fa-inbox"></i>Sin incidencias</div>';
             }
 
             propias.forEach(inc => {
@@ -362,7 +423,8 @@ async function cargarTablero() {
                     <button type="button" class="btn-mover" title="Cambiar estado">
                         <i class="fas fa-exchange-alt"></i>
                     </button>
-                    <div class="tarjeta-titulo">#${inc.id} · ${escaparHtml(inc.titulo)}</div>
+                    <div class="tarjeta-id">#${inc.id}</div>
+                    <div class="tarjeta-titulo">${escaparHtml(inc.titulo)}</div>
                     <div class="tarjeta-meta">
                         <span><i class="fas fa-map-marker-alt mr-1"></i>${escaparHtml(inc.ciudad ? inc.ciudad.nombre : 'N/A')}</span>
                         <span class="prioridad-pill prioridad-${inc.prioridad}">${inc.prioridad}</span>

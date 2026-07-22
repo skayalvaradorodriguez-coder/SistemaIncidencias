@@ -13,39 +13,187 @@
         }
     </script>
 
+    <script>
+        // Aplica el tema guardado ANTES de pintar la página (evita el "flash" de color)
+        (function () {
+            const tema = localStorage.getItem('tema') || 'dark';
+            document.documentElement.setAttribute('data-theme', tema);
+        })();
+    </script>
+
     <link rel="stylesheet" href="{{ asset('plugins/fontawesome-free/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ asset('plugins/overlayScrollbars/css/OverlayScrollbars.min.css') }}">
     <link rel="stylesheet" href="{{ asset('dist/css/adminlte.min.css') }}">
 
     <style>
-        /* ===== Barra lateral con el degradado del login ===== */
+        /* =========================================================
+           Paleta compartida con la pantalla de login
+           ========================================================= */
+        :root, [data-theme="dark"] {
+            --brand-900: #1e3a8a;
+            --brand-700: #1d4ed8;
+            --brand-400: #0ea5e9;
+            --brand-gradient: linear-gradient(135deg, var(--brand-900) 0%, var(--brand-700) 45%, var(--brand-400) 100%);
+            --bg-app: #1f2937;      /* mismo fondo que el <body> del login */
+            --bg-panel: #111827;    /* mismo tono de los paneles del login */
+            --bg-card: #1a2333;     /* un peldaño más claro, para tarjetas/columnas */
+            --bg-card-hover: #222f45;
+            --bg-card-tarjeta: #222f45; /* tono de las tarjetas dentro del kanban */
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --text-main: #f1f5f9;
+            --text-muted: #9ca3af;
+            --input-bg: var(--bg-panel);
+        }
+
+        /* ===== Tema claro: mismos azules de marca, fondo/tarjetas claros ===== */
+        [data-theme="light"] {
+            --brand-900: #1e3a8a;
+            --brand-700: #1d4ed8;
+            --brand-400: #0ea5e9;
+            --brand-gradient: linear-gradient(135deg, var(--brand-900) 0%, var(--brand-700) 45%, var(--brand-400) 100%);
+            --bg-app: #f1f5f9;
+            --bg-panel: #ffffff;
+            --bg-card: #ffffff;
+            --bg-card-hover: #eef2ff;
+            --bg-card-tarjeta: #f8fafc;
+            --border-subtle: rgba(15, 23, 42, 0.1);
+            --text-main: #1f2937;
+            --text-muted: #64748b;
+            --input-bg: #ffffff;
+        }
+
+        body,
+        .content-wrapper {
+            background: var(--bg-app) !important;
+        }
+
+        /* ===== Barra lateral: SIEMPRE el degradado de marca, en ambos temas ===== */
         .main-sidebar {
-            background: linear-gradient(180deg, #1e3a8a 0%, #1d4ed8 60%, #0ea5e9 140%) !important;
+            background: var(--brand-gradient) !important;
+        }
+
+        /* Texto del sidebar con contraste garantizado sobre el degradado,
+           sin importar el tema activo (evita el problema de texto ilegible) */
+        .main-sidebar .brand-text,
+        .main-sidebar .nav-sidebar .nav-link,
+        .main-sidebar .nav-sidebar .nav-link p,
+        .main-sidebar .nav-sidebar .nav-icon {
+            color: rgba(255, 255, 255, 0.92) !important;
+        }
+
+        .main-sidebar .nav-header {
+            color: rgba(255, 255, 255, 0.55) !important;
+        }
+
+        .main-sidebar .nav-sidebar .nav-link:hover {
+            background: rgba(255, 255, 255, 0.14) !important;
+            color: #fff !important;
+        }
+
+        .main-sidebar .nav-sidebar .nav-link.active {
+            background: rgba(255, 255, 255, 0.24) !important;
+            color: #fff !important;
+            box-shadow: none !important;
+        }
+
+        /* ===== Barra superior a juego con los paneles oscuros/claros del login ===== */
+        .main-header.navbar {
+            background: var(--bg-panel) !important;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .main-header .nav-link {
+            color: var(--text-main) !important;
+        }
+
+        .main-header .nav-link:hover {
+            color: var(--brand-400) !important;
+        }
+
+        .main-header #usuarioLogueado {
+            color: var(--text-main) !important;
+        }
+
+        .content-wrapper, .content-wrapper h1, .content-wrapper h2,
+        .content-wrapper h3, .content-wrapper h4, .content-wrapper h5 {
+            color: var(--text-main);
+        }
+
+        /* ===== Tarjetas / paneles genéricos (AdminLTE .card) ===== */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+        }
+
+        .card-header {
+            background: transparent;
+            border-bottom: 1px solid var(--border-subtle);
+            border-radius: 12px 12px 0 0 !important;
+        }
+
+        /* ===== Botones primarios con el mismo degradado del botón "Ingresar" ===== */
+        .btn-primary {
+            background: var(--brand-gradient);
+            border: none;
+        }
+
+        .btn-primary:hover,
+        .btn-primary:focus {
+            filter: brightness(1.08);
+            background: var(--brand-gradient);
+            border: none;
+        }
+
+        /* ===== Tablas dentro de tarjetas ===== */
+        .table {
+            color: var(--text-main);
+        }
+
+        .table thead th {
+            border-bottom: 1px solid var(--border-subtle);
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .table td, .table th {
+            border-top-color: var(--border-subtle);
+        }
+
+        /* AdminLTE agrega franjas claras a las tablas "striped"; las adaptamos al tema */
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(128, 128, 128, 0.06);
+        }
+
+        /* ===== Inputs / selects ===== */
+        .form-control, .custom-select {
+            background: var(--input-bg);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-main);
+        }
+
+        .form-control:focus, .custom-select:focus {
+            background: var(--input-bg);
+            color: var(--text-main);
+            border-color: var(--brand-400);
+            box-shadow: 0 0 0 0.15rem rgba(14, 165, 233, 0.25);
+        }
+
+        .form-control::placeholder {
+            color: var(--text-muted);
+        }
+
+        .main-footer {
+            background: var(--bg-panel);
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-subtle);
         }
 
         .main-sidebar .brand-link {
             border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-        }
-
-        .nav-sidebar .nav-header {
-            color: rgba(255, 255, 255, 0.55);
-            font-size: 0.72rem;
-            letter-spacing: 0.5px;
-        }
-
-        .nav-sidebar .nav-link {
-            color: rgba(255, 255, 255, 0.85);
-        }
-
-        .nav-sidebar .nav-link:hover {
-            background: rgba(255, 255, 255, 0.12);
-            color: #fff;
-        }
-
-        .nav-sidebar .nav-link.active {
-            background: rgba(255, 255, 255, 0.22) !important;
-            color: #fff !important;
-            box-shadow: none !important;
         }
 
         /* ===== Notificaciones ===== */
@@ -142,7 +290,14 @@
     @yield('styles')
 </head>
 
-<body class="hold-transition dark-mode sidebar-mini layout-fixed">
+<body class="hold-transition sidebar-mini layout-fixed">
+<script>
+    // Sincroniza la clase dark-mode de AdminLTE (dropdowns, modales, etc.)
+    // con el tema guardado, apenas se abre el <body> para minimizar el parpadeo.
+    if ((document.documentElement.getAttribute('data-theme') || 'dark') === 'dark') {
+        document.body.classList.add('dark-mode');
+    }
+</script>
 
 <div class="wrapper">
 
@@ -160,6 +315,12 @@
         </ul>
 
         <ul class="navbar-nav ml-auto">
+
+            <li class="nav-item">
+                <a class="nav-link" href="#" id="btnTema" title="Cambiar tema">
+                    <i class="fas fa-sun" id="iconoTema"></i>
+                </a>
+            </li>
 
             <li class="nav-item dropdown">
                 <a class="nav-link" data-toggle="dropdown" href="#" id="btnNotificaciones">
@@ -299,6 +460,29 @@
 <script>
 
 const usuario = getUser();
+
+// ===== Modo oscuro / claro =====
+const btnTema = document.getElementById('btnTema');
+const iconoTema = document.getElementById('iconoTema');
+
+function aplicarIconoTema(tema) {
+    // En modo oscuro mostramos el ícono de sol (invita a pasar a claro), y viceversa
+    iconoTema.className = tema === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+}
+
+aplicarIconoTema(document.documentElement.getAttribute('data-theme') || 'dark');
+
+btnTema.addEventListener('click', function (e) {
+    e.preventDefault();
+
+    const actual = document.documentElement.getAttribute('data-theme') || 'dark';
+    const nuevo = actual === 'dark' ? 'light' : 'dark';
+
+    document.documentElement.setAttribute('data-theme', nuevo);
+    document.body.classList.toggle('dark-mode', nuevo === 'dark');
+    localStorage.setItem('tema', nuevo);
+    aplicarIconoTema(nuevo);
+});
 
 if(usuario){
 
