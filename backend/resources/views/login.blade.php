@@ -25,7 +25,7 @@
         /* ===== Panel izquierdo (marca) ===== */
         .panel-marca {
             flex: 1.1;
-            background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 45%, #0ea5e9 100%);
+            background: linear-gradient(135deg, #0A1128 0%, #16233F 62%, #C9A961 145%);
             color: #fff;
             display: flex;
             flex-direction: column;
@@ -133,8 +133,8 @@
         }
 
         .tab.activa {
-            background: #2563eb;
-            color: #fff;
+            background: linear-gradient(to bottom, #E3CD8F, #C9A961);
+            color: #0A1128;
         }
 
         .formulario {
@@ -202,7 +202,7 @@
         }
 
         .campo-input input:focus {
-            border-color: #2563eb;
+            border-color: #C9A961;
         }
 
         .ver-pass {
@@ -260,18 +260,18 @@
         .btn-principal {
             width: 100%;
             padding: 13px;
-            background: #2563eb;
+            background: linear-gradient(to bottom, #E3CD8F, #C9A961);
             border: none;
             border-radius: 9px;
-            color: #fff;
+            color: #0A1128;
             font-size: 0.95rem;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             transition: background 0.2s;
             margin-top: 6px;
         }
 
-        .btn-principal:hover { background: #1d4ed8; }
+        .btn-principal:hover { background: linear-gradient(to bottom, #C9A961, #A9863F); }
         .btn-principal:disabled { background: #374151; cursor: not-allowed; }
 
         .alerta {
