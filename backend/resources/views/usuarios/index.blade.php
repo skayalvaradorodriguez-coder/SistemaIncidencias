@@ -5,7 +5,7 @@
 @section('styles')
 <style>
     .usuarios-header {
-        background: linear-gradient(135deg, rgba(30,58,138,0.35) 0%, rgba(29,78,216,0.25) 45%, rgba(14,165,233,0.18) 100%);
+        background: linear-gradient(135deg, rgba(10,17,40,0.35) 0%, rgba(22,35,63,0.25) 45%, rgba(201,169,97,0.18) 100%);
         border: 1px solid var(--border-subtle);
         border-radius: 14px;
         padding: 18px 22px;
@@ -58,7 +58,7 @@
     }
 
     .rol-Administrador { background: rgba(139,92,246,0.15); color: #8b5cf6; border: 1px solid rgba(139,92,246,0.4); }
-    .rol-Responsable    { background: rgba(14,165,233,0.15); color: #0ea5e9; border: 1px solid rgba(14,165,233,0.4); }
+    .rol-Responsable    { background: rgba(201,169,97,0.15); color: #C9A961; border: 1px solid rgba(201,169,97,0.4); }
     .rol-Ciudadano      { background: rgba(34,197,94,0.15); color: #16a34a; border: 1px solid rgba(34,197,94,0.4); }
 
     /* =========================================================
@@ -91,8 +91,8 @@
         color: #fff;
     }
 
-    .btn-ver     { background: rgba(14,165,233,0.18); color: #0ea5e9; }
-    .btn-ver:hover { background: #0ea5e9; }
+    .btn-ver     { background: rgba(201,169,97,0.18); color: #C9A961; }
+    .btn-ver:hover { background: #C9A961; color: #0A1128 !important; }
 
     .btn-editar  { background: rgba(245,158,11,0.18); color: #f59e0b; }
     .btn-editar:hover { background: #f59e0b; }
