@@ -2,19 +2,91 @@
 
 @section('title', 'Detalle del Usuario')
 
+@section('styles')
+<style>
+    .pagina-header {
+        background: linear-gradient(135deg, rgba(30,58,138,0.35) 0%, rgba(29,78,216,0.25) 45%, rgba(14,165,233,0.18) 100%);
+        border: 1px solid var(--border-subtle);
+        border-radius: 14px;
+        padding: 18px 22px;
+    }
+
+    /* Botón fantasma (Volver / Cancelar): combina con el tema oscuro y claro */
+    .btn-ghost {
+        background: rgba(148,163,184,0.12);
+        border: 1px solid var(--border-subtle);
+        color: var(--text-main);
+    }
+
+    .btn-ghost:hover,
+    .btn-ghost:focus {
+        background: rgba(148,163,184,0.22);
+        color: var(--text-main);
+        border-color: var(--border-subtle);
+    }
+
+    #tablaDetalle th {
+        width: 200px;
+        vertical-align: middle;
+        color: var(--text-muted);
+        background: transparent;
+    }
+
+    #tablaDetalle td {
+        vertical-align: middle;
+        word-break: break-word;
+    }
+
+    @media (max-width: 767.98px) {
+
+        .pagina-header {
+            padding: 16px;
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 12px;
+        }
+
+        .pagina-header .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        #tablaDetalle th {
+            width: 130px;
+            font-size: 0.82rem;
+        }
+
+        #tablaDetalle td {
+            font-size: 0.85rem;
+        }
+
+        .card-footer {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .card-footer .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+@endsection
+
 @section('content')
 
 <div class="container-fluid">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Detalle del Usuario</h1>
+    <div class="pagina-header d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0"><i class="fas fa-user-circle mr-2"></i>Detalle del Usuario</h1>
 
-        <a href="{{ route('usuarios.index') }}" class="btn btn-secondary">
+        <a href="{{ route('usuarios.index') }}" class="btn btn-ghost">
             <i class="fas fa-arrow-left"></i> Volver
         </a>
     </div>
 
-    <div class="card card-primary">
+    <div class="card">
 
         <div class="card-header">
             <h3 class="card-title">
@@ -22,12 +94,12 @@
             </h3>
         </div>
 
-        <div class="card-body">
+        <div class="card-body table-responsive">
 
-            <table class="table table-bordered">
+            <table class="table table-bordered" id="tablaDetalle">
 
                 <tr>
-                    <th width="200">ID</th>
+                    <th>ID</th>
                     <td id="id"></td>
                 </tr>
 
@@ -60,14 +132,14 @@
 
         </div>
 
-        <div class="card-footer">
+        <div class="card-footer d-flex" style="gap:8px;">
 
-            <a id="editar" class="btn btn-warning">
+            <a id="editar" class="btn btn-primary">
                 <i class="fas fa-edit"></i>
                 Editar
             </a>
 
-            <a href="{{ route('usuarios.index') }}" class="btn btn-secondary">
+            <a href="{{ route('usuarios.index') }}" class="btn btn-ghost">
                 <i class="fas fa-arrow-left"></i>
                 Volver
             </a>

@@ -2,19 +2,63 @@
 
 @section('title', 'Nuevo Usuario')
 
+@section('styles')
+<style>
+    .pagina-header {
+        background: linear-gradient(135deg, rgba(30,58,138,0.35) 0%, rgba(29,78,216,0.25) 45%, rgba(14,165,233,0.18) 100%);
+        border: 1px solid var(--border-subtle);
+        border-radius: 14px;
+        padding: 18px 22px;
+    }
+
+    .btn-ghost {
+        background: rgba(148,163,184,0.12);
+        border: 1px solid var(--border-subtle);
+        color: var(--text-main);
+    }
+
+    .btn-ghost:hover,
+    .btn-ghost:focus {
+        background: rgba(148,163,184,0.22);
+        color: var(--text-main);
+        border-color: var(--border-subtle);
+    }
+
+    @media (max-width: 767.98px) {
+
+        .pagina-header {
+            padding: 16px;
+        }
+
+        .pagina-header h1 {
+            font-size: 1.35rem;
+        }
+
+        .card-footer {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .card-footer .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+@endsection
+
 @section('content')
 
 <div class="container-fluid">
 
-    <div class="row mb-2">
-        <div class="col-sm-6">
-            <h1>Nuevo Usuario</h1>
-        </div>
+    <div class="pagina-header mb-4">
+        <h1 class="mb-0"><i class="fas fa-user-plus mr-2"></i>Nuevo Usuario</h1>
     </div>
 
     <div id="alerta"></div>
 
-    <div class="card card-dark">
+    <div class="card">
 
         <div class="card-header">
             <h3 class="card-title">
@@ -111,7 +155,7 @@
 
             </div>
 
-            <div class="card-footer">
+            <div class="card-footer d-flex" style="gap:8px;">
 
                 <button
                     type="submit"
@@ -125,7 +169,7 @@
 
                 <a
                     href="{{ route('usuarios.index') }}"
-                    class="btn btn-secondary">
+                    class="btn btn-ghost">
 
                     Cancelar
 

@@ -4,12 +4,56 @@
 
 @section('styles')
 <style>
+    .pagina-header {
+        background: linear-gradient(135deg, rgba(30,58,138,0.35) 0%, rgba(29,78,216,0.25) 45%, rgba(14,165,233,0.18) 100%);
+        border: 1px solid var(--border-subtle);
+        border-radius: 14px;
+        padding: 18px 22px;
+    }
+
     .avatar-iniciales {
         width: 90px; height: 90px; border-radius: 50%;
         background: linear-gradient(135deg, #1e3a8a, #0ea5e9);
         color: #fff; font-size: 2rem; font-weight: 700;
         display: flex; align-items: center; justify-content: center;
         margin: 0 auto 12px;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+    }
+
+    /* Acción de seguridad (cambiar contraseña): ámbar en vez del
+       naranja plano de Bootstrap, para que combine con el resto */
+    .btn-accent {
+        background: linear-gradient(135deg, #b45309 0%, #f59e0b 100%);
+        border: none;
+        color: #fff;
+    }
+
+    .btn-accent:hover,
+    .btn-accent:focus {
+        filter: brightness(1.08);
+        color: #fff;
+    }
+
+    @media (max-width: 767.98px) {
+
+        .pagina-header {
+            padding: 16px;
+        }
+
+        .pagina-header h1 {
+            font-size: 1.35rem;
+        }
+
+        .avatar-iniciales {
+            width: 76px;
+            height: 76px;
+            font-size: 1.7rem;
+        }
+
+        #formDatos .btn,
+        #formPassword .btn {
+            width: 100%;
+        }
     }
 </style>
 @endsection
@@ -17,19 +61,21 @@
 @section('content')
 <div class="container-fluid">
 
-    <h1 class="mb-4">Mi Perfil</h1>
+    <div class="pagina-header mb-4">
+        <h1 class="mb-0"><i class="fas fa-user-circle mr-2"></i>Mi Perfil</h1>
+    </div>
 
     <div id="alertPerfil" class="alert d-none"></div>
 
     <div class="row">
 
-        <div class="col-md-4">
+        <div class="col-md-4 mb-3 mb-md-0">
             <div class="card">
                 <div class="card-body text-center">
                     <div class="avatar-iniciales" id="avatarIniciales">--</div>
                     <h4 id="perfilNombre" class="mb-1">Cargando...</h4>
                     <span class="badge badge-primary" id="perfilRol"></span>
-                    <p class="text-muted mt-2 mb-0" id="perfilEmail" style="font-size: 0.88rem;"></p>
+                    <p class="mt-2 mb-0" id="perfilEmail" style="font-size: 0.88rem; color: var(--text-muted);"></p>
                 </div>
             </div>
         </div>
@@ -84,7 +130,7 @@
                                 <input type="password" id="password_confirmation" class="form-control" required>
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-warning">
+                        <button type="submit" class="btn btn-accent">
                             <i class="fas fa-lock mr-1"></i>Actualizar contraseña
                         </button>
                     </form>

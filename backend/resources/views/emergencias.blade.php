@@ -4,30 +4,86 @@
 
 @section('styles')
 <style>
+    .pagina-header {
+        background: linear-gradient(135deg, rgba(30,58,138,0.35) 0%, rgba(29,78,216,0.25) 45%, rgba(14,165,233,0.18) 100%);
+        border: 1px solid var(--border-subtle);
+        border-radius: 14px;
+        padding: 18px 22px;
+    }
+
     .tarjeta-emergencia {
-        border-radius: 10px;
+        border-radius: 12px;
         border-left: 5px solid var(--color-e, #6c757d);
-        transition: transform 0.15s;
+        transition: transform 0.15s, box-shadow 0.15s;
     }
-    .tarjeta-emergencia:hover { transform: translateY(-3px); }
+
+    .tarjeta-emergencia:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+
     .icono-emergencia {
-        width: 56px; height: 56px; border-radius: 50%;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 1.4rem; color: #fff; background: var(--color-e, #6c757d);
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        color: #fff;
+        background: var(--color-e, #6c757d);
         flex-shrink: 0;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.3);
     }
-    .btn-llamar { min-width: 130px; }
+
+    .btn-llamar {
+        min-width: 130px;
+        border-radius: 8px;
+        font-weight: 600;
+        border: none;
+    }
+
+    /* =========================================================
+       Responsive
+       ========================================================= */
+    @media (max-width: 767.98px) {
+
+        .pagina-header {
+            padding: 16px;
+        }
+
+        .pagina-header h1 {
+            font-size: 1.35rem;
+        }
+
+        .icono-emergencia {
+            width: 46px;
+            height: 46px;
+            font-size: 1.15rem;
+        }
+
+        .tarjeta-emergencia .card-body {
+            padding: 14px;
+        }
+
+        .btn-llamar {
+            min-width: 0;
+            width: 100%;
+        }
+    }
 </style>
 @endsection
 
 @section('content')
 <div class="container-fluid">
 
-    <h1 class="mb-2">Directorio de Emergencias</h1>
-    <p class="text-muted mb-4">
-        Si la incidencia representa un riesgo inmediato para la vida o la seguridad,
-        comunícate directamente con las autoridades. Este sistema no reemplaza a los servicios de emergencia.
-    </p>
+    <div class="pagina-header mb-4">
+        <h1 class="mb-1"><i class="fas fa-phone-alt mr-2"></i>Directorio de Emergencias</h1>
+        <span style="color:var(--text-muted); font-size:0.88rem;">
+            Si la incidencia representa un riesgo inmediato para la vida o la seguridad,
+            comunícate directamente con las autoridades. Este sistema no reemplaza a los servicios de emergencia.
+        </span>
+    </div>
 
     <div class="row">
         @php
@@ -42,7 +98,7 @@
         @endphp
 
         @foreach($contactos as $c)
-            <div class="col-md-6 col-lg-4 mb-3">
+            <div class="col-sm-6 col-lg-4 mb-3">
                 <div class="card tarjeta-emergencia h-100" style="--color-e: {{ $c['color'] }};">
                     <div class="card-body d-flex align-items-center">
                         <div class="icono-emergencia mr-3">
@@ -50,7 +106,7 @@
                         </div>
                         <div class="flex-grow-1">
                             <h5 class="mb-1" style="font-size: 1rem;">{{ $c['nombre'] }}</h5>
-                            <p class="text-muted mb-2" style="font-size: 0.82rem;">{{ $c['desc'] }}</p>
+                            <p class="mb-2" style="font-size: 0.82rem; color: var(--text-muted);">{{ $c['desc'] }}</p>
                             <a href="tel:{{ $c['tel'] }}" class="btn btn-sm btn-llamar"
                                style="background: {{ $c['color'] }}; color: #fff;">
                                 <i class="fas fa-phone mr-1"></i> {{ $c['tel'] }}
