@@ -21,6 +21,10 @@ backend/public/build
 # Bases de datos locales
 backend/database/*.sqlite*
 
+# Respaldos SQL sueltos (el dump oficial va en database/scripts/)
+respaldo.sql
+backend/respaldo.sql
+
 # IDE / SO
 .DS_Store
 Thumbs.db
