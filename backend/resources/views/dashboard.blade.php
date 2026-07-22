@@ -31,6 +31,40 @@
     .leyenda-otro::before      { background: #6c757d; }
 
     .small-box { cursor: pointer; }
+
+    .btn-vista-mapa { font-size: 0.78rem; }
+    .btn-vista-mapa.activo { background: #007bff; color: #fff; }
+
+    /* Leyenda del mapa de calor */
+    .leyenda-calor {
+        display: none;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.82rem;
+        margin-top: 10px;
+    }
+    .barra-calor {
+        width: 180px;
+        height: 12px;
+        border-radius: 6px;
+        background: linear-gradient(to right, #0dcaf0, #ffc107, #fd7e14, #dc3545);
+    }
+
+    /* Panel solo visible para gestión */
+    .solo-gestion { display: none; }
+
+    /* Empareja la altura de las tarjetas de analítica */
+    .solo-gestion .info-box {
+        min-height: 105px;
+        align-items: center;
+    }
+    .solo-gestion .info-box-text {
+        font-size: 0.82rem;
+        line-height: 1.2;
+    }
+    .solo-gestion .info-box .progress {
+        margin: 6px 0;
+    }
 </style>
 @endsection
 
@@ -107,22 +141,114 @@
 
     </div>
 
+    <!-- Segunda fila de indicadores (SOLO GESTIÓN) -->
+    <div class="row solo-gestion">
+
+        <div class="col-md-3 col-sm-6">
+            <div class="info-box bg-gradient-teal">
+                <span class="info-box-icon"><i class="fas fa-percentage"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Tasa de Resolución</span>
+                    <span class="info-box-number">{{ $tasaResolucion }}%</span>
+                    <div class="progress">
+                        <div class="progress-bar" style="width: {{ $tasaResolucion }}%"></div>
+                    </div>
+                    <span class="progress-description">
+                        {{ $resueltas }} de {{ $totalIncidencias }} incidencias
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="info-box bg-gradient-indigo">
+                <span class="info-box-icon"><i class="fas fa-stopwatch"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Tiempo Promedio de Resolución</span>
+                    <span class="info-box-number">
+                        @if($tiempoPromedio <= 0)
+                            —
+                        @elseif($tiempoPromedio >= 48)
+                            {{ round($tiempoPromedio / 24, 1) }} días
+                        @else
+                            {{ $tiempoPromedio }} h
+                        @endif
+                    </span>
+                    <span class="progress-description">
+                        Desde el reporte hasta "Resuelto"
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="info-box bg-gradient-info">
+                <span class="info-box-icon"><i class="fas fa-users"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Usuarios Activos</span>
+                    <span class="info-box-number">{{ $totalUsuarios }}</span>
+                    <span class="progress-description">
+                        Registrados en el sistema
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="info-box bg-gradient-orange">
+                <span class="info-box-icon"><i class="fas fa-hourglass-half"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">En Atención</span>
+                    <span class="info-box-number">{{ $pendientes + $enProceso }}</span>
+                    <span class="progress-description">
+                        Pendientes + En Proceso
+                    </span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
     <!-- Mapa general -->
     <div class="card">
         <div class="card-header">
-            <h3 class="card-title">
-                <i class="fas fa-map-marked-alt mr-2"></i>
-                Mapa de Incidencias Georreferenciadas
-            </h3>
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <h3 class="card-title mb-0">
+                    <i class="fas fa-map-marked-alt mr-2"></i>
+                    Mapa de Incidencias Georreferenciadas
+                </h3>
+                @if($conUbicacion->count() > 0)
+                    <div class="btn-group btn-group-sm mt-1 mt-sm-0" role="group">
+                        <button type="button" id="btnMarcadores" class="btn btn-outline-light btn-vista-mapa activo">
+                            <i class="fas fa-map-pin mr-1"></i>Marcadores
+                        </button>
+                        <button type="button" id="btnCalor" class="btn btn-outline-light btn-vista-mapa">
+                            <i class="fas fa-fire mr-1"></i>Mapa de calor
+                        </button>
+                    </div>
+                @endif
+            </div>
         </div>
         <div class="card-body">
             @if($conUbicacion->count() > 0)
                 <div id="mapaGeneral"></div>
-                <div class="leyenda-mapa">
+
+                <!-- Leyenda de marcadores -->
+                <div class="leyenda-mapa" id="leyendaMarcadores">
                     <span class="leyenda-pendiente">Pendiente</span>
                     <span class="leyenda-proceso">En Proceso</span>
                     <span class="leyenda-resuelto">Resuelto</span>
                     <span class="leyenda-otro">Otro estado</span>
+                </div>
+
+                <!-- Leyenda del mapa de calor -->
+                <div class="leyenda-calor" id="leyendaCalor">
+                    <span>Menor concentración</span>
+                    <div class="barra-calor"></div>
+                    <span>Mayor concentración</span>
+                    <span class="text-muted ml-2" style="font-size:0.78rem;">
+                        (las zonas más cálidas tienen más incidencias acumuladas)
+                    </span>
                 </div>
             @else
                 <p class="text-muted text-center py-4">
@@ -160,6 +286,39 @@
                 </div>
                 <div class="card-body">
                     <canvas id="graficoTipos" style="max-height: 280px;"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Analítica adicional: tendencia y ciudades (SOLO GESTIÓN) -->
+    <div class="row solo-gestion">
+
+        <div class="col-md-7">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-chart-line mr-2"></i>
+                        Tendencia de Incidencias (últimos 6 meses)
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="graficoTendencia" style="max-height: 280px;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-city mr-2"></i>
+                        Top Ciudades con más Incidencias
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="graficoCiudades" style="max-height: 280px;"></canvas>
                 </div>
             </div>
         </div>
@@ -227,8 +386,22 @@
 @section('scripts')
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
 <script src="{{ asset('plugins/chart.js/Chart.min.js') }}"></script>
 <script>
+    // ================== CONTROL POR ROL ==================
+    // Muestra los paneles de gestión solo a Administrador y Responsable
+    (function () {
+        const usuario = getUser();
+        const rol = usuario && usuario.rol ? usuario.rol.nombre : null;
+
+        if (rol === 'Administrador' || rol === 'Responsable') {
+            document.querySelectorAll('.solo-gestion').forEach(el => {
+                el.style.display = 'flex';
+            });
+        }
+    })();
+
     // ================== MAPA GENERAL ==================
     const incidencias = @json($conUbicacion);
 
@@ -238,9 +411,13 @@
         'Resuelto': '#28a745'
     };
 
+    let mapaGeneral = null;
+    let capaMarcadores = null;
+    let capaCalor = null;
+
     if (incidencias.length > 0) {
 
-        const mapaGeneral = L.map('mapaGeneral').setView([-2.2276, -80.8585], 11);
+        mapaGeneral = L.map('mapaGeneral').setView([-2.2276, -80.8585], 11);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
@@ -261,7 +438,7 @@
                 weight: 2,
                 opacity: 1,
                 fillOpacity: 0.85
-            }).addTo(mapaGeneral);
+            });
 
             marcador.bindPopup(`
                 <strong>#${inc.id} - ${inc.titulo}</strong><br>
@@ -274,9 +451,40 @@
             marcadores.push(marcador);
         });
 
-        // Ajusta el zoom para que se vean todos los marcadores
-        const grupo = L.featureGroup(marcadores);
-        mapaGeneral.fitBounds(grupo.getBounds().pad(0.2));
+        capaMarcadores = L.featureGroup(marcadores).addTo(mapaGeneral);
+
+        const puntosCalor = incidencias.map(inc => [inc.latitud, inc.longitud, 0.8]);
+        capaCalor = L.heatLayer(puntosCalor, {
+            radius: 30,
+            blur: 20,
+            maxZoom: 15,
+            gradient: { 0.2: '#0dcaf0', 0.5: '#ffc107', 0.8: '#fd7e14', 1.0: '#dc3545' }
+        });
+
+        mapaGeneral.fitBounds(capaMarcadores.getBounds().pad(0.2));
+
+        const btnMarcadores = document.getElementById('btnMarcadores');
+        const btnCalor = document.getElementById('btnCalor');
+        const leyendaMarc = document.getElementById('leyendaMarcadores');
+        const leyendaCal = document.getElementById('leyendaCalor');
+
+        btnMarcadores.addEventListener('click', function () {
+            mapaGeneral.removeLayer(capaCalor);
+            mapaGeneral.addLayer(capaMarcadores);
+            btnMarcadores.classList.add('activo');
+            btnCalor.classList.remove('activo');
+            leyendaMarc.style.display = 'flex';
+            leyendaCal.style.display = 'none';
+        });
+
+        btnCalor.addEventListener('click', function () {
+            mapaGeneral.removeLayer(capaMarcadores);
+            mapaGeneral.addLayer(capaCalor);
+            btnCalor.classList.add('activo');
+            btnMarcadores.classList.remove('activo');
+            leyendaMarc.style.display = 'none';
+            leyendaCal.style.display = 'flex';
+        });
     }
 
     // ================== GRÁFICO POR ESTADO ==================
@@ -330,6 +538,90 @@
                     gridLines: { color: 'rgba(255,255,255,0.08)' }
                 }],
                 xAxes: [{
+                    ticks: { fontColor: '#c2c7d0' },
+                    gridLines: { display: false }
+                }]
+            }
+        }
+    });
+
+    // ================== GRÁFICO DE TENDENCIA (por mes) ==================
+    const porMes = @json($porMes);
+
+    const nombresMes = {
+        '01': 'Ene', '02': 'Feb', '03': 'Mar', '04': 'Abr', '05': 'May', '06': 'Jun',
+        '07': 'Jul', '08': 'Ago', '09': 'Sep', '10': 'Oct', '11': 'Nov', '12': 'Dic'
+    };
+
+    const etiquetasMes = porMes.map(m => {
+        const partes = m.mes.split('-');
+        return nombresMes[partes[1]] + ' ' + partes[0];
+    });
+
+    new Chart(document.getElementById('graficoTendencia'), {
+        type: 'line',
+        data: {
+            labels: etiquetasMes,
+            datasets: [{
+                label: 'Incidencias registradas',
+                data: porMes.map(m => m.total),
+                borderColor: '#007bff',
+                backgroundColor: 'rgba(0, 123, 255, 0.15)',
+                fill: true,
+                lineTension: 0.3,
+                pointBackgroundColor: '#007bff',
+                pointRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            legend: { display: false },
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true,
+                        stepSize: 1,
+                        fontColor: '#c2c7d0'
+                    },
+                    gridLines: { color: 'rgba(255,255,255,0.08)' }
+                }],
+                xAxes: [{
+                    ticks: { fontColor: '#c2c7d0' },
+                    gridLines: { display: false }
+                }]
+            }
+        }
+    });
+
+    // ================== GRÁFICO TOP CIUDADES ==================
+    const porCiudad = @json($porCiudad);
+
+    new Chart(document.getElementById('graficoCiudades'), {
+        type: 'horizontalBar',
+        data: {
+            labels: porCiudad.map(c => c.nombre),
+            datasets: [{
+                label: 'Incidencias',
+                data: porCiudad.map(c => c.total),
+                backgroundColor: ['#dc3545', '#fd7e14', '#ffc107', '#20c997', '#0dcaf0'],
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            legend: { display: false },
+            scales: {
+                xAxes: [{
+                    ticks: {
+                        beginAtZero: true,
+                        stepSize: 1,
+                        fontColor: '#c2c7d0'
+                    },
+                    gridLines: { color: 'rgba(255,255,255,0.08)' }
+                }],
+                yAxes: [{
                     ticks: { fontColor: '#c2c7d0' },
                     gridLines: { display: false }
                 }]

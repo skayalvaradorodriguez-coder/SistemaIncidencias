@@ -29,6 +29,20 @@ class DashboardController extends Controller
             $query->where('nombre', 'Resuelto');
         })->count();
 
+        // Tasa de resolución (% resueltas sobre el total)
+        $tasaResolucion = $totalIncidencias > 0
+            ? round(($resueltas / $totalIncidencias) * 100, 1)
+            : 0;
+
+        // Tiempo promedio de resolución en horas (desde la vista SQL)
+        $tiempoPromedio = 0;
+        try {
+            $fila = DB::selectOne('SELECT horas_promedio FROM vista_tiempo_resolucion');
+            $tiempoPromedio = $fila && $fila->horas_promedio ? round($fila->horas_promedio, 1) : 0;
+        } catch (\Throwable $e) {
+            $tiempoPromedio = 0;
+        }
+
         $recientes = Incidencia::with([
             'usuario',
             'estado',
@@ -64,16 +78,35 @@ class DashboardController extends Controller
             ->groupBy('prioridad')
             ->get();
 
+        // Top 5 ciudades con más incidencias
+        $porCiudad = Incidencia::selectRaw('ciudades.nombre, count(*) as total')
+            ->join('ciudades', 'ciudades.id', '=', 'incidencias.ciudad_id')
+            ->groupBy('ciudades.nombre')
+            ->orderByDesc('total')
+            ->limit(5)
+            ->get();
+
+        // Incidencias por mes (últimos 6 meses) para la línea de tendencia
+        $porMes = Incidencia::selectRaw("TO_CHAR(created_at, 'YYYY-MM') as mes, count(*) as total")
+            ->where('created_at', '>=', now()->subMonths(6)->startOfMonth())
+            ->groupBy('mes')
+            ->orderBy('mes')
+            ->get();
+
         return view('dashboard', compact(
             'totalIncidencias',
             'totalUsuarios',
             'pendientes',
             'enProceso',
             'resueltas',
+            'tasaResolucion',
+            'tiempoPromedio',
             'recientes',
             'conUbicacion',
             'porTipo',
-            'porPrioridad'
+            'porPrioridad',
+            'porCiudad',
+            'porMes'
         ));
     }
 
