@@ -13,7 +13,7 @@
     }
 
     .tablero-header-page {
-        background: linear-gradient(135deg, rgba(30,58,138,0.35) 0%, rgba(29,78,216,0.25) 45%, rgba(14,165,233,0.18) 100%);
+        background: linear-gradient(135deg, rgba(10,17,40,0.35) 0%, rgba(22,35,63,0.25) 45%, rgba(201,169,97,0.18) 100%);
         border: 1px solid var(--border-subtle, rgba(255,255,255,0.08));
         border-radius: 14px;
         padding: 18px 22px;
@@ -145,7 +145,7 @@
     }
 
     .btn-mover:hover {
-        background: var(--brand-400, #0ea5e9);
+        background: var(--brand-400, #C9A961);
         color: #fff;
     }
 
