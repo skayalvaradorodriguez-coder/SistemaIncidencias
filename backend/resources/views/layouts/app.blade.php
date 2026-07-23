@@ -418,6 +418,14 @@
                         </a>
                     </li>
 
+                    <li class="nav-item" id="menuReportes" style="display:none;">
+                        <a href="{{ route('reportes') }}"
+                           class="nav-link {{ request()->is('reportes') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-chart-pie"></i>
+                            <p>Reportes</p>
+                        </a>
+                    </li>
+
                     <li class="nav-item" id="menuUsuarios" style="display:none;">
                         <a href="{{ route('usuarios.index') }}"
                            class="nav-link {{ request()->is('usuarios*') ? 'active' : '' }}">
@@ -517,6 +525,7 @@ if(usuario){
     if(rolNombre === "Administrador" || rolNombre === "Responsable"){
         document.getElementById("headerGestion").style.display = "block";
         document.getElementById("menuTablero").style.display = "block";
+        document.getElementById("menuReportes").style.display = "block";
     }
 
     if(rolNombre === "Administrador"){
