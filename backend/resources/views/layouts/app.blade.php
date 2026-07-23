@@ -211,6 +211,14 @@
         .small-box.bg-warning p,
         .small-box.bg-warning a { color: #0A1128 !important; }
         .small-box.bg-success  { background: linear-gradient(135deg, #2F7A4D, #1F5636) !important; }
+
+        /* Fondos oscuros fijos: forzar texto blanco sin importar el tema claro/oscuro */
+        .small-box.bg-info    .icon, .small-box.bg-info    h3, .small-box.bg-info    p, .small-box.bg-info    a,
+        .small-box.bg-primary .icon, .small-box.bg-primary h3, .small-box.bg-primary p, .small-box.bg-primary a,
+        .small-box.bg-success .icon, .small-box.bg-success h3, .small-box.bg-success p, .small-box.bg-success a {
+            color: #fff !important;
+        }
+
         .small-box .icon { opacity: 0.25; }
         .small-box-footer { background: rgba(0,0,0,0.15) !important; }
 
