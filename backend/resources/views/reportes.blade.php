@@ -430,20 +430,23 @@ function renderizarTablaUsuarios(datos) {
 }
 
 // ================== EXPORTAR PDF ==================
+const LOGO_URL = '/images/logo.png'; // <-- 👈 CAMBIÁ ESTA RUTA POR LA DE TU LOGO
+ 
 document.getElementById('btnPdf').addEventListener('click', function () {
-
+ 
     const usuarioActual = getUser();
     const ahora = new Date();
     const fechaEmision = ahora.toLocaleDateString('es-EC', { day: '2-digit', month: 'long', year: 'numeric' });
     const horaEmision = ahora.toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' });
     const referencia = `RPT-${ahora.getFullYear()}${String(ahora.getMonth() + 1).padStart(2, '0')}${String(ahora.getDate()).padStart(2, '0')}-${tipoActivo.replace(/\s+/g, '')}`;
-
+ 
     const titulo = document.getElementById('tituloTabla').textContent;
     const kpisHtml = document.getElementById('filaKpis').innerHTML;
-
+ 
     let filasTabla = '';
     let columnasTabla = [];
-
+    let distribucion = {}; // para el gráfico de barras
+ 
     if (tipoActivo === 'usuarios') {
         columnasTabla = ['#', 'Nombre', 'Correo', 'Rol', 'Estado', 'Registrado'];
         filasTabla = todosLosUsuarios.map(u => `
@@ -455,11 +458,18 @@ document.getElementById('btnPdf').addEventListener('click', function () {
                 <td>${u.activo ? 'Activo' : 'Inactivo'}</td>
                 <td>${new Date(u.created_at).toLocaleDateString('es-EC')}</td>
             </tr>`).join('');
+ 
+        // Distribución por rol
+        todosLosUsuarios.forEach(u => {
+            const r = u.rol ? u.rol.nombre : 'Sin rol';
+            distribucion[r] = (distribucion[r] || 0) + 1;
+        });
+ 
     } else {
         const datos = tipoActivo === 'todas'
             ? todasLasIncidencias
             : todasLasIncidencias.filter(i => (i.estado ? i.estado.nombre : '') === tipoActivo);
-
+ 
         columnasTabla = ['#', 'Título', 'Ciudad', 'Tipo', 'Estado', 'Prioridad', 'Reportado por', 'Fecha'];
         filasTabla = datos.map(inc => `
             <tr>
@@ -472,190 +482,418 @@ document.getElementById('btnPdf').addEventListener('click', function () {
                 <td>${escaparHtml(inc.usuario ? inc.usuario.name : 'N/A')}</td>
                 <td>${new Date(inc.created_at).toLocaleDateString('es-EC')}</td>
             </tr>`).join('');
-
+ 
         if (datos.length === 0) {
             filasTabla = `<tr><td colspan="${columnasTabla.length}" style="text-align:center; color:#94a3b8; padding:18px;">Sin registros para este reporte.</td></tr>`;
         }
+ 
+        // Distribución por prioridad (más útil que por estado cuando ya está filtrado por estado)
+        datos.forEach(inc => {
+            distribucion[inc.prioridad] = (distribucion[inc.prioridad] || 0) + 1;
+        });
     }
-
+ 
     const encabezadoTabla = columnasTabla.map(c => `<th>${c}</th>`).join('');
-
+ 
+    // ---------- Construcción del gráfico de barras (100% CSS, sin librerías) ----------
+    const COLOR_BARRA = {
+        'Baja': '#2F7A4D', 'Media': '#C98A2C', 'Alta': '#C9622E', 'Crítica': '#B3413A',
+        'Administrador': '#0A1128', 'Responsable': '#16233F', 'Ciudadano': '#C9A961', 'Sin rol': '#94a3b8'
+    };
+    const totalDistribucion = Object.values(distribucion).reduce((a, b) => a + b, 0);
+    const filasGrafico = Object.entries(distribucion)
+        .sort((a, b) => b[1] - a[1])
+        .map(([etiqueta, valor]) => {
+            const porcentaje = totalDistribucion > 0 ? Math.round((valor / totalDistribucion) * 100) : 0;
+            const color = COLOR_BARRA[etiqueta] || '#64748b';
+            return `
+                <div class="chart-fila">
+                    <span class="chart-etiqueta">${escaparHtml(etiqueta)}</span>
+                    <span class="chart-pista"><span class="chart-relleno" style="width:${porcentaje}%; background:${color};"></span></span>
+                    <span class="chart-valor">${valor}</span>
+                </div>`;
+        }).join('');
+ 
+    const tituloGrafico = tipoActivo === 'usuarios' ? 'Distribución por Rol' : 'Distribución por Prioridad';
+ 
     const ventana = window.open('', '_blank');
     ventana.document.write(`
         <!DOCTYPE html>
         <html lang="es">
         <head>
             <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
             <title>${escaparHtml(titulo)} - Sistema de Incidencias</title>
             <style>
-                @page { margin: 20mm 15mm; }
+                :root {
+                    --brand-900: #0A1128;
+                    --brand-700: #16233F;
+                    --brand-400: #C9A961;
+                    --texto: #1f2937;
+                    --texto-suave: #64748b;
+                    --borde: #e2e8f0;
+                }
+ 
+                @page { margin: 15mm 12mm; }
                 * { box-sizing: border-box; }
-
+ 
+                html, body {
+                    margin: 0;
+                    background: #eef1f5;
+                }
+ 
                 body {
                     font-family: 'Segoe UI', Arial, sans-serif;
-                    color: #1f2937;
-                    margin: 0;
+                    color: var(--texto);
                     font-size: 12.5px;
-                    line-height: 1.5;
+                    line-height: 1.55;
                 }
-
+ 
+                /* ===== Hoja centrada tipo "documento" al verla en pantalla ===== */
+                .hoja {
+                    max-width: 860px;
+                    margin: 24px auto;
+                    background: #fff;
+                    box-shadow: 0 4px 24px rgba(10, 17, 40, 0.12);
+                    border-radius: 10px;
+                    overflow: hidden;
+                }
+ 
                 .franja-superior {
                     height: 6px;
-                    background: linear-gradient(90deg, #0A1128, #16233F, #E3CD8F);
+                    background: linear-gradient(90deg, var(--brand-900), var(--brand-700), var(--brand-400));
                 }
-
+ 
                 .encabezado {
                     display: flex;
                     justify-content: space-between;
                     align-items: flex-start;
-                    padding: 18px 24px 14px;
-                    border-bottom: 2px solid #0A1128;
-                    margin-bottom: 20px;
+                    gap: 16px;
+                    padding: 20px 28px 16px;
+                    border-bottom: 2px solid var(--brand-900);
+                    margin-bottom: 22px;
+                    flex-wrap: wrap;
                 }
-
+ 
+                .encabezado .marca {
+                    display: flex;
+                    align-items: center;
+                    gap: 14px;
+                    min-width: 0;
+                }
+ 
+                .encabezado .logo {
+                    height: 44px;
+                    width: auto;
+                    flex-shrink: 0;
+                    object-fit: contain;
+                }
+ 
                 .encabezado .institucion {
                     font-size: 0.72rem;
                     text-transform: uppercase;
                     letter-spacing: 0.06em;
-                    color: #64748b;
+                    color: var(--texto-suave);
                     margin: 0 0 2px;
                 }
-
+ 
                 .encabezado h1 {
                     margin: 0 0 6px;
-                    font-size: 1.3rem;
-                    color: #0A1128;
+                    font-size: 1.35rem;
+                    color: var(--brand-900);
+                    line-height: 1.25;
                 }
-
+ 
+                .encabezado .generado-por {
+                    margin: 0;
+                    color: #334155;
+                    font-size: 0.82rem;
+                }
+ 
                 .encabezado .meta-derecha {
                     text-align: right;
                     font-size: 0.76rem;
                     color: #475569;
                     white-space: nowrap;
+                    flex-shrink: 0;
                 }
-
+ 
                 .encabezado .referencia {
                     display: inline-block;
                     background: #f1efe6;
-                    color: #0A1128;
+                    color: var(--brand-900);
                     font-weight: 600;
-                    padding: 3px 10px;
-                    border-radius: 4px;
+                    padding: 4px 12px;
+                    border-radius: 20px;
                     margin-bottom: 6px;
                     font-size: 0.74rem;
                 }
-
-                .contenido { padding: 0 24px; }
-
+ 
+                .contenido { padding: 0 28px 8px; }
+ 
+                h2.titulo-seccion {
+                    font-size: 0.95rem;
+                    color: var(--brand-900);
+                    border-bottom: 1px solid var(--borde);
+                    padding-bottom: 6px;
+                    margin: 0 0 14px;
+                }
+ 
                 /* ---------- KPIs ---------- */
                 .kpis-pdf {
                     display: flex;
                     gap: 14px;
-                    margin-bottom: 24px;
+                    margin-bottom: 28px;
                     flex-wrap: wrap;
                 }
-
+ 
                 .kpi-card, .kpi-icono, .kpi-etiqueta { all: unset; }
-
+ 
                 .kpi-pdf-item {
-                    flex: 1;
+                    flex: 1 1 160px;
                     min-width: 140px;
-                    border: 1px solid #e2e8f0;
-                    border-radius: 8px;
-                    padding: 12px 14px;
+                    border: 1px solid var(--borde);
+                    border-radius: 10px;
+                    padding: 14px 16px;
+                    background: #fbfcfe;
                 }
-
+ 
                 .kpi-pdf-item .kpi-numero {
-                    font-size: 1.3rem;
+                    font-size: 1.35rem;
                     font-weight: 700;
-                    color: #0A1128;
+                    color: var(--brand-900);
                 }
-
+ 
                 .kpi-pdf-item .kpi-etiqueta {
                     font-size: 0.68rem;
                     text-transform: uppercase;
-                    color: #64748b;
+                    color: var(--texto-suave);
                     letter-spacing: 0.03em;
                 }
-
-                .kpi-icono, .kpi-card { display: none; } /* no se imprimen los íconos del dashboard */
-
-                h2.titulo-seccion {
-                    font-size: 0.95rem;
-                    color: #0A1128;
-                    border-bottom: 1px solid #e2e8f0;
-                    padding-bottom: 6px;
-                    margin: 0 0 12px;
+ 
+                .kpi-icono, .kpi-card { display: none; }
+ 
+                /* ---------- Gráfico de distribución (barras CSS) ---------- */
+                .chart-barras {
+                    margin-bottom: 28px;
+                    padding: 16px 18px;
+                    border: 1px solid var(--borde);
+                    border-radius: 10px;
+                    background: #fbfcfe;
                 }
-
-                table.tabla-reporte { width: 100%; border-collapse: collapse; font-size: 0.76rem; margin-bottom: 26px; }
+ 
+                .chart-fila {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    margin-bottom: 9px;
+                    font-size: 0.78rem;
+                }
+ 
+                .chart-fila:last-child { margin-bottom: 0; }
+ 
+                .chart-etiqueta {
+                    width: 110px;
+                    flex-shrink: 0;
+                    color: #334155;
+                    font-weight: 600;
+                }
+ 
+                .chart-pista {
+                    flex: 1;
+                    background: #eef1f5;
+                    border-radius: 5px;
+                    overflow: hidden;
+                    height: 14px;
+                }
+ 
+                .chart-relleno {
+                    display: block;
+                    height: 100%;
+                    border-radius: 5px;
+                }
+ 
+                .chart-valor {
+                    width: 32px;
+                    text-align: right;
+                    font-weight: 700;
+                    color: var(--brand-900);
+                    flex-shrink: 0;
+                }
+ 
+                /* ---------- Tabla ---------- */
+                .tabla-wrapper {
+                    width: 100%;
+                    overflow-x: auto;
+                    margin-bottom: 28px;
+                    border-radius: 8px;
+                }
+ 
+                table.tabla-reporte {
+                    width: 100%;
+                    min-width: 620px;
+                    border-collapse: collapse;
+                    font-size: 0.76rem;
+                }
+ 
                 table.tabla-reporte th {
-                    background: #0A1128; color: #fff; padding: 8px; text-align: left;
-                    font-weight: 600; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.03em;
+                    background: var(--brand-900);
+                    color: #fff;
+                    padding: 9px 8px;
+                    text-align: left;
+                    font-weight: 600;
+                    font-size: 0.68rem;
+                    text-transform: uppercase;
+                    letter-spacing: 0.03em;
+                    white-space: nowrap;
                 }
-                table.tabla-reporte td { padding: 7px 8px; border-bottom: 1px solid #e2e8f0; }
+ 
+                table.tabla-reporte td {
+                    padding: 7px 8px;
+                    border-bottom: 1px solid var(--borde);
+                }
+ 
                 table.tabla-reporte tr:nth-child(even) td { background: #f8fafc; }
-
+ 
                 .pie-documento {
-                    margin-top: 30px;
-                    padding: 14px 24px;
-                    border-top: 1px solid #e2e8f0;
+                    padding: 16px 28px;
+                    border-top: 1px solid var(--borde);
                     font-size: 0.7rem;
                     color: #94a3b8;
                     display: flex;
                     justify-content: space-between;
+                    flex-wrap: wrap;
+                    gap: 6px;
                 }
-
+ 
+                .no-imprimir {
+                    text-align: center;
+                    padding: 18px;
+                    background: #f8fafc;
+                }
+ 
+                .btn-imprimir {
+                    padding: 10px 26px;
+                    background: linear-gradient(to bottom, #E3CD8F, #C9A961);
+                    border: none;
+                    border-radius: 8px;
+                    font-weight: 600;
+                    color: var(--brand-900);
+                    cursor: pointer;
+                    font-size: 0.85rem;
+                }
+ 
+                /* ===== Responsive (pantallas chicas, antes de imprimir) ===== */
+                @media (max-width: 640px) {
+                    .hoja { margin: 0; border-radius: 0; box-shadow: none; }
+                    .encabezado { padding: 16px 16px 14px; }
+                    .encabezado .meta-derecha { text-align: left; }
+                    .contenido { padding: 0 16px 4px; }
+                    .kpi-pdf-item { flex: 1 1 45%; }
+                    .chart-etiqueta { width: 80px; font-size: 0.72rem; }
+                    table.tabla-reporte { font-size: 0.7rem; }
+                }
+ 
+                /* ===== Impresión: sin sombra, sin fondo gris, ocupa toda la hoja ===== */
                 @media print {
+                    body { background: #fff; font-size: 11.5px; }
+                    .hoja { max-width: none; margin: 0; box-shadow: none; border-radius: 0; }
                     .no-imprimir { display: none; }
+                    .tabla-wrapper { overflow-x: visible; }
+                    table.tabla-reporte { min-width: 0; }
+
+                    /* Fuerza a imprimir colores de fondo aunque el navegador
+                    tenga desactivada la opción "Gráficos de fondo" */
+                    * {
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                        color-adjust: exact !important;
+                    }
+
+                    /* Evita que se corten elementos justo en el salto de página */
+                    .kpi-pdf-item,
+                    .chart-barras,
+                    tr,
+                    .pie-documento {
+                        page-break-inside: avoid;
+                        break-inside: avoid;
+                    }
+
+                    h2.titulo-seccion {
+                        page-break-after: avoid;
+                        break-after: avoid;
+                    }
+
+                    /* Repite el encabezado de la tabla en cada página nueva */
+                    table.tabla-reporte thead {
+                        display: table-header-group;
+                    }
+
+                    /* Evita que la última fila quede sola arriba de una página nueva */
+                    table.tabla-reporte tr {
+                        break-after: auto;
+                    }
                 }
             </style>
         </head>
         <body>
-
-            <div class="franja-superior"></div>
-
-            <div class="encabezado">
-                <div>
-                    <p class="institucion">Sistema de Gestión de Incidencias Georreferenciadas</p>
-                    <h1>${escaparHtml(titulo)}</h1>
-                    <p style="margin:0; color:#334155;">Generado por ${escaparHtml(usuarioActual.name)} (${escaparHtml(usuarioActual.rol.nombre)})</p>
+            <div class="hoja">
+ 
+                <div class="franja-superior"></div>
+ 
+                <div class="encabezado">
+                    <div class="marca">
+                        ${LOGO_URL ? `<img class="logo" src="${LOGO_URL}" alt="Logo" onerror="this.style.display='none'">` : ''}
+                        <div>
+                            <p class="institucion">Sistema de Gestión de Incidencias Georreferenciadas</p>
+                            <h1>${escaparHtml(titulo)}</h1>
+                            <p class="generado-por">Generado por ${escaparHtml(usuarioActual.name)} (${escaparHtml(usuarioActual.rol.nombre)})</p>
+                        </div>
+                    </div>
+                    <div class="meta-derecha">
+                        <span class="referencia">${referencia}</span><br>
+                        Emitido: ${fechaEmision}<br>
+                        Hora: ${horaEmision}
+                    </div>
                 </div>
-                <div class="meta-derecha">
-                    <span class="referencia">${referencia}</span><br>
-                    Emitido: ${fechaEmision}<br>
-                    Hora: ${horaEmision}
+ 
+                <div class="contenido">
+ 
+                    <h2 class="titulo-seccion">Resumen</h2>
+                    <div class="kpis-pdf">
+                        ${kpisHtml.replace(/class="col-md-3 col-sm-6 mb-3 mb-md-0"/g, 'class="kpi-pdf-item-wrap"')
+                                  .replace(/<div class="kpi-card">/g, '<div class="kpi-pdf-item">')
+                                  .replace(/<div class="kpi-icono"[^>]*>.*?<\/div>/gs, '')}
+                    </div>
+ 
+                    ${totalDistribucion > 0 ? `
+                    <h2 class="titulo-seccion">${tituloGrafico}</h2>
+                    <div class="chart-barras">
+                        ${filasGrafico}
+                    </div>` : ''}
+ 
+                    <h2 class="titulo-seccion">Detalle</h2>
+                    <div class="tabla-wrapper">
+                        <table class="tabla-reporte">
+                            <thead><tr>${encabezadoTabla}</tr></thead>
+                            <tbody>${filasTabla}</tbody>
+                        </table>
+                    </div>
+ 
                 </div>
-            </div>
-
-            <div class="contenido">
-
-                <h2 class="titulo-seccion">Resumen</h2>
-                <div class="kpis-pdf">
-                    ${kpisHtml.replace(/class="col-md-3 col-sm-6 mb-3 mb-md-0"/g, 'class="kpi-pdf-item-wrap"')
-                              .replace(/<div class="kpi-card">/g, '<div class="kpi-pdf-item">')
-                              .replace(/<div class="kpi-icono"[^>]*>.*?<\/div>/gs, '')}
+ 
+                <div class="pie-documento">
+                    <span>Sistema de Gestión de Incidencias Georreferenciadas</span>
+                    <span>Documento generado automáticamente — ${referencia}</span>
                 </div>
-
-                <h2 class="titulo-seccion">Detalle</h2>
-                <table class="tabla-reporte">
-                    <thead><tr>${encabezadoTabla}</tr></thead>
-                    <tbody>${filasTabla}</tbody>
-                </table>
-
+ 
+                <div class="no-imprimir">
+                    <button class="btn-imprimir" onclick="window.print()">
+                        Imprimir / Guardar como PDF
+                    </button>
+                </div>
+ 
             </div>
-
-            <div class="pie-documento">
-                <span>Sistema de Gestión de Incidencias Georreferenciadas</span>
-                <span>Documento generado automáticamente — ${referencia}</span>
-            </div>
-
-            <div class="no-imprimir" style="text-align:center; padding:16px;">
-                <button onclick="window.print()" style="padding:10px 22px; background:linear-gradient(to bottom,#E3CD8F,#C9A961); border:none; border-radius:6px; font-weight:600; color:#0A1128; cursor:pointer;">
-                    Imprimir / Guardar como PDF
-                </button>
-            </div>
-
         </body>
         </html>
     `);
