@@ -17,6 +17,9 @@ Route::get('/tablero', [IncidenciaController::class, 'vistaTablero'])
 Route::get('/mis-reportes', [IncidenciaController::class, 'vistaMisReportes'])
     ->name('incidencias.mis');
 
+Route::get('/reportes', [IncidenciaController::class, 'vistaReportes'])
+    ->name('reportes');
+
 Route::get('/emergencias', function () {
     return view('emergencias');
 })->name('emergencias');
