@@ -334,4 +334,9 @@ class IncidenciaController extends Controller
     {
         return view('incidencias.mis-reportes');
     }
+
+    public function vistaReportes()
+    {
+        return view('reportes');
+    }
 }
