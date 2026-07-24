@@ -217,6 +217,70 @@
 
         .ver-pass:hover { color: #d1d5db; }
 
+        .link-olvido {
+            display: block;
+            text-align: right;
+            margin: -8px 0 16px;
+            color: #9ca3af;
+            font-size: 0.78rem;
+            text-decoration: none;
+            cursor: pointer;
+            background: none;
+            border: none;
+            width: 100%;
+        }
+
+        .link-olvido:hover { color: #C9A961; }
+
+        /* ===== Modal de recuperación de contraseña ===== */
+        .modal-fondo {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 17, 40, 0.7);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 50;
+        }
+
+        .modal-fondo.visible {
+            display: flex;
+        }
+
+        .modal-caja {
+            width: 100%;
+            max-width: 380px;
+            background: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 14px;
+            padding: 28px;
+        }
+
+        .modal-titulo {
+            color: #f3f4f6;
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .modal-sub {
+            color: #9ca3af;
+            font-size: 0.84rem;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .modal-cerrar {
+            text-align: center;
+            margin-top: 14px;
+            color: #9ca3af;
+            font-size: 0.84rem;
+            cursor: pointer;
+        }
+
+        .modal-cerrar:hover { color: #d1d5db; }
+
         .fila-doble {
             display: flex;
             gap: 12px;
@@ -297,19 +361,6 @@
             color: #6ee7b7;
         }
 
-        .nota-prueba {
-            margin-top: 22px;
-            padding: 12px 14px;
-            background: #111827;
-            border-radius: 9px;
-            border: 1px dashed #374151;
-            color: #9ca3af;
-            font-size: 0.78rem;
-            line-height: 1.6;
-        }
-
-        .nota-prueba b { color: #d1d5db; }
-
         @media (max-width: 900px) {
             .panel-marca { display: none; }
         }
@@ -379,15 +430,13 @@
                     </div>
                 </div>
 
+                <button type="button" class="link-olvido" onclick="abrirModalOlvido()">
+                    ¿Olvidaste tu contraseña?
+                </button>
+
                 <button type="submit" class="btn-principal" id="btnLogin">
                     Ingresar
                 </button>
-
-                <div class="nota-prueba">
-                    <b>Usuarios de prueba:</b><br>
-                    admin@incidencias.com / Admin123!<br>
-                    ciudadano@incidencias.com / Ciudadano123!
-                </div>
 
             </form>
 
@@ -452,6 +501,35 @@
         </div>
     </div>
 
+    <!-- ========== MODAL: OLVIDÉ MI CONTRASEÑA ========== -->
+    <div class="modal-fondo" id="modalOlvido">
+        <div class="modal-caja">
+            <div class="modal-titulo">Recuperar contraseña</div>
+            <div class="modal-sub">
+                Ingresa tu correo y, si está registrado, te enviaremos un enlace
+                para crear una nueva contraseña.
+            </div>
+
+            <div id="alertaOlvido" class="alerta"></div>
+
+            <form id="formOlvido">
+                <div class="campo">
+                    <label>Correo electrónico</label>
+                    <div class="campo-input">
+                        <i class="fas fa-envelope icono"></i>
+                        <input type="email" id="olvidoEmail" placeholder="usuario@correo.com" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-principal" id="btnOlvido">
+                    Enviar enlace de recuperación
+                </button>
+
+                <div class="modal-cerrar" onclick="cerrarModalOlvido()">Cancelar</div>
+            </form>
+        </div>
+    </div>
+
 <script>
 // Si ya hay sesión, va directo al dashboard
 if (localStorage.getItem('token')) {
@@ -486,6 +564,61 @@ function togglePassword(inputId, icono) {
     icono.classList.toggle('fa-eye', visible);
     icono.classList.toggle('fa-eye-slash', !visible);
 }
+
+// ================== MODAL OLVIDÉ MI CONTRASEÑA ==================
+const modalOlvido = document.getElementById('modalOlvido');
+const alertaOlvido = document.getElementById('alertaOlvido');
+
+function abrirModalOlvido() {
+    document.getElementById('formOlvido').reset();
+    alertaOlvido.className = 'alerta';
+    modalOlvido.classList.add('visible');
+}
+
+function cerrarModalOlvido() {
+    modalOlvido.classList.remove('visible');
+}
+
+modalOlvido.addEventListener('click', function (e) {
+    if (e.target === modalOlvido) cerrarModalOlvido();
+});
+
+document.getElementById('formOlvido').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const boton = document.getElementById('btnOlvido');
+    botonCargando(boton, true, 'Enviar enlace de recuperación');
+
+    try {
+        const response = await fetch('/api/forgot-password', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                email: document.getElementById('olvidoEmail').value
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.status === 429) {
+            alertaOlvido.textContent = 'Demasiados intentos. Espera un minuto e intenta de nuevo.';
+            alertaOlvido.className = 'alerta error';
+            return;
+        }
+
+        alertaOlvido.textContent = data.message || 'Si el correo está registrado, recibirás un enlace.';
+        alertaOlvido.className = 'alerta exito';
+
+    } catch (error) {
+        alertaOlvido.textContent = 'Error de conexión con el servidor';
+        alertaOlvido.className = 'alerta error';
+    } finally {
+        botonCargando(boton, false, 'Enviar enlace de recuperación');
+    }
+});
 
 function botonCargando(boton, cargando, textoNormal) {
     boton.disabled = cargando;

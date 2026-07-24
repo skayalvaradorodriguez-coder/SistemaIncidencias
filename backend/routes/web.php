@@ -9,6 +9,13 @@ Route::get('/login', function () {
     return view('login');
 })->name('login');
 
+Route::get('/reset-password/{token}', function (\Illuminate\Http\Request $request, $token) {
+    return view('reset-password', [
+        'token' => $token,
+        'email' => $request->query('email', ''),
+    ]);
+})->name('password.reset');
+
 Route::get('/', [DashboardController::class, 'index']);
 
 Route::get('/tablero', [IncidenciaController::class, 'vistaTablero'])
