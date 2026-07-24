@@ -133,6 +133,9 @@
             <div class="pildora-reporte" data-tipo="usuarios" id="pildoraUsuarios" style="display:none;">
                 <i class="fas fa-users"></i> Usuarios del Sistema
             </div>
+            <div class="pildora-reporte" data-tipo="por_usuario" id="pildoraPorUsuario" style="display:none;">
+                <i class="fas fa-user"></i> Reporte por Usuario
+            </div>
         </div>
 
         <!-- ===== KPIs ===== -->
@@ -142,8 +145,13 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
                 <h3 class="card-title mb-0" id="tituloTabla">Todas las Incidencias</h3>
-                <input type="text" id="buscadorReporte" class="form-control form-control-sm buscador-reporte"
-                       placeholder="Buscar en esta tabla...">
+                <div class="d-flex align-items-center flex-wrap" style="gap:10px;">
+                    <select id="selectUsuarioReporte" class="form-control form-control-sm" style="display:none; min-width:220px;">
+                        <option value="">Selecciona un usuario...</option>
+                    </select>
+                    <input type="text" id="buscadorReporte" class="form-control form-control-sm buscador-reporte"
+                           placeholder="Buscar en esta tabla...">
+                </div>
             </div>
             <div class="card-body table-responsive p-0">
                 <table class="table table-hover mb-0">
@@ -219,6 +227,7 @@ function escaparHtml(texto) {
     esAdminReporte  = (rol === 'Administrador');
     if (esAdminReporte) {
         document.getElementById('pildoraUsuarios').style.display = 'flex';
+        document.getElementById('pildoraPorUsuario').style.display = 'flex';
     }
 
     document.getElementById('contenidoReportes').style.display = 'block';
@@ -261,11 +270,30 @@ function renderizarReporte(tipo) {
     document.getElementById('buscadorReporte').value = '';
 
     if (tipo === 'usuarios') {
+        document.getElementById('selectUsuarioReporte').style.display = 'none';
         renderizarKpisUsuarios();
         renderizarTablaUsuarios(todosLosUsuarios);
         document.getElementById('tituloTabla').textContent = 'Usuarios del Sistema';
         return;
     }
+
+    if (tipo === 'por_usuario') {
+        const selector = document.getElementById('selectUsuarioReporte');
+        selector.style.display = 'inline-block';
+        poblarSelectUsuarios();
+        if (selector.value) {
+            renderizarReportePorUsuario(selector.value);
+        } else {
+            document.getElementById('tituloTabla').textContent = 'Reporte por Usuario';
+            document.getElementById('filaKpis').innerHTML = '';
+            document.getElementById('cabeceraTabla').innerHTML = '';
+            document.getElementById('cuerpoTabla').innerHTML =
+                '<tr><td class="text-center text-muted py-4">Selecciona un usuario arriba para ver su reporte de incidencias.</td></tr>';
+        }
+        return;
+    }
+
+    document.getElementById('selectUsuarioReporte').style.display = 'none';
 
     const datos = tipo === 'todas'
         ? todasLasIncidencias
@@ -329,6 +357,50 @@ function renderizarKpisUsuarios() {
     ];
 
     pintarKpis(kpis);
+}
+
+// ================== REPORTE POR USUARIO ==================
+let selectUsuariosPoblado = false;
+
+function poblarSelectUsuarios() {
+    if (selectUsuariosPoblado) return;
+
+    const selector = document.getElementById('selectUsuarioReporte');
+    const usuariosOrdenados = [...todosLosUsuarios].sort((a, b) =>
+        (a.name || '').localeCompare(b.name || '')
+    );
+
+    usuariosOrdenados.forEach(u => {
+        const opcion = document.createElement('option');
+        opcion.value = u.id;
+        opcion.textContent = `${u.name} ${u.apellido || ''}`.trim();
+        selector.appendChild(opcion);
+    });
+
+    selectUsuariosPoblado = true;
+}
+
+document.getElementById('selectUsuarioReporte').addEventListener('change', function () {
+    if (this.value) {
+        renderizarReportePorUsuario(this.value);
+    } else {
+        document.getElementById('tituloTabla').textContent = 'Reporte por Usuario';
+        document.getElementById('filaKpis').innerHTML = '';
+        document.getElementById('cabeceraTabla').innerHTML = '';
+        document.getElementById('cuerpoTabla').innerHTML =
+            '<tr><td class="text-center text-muted py-4">Selecciona un usuario arriba para ver su reporte de incidencias.</td></tr>';
+    }
+});
+
+function renderizarReportePorUsuario(usuarioId) {
+    const usuario = todosLosUsuarios.find(u => String(u.id) === String(usuarioId));
+    const datos = todasLasIncidencias.filter(i => i.usuario && String(i.usuario.id) === String(usuarioId));
+
+    const nombreUsuario = usuario ? `${usuario.name} ${usuario.apellido || ''}`.trim() : 'Usuario';
+    document.getElementById('tituloTabla').textContent = `Incidencias de ${nombreUsuario}`;
+
+    renderizarKpisIncidencias(datos);
+    renderizarTablaIncidencias(datos);
 }
 
 function pintarKpis(kpis) {
@@ -433,12 +505,20 @@ function renderizarTablaUsuarios(datos) {
 const LOGO_URL = '/images/logo.png'; // <-- 👈 CAMBIÁ ESTA RUTA POR LA DE TU LOGO
  
 document.getElementById('btnPdf').addEventListener('click', function () {
+
+    const idUsuarioReporte = document.getElementById('selectUsuarioReporte').value;
+
+    if (tipoActivo === 'por_usuario' && !idUsuarioReporte) {
+        alert('Selecciona un usuario para generar su reporte.');
+        return;
+    }
  
     const usuarioActual = getUser();
     const ahora = new Date();
     const fechaEmision = ahora.toLocaleDateString('es-EC', { day: '2-digit', month: 'long', year: 'numeric' });
     const horaEmision = ahora.toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' });
-    const referencia = `RPT-${ahora.getFullYear()}${String(ahora.getMonth() + 1).padStart(2, '0')}${String(ahora.getDate()).padStart(2, '0')}-${tipoActivo.replace(/\s+/g, '')}`;
+    const sufijoReferencia = tipoActivo === 'por_usuario' ? `usuario${idUsuarioReporte}` : tipoActivo.replace(/\s+/g, '');
+    const referencia = `RPT-${ahora.getFullYear()}${String(ahora.getMonth() + 1).padStart(2, '0')}${String(ahora.getDate()).padStart(2, '0')}-${sufijoReferencia}`;
  
     const titulo = document.getElementById('tituloTabla').textContent;
     const kpisHtml = document.getElementById('filaKpis').innerHTML;
@@ -466,9 +546,15 @@ document.getElementById('btnPdf').addEventListener('click', function () {
         });
  
     } else {
-        const datos = tipoActivo === 'todas'
-            ? todasLasIncidencias
-            : todasLasIncidencias.filter(i => (i.estado ? i.estado.nombre : '') === tipoActivo);
+        let datos;
+
+        if (tipoActivo === 'por_usuario') {
+            datos = todasLasIncidencias.filter(i => i.usuario && String(i.usuario.id) === String(idUsuarioReporte));
+        } else {
+            datos = tipoActivo === 'todas'
+                ? todasLasIncidencias
+                : todasLasIncidencias.filter(i => (i.estado ? i.estado.nombre : '') === tipoActivo);
+        }
  
         columnasTabla = ['#', 'Título', 'Ciudad', 'Tipo', 'Estado', 'Prioridad', 'Reportado por', 'Fecha'];
         filasTabla = datos.map(inc => `
