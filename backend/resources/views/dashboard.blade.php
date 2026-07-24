@@ -301,10 +301,10 @@
 
     </div>
 
-    <!-- Analítica adicional: tendencia y ciudades (SOLO GESTIÓN) -->
+    <!-- Analítica adicional: tendencia (SOLO GESTIÓN) -->
     <div class="row solo-gestion">
 
-        <div class="col-md-7">
+        <div class="col-md-12">
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">
@@ -318,7 +318,12 @@
             </div>
         </div>
 
-        <div class="col-md-5">
+    </div>
+
+    <!-- Analítica adicional: ciudades y provincias (SOLO GESTIÓN) -->
+    <div class="row solo-gestion">
+
+        <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">
@@ -328,6 +333,20 @@
                 </div>
                 <div class="card-body">
                     <canvas id="graficoCiudades" style="max-height: 280px;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-map mr-2"></i>
+                        Top Provincias con más Incidencias
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="graficoProvincias" style="max-height: 280px;"></canvas>
                 </div>
             </div>
         </div>
@@ -628,6 +647,41 @@
                 label: 'Incidencias',
                 data: porCiudad.map(c => c.total),
                 backgroundColor: [doradoClaro, dorado, doradoOscuro, navy, navyOscuro],
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            legend: { display: false },
+            scales: {
+                xAxes: [{
+                    ticks: {
+                        beginAtZero: true,
+                        stepSize: 1,
+                        fontColor: colorTexto
+                    },
+                    gridLines: { color: colorGrid }
+                }],
+                yAxes: [{
+                    ticks: { fontColor: colorTexto },
+                    gridLines: { display: false }
+                }]
+            }
+        }
+    });
+
+    // ================== GRÁFICO TOP PROVINCIAS ==================
+    const porProvincia = @json($porProvincia);
+
+    new Chart(document.getElementById('graficoProvincias'), {
+        type: 'horizontalBar',
+        data: {
+            labels: porProvincia.map(p => p.nombre),
+            datasets: [{
+                label: 'Incidencias',
+                data: porProvincia.map(p => p.total),
+                backgroundColor: [navyOscuro, navy, doradoOscuro, dorado, doradoClaro],
                 borderRadius: 4
             }]
         },

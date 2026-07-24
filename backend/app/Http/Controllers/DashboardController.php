@@ -86,6 +86,16 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
+        // Top 5 provincias con más incidencias (agrupando las ciudades
+        // por su provincia a través de ciudades.provincia_id)
+        $porProvincia = Incidencia::selectRaw('provincias.nombre, count(*) as total')
+            ->join('ciudades', 'ciudades.id', '=', 'incidencias.ciudad_id')
+            ->join('provincias', 'provincias.id', '=', 'ciudades.provincia_id')
+            ->groupBy('provincias.nombre')
+            ->orderByDesc('total')
+            ->limit(5)
+            ->get();
+
         // Incidencias por mes (últimos 6 meses) para la línea de tendencia
         $porMes = Incidencia::selectRaw("TO_CHAR(created_at, 'YYYY-MM') as mes, count(*) as total")
             ->where('created_at', '>=', now()->subMonths(6)->startOfMonth())
@@ -106,6 +116,7 @@ class DashboardController extends Controller
             'porTipo',
             'porPrioridad',
             'porCiudad',
+            'porProvincia',
             'porMes'
         ));
     }
