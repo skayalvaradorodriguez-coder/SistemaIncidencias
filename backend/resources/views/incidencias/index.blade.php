@@ -2,12 +2,226 @@
 
 @section('title', 'Incidencias')
 
+@section('styles')
+<style>
+    .incidencias-header {
+        background: linear-gradient(135deg, rgba(201,169,97,0.30) 0%, rgba(169,134,63,0.22) 45%, rgba(10,17,40,0.20) 100%);
+        border: 1px solid var(--border-subtle);
+        border-radius: 14px;
+        padding: 18px 22px;
+    }
+
+    #tablaIncidencias td {
+        vertical-align: middle;
+    }
+
+    /* =========================================================
+       Celda principal: avatar circular con iniciales del tipo
+       (mismo patrón visual que la vista de Usuarios)
+       ========================================================= */
+    .avatar-mini {
+        width: 34px;
+        height: 34px;
+        min-width: 34px;
+        border-radius: 50%;
+        background: var(--brand-gradient);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.78rem;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    }
+
+    .incidencia-titulo-celda {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .incidencia-titulo-celda .titulo-principal {
+        font-weight: 600;
+        color: var(--text-main);
+        line-height: 1.2;
+    }
+
+    .incidencia-titulo-celda .id-chico {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+    }
+
+    /* =========================================================
+       Pills de Estado y Prioridad (mismo look que rol-pill)
+       ========================================================= */
+    .estado-pill,
+    .prioridad-pill {
+        display: inline-block;
+        border-radius: 20px;
+        padding: 2px 12px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.2px;
+        white-space: nowrap;
+    }
+
+    .estado-pill-warning   { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.4); }
+    .estado-pill-primary   { background: rgba(13,110,253,0.15); color: #3b82f6; border: 1px solid rgba(13,110,253,0.4); }
+    .estado-pill-success   { background: rgba(34,197,94,0.15);  color: #16a34a; border: 1px solid rgba(34,197,94,0.4); }
+    .estado-pill-danger    { background: rgba(239,68,68,0.15);  color: #ef4444; border: 1px solid rgba(239,68,68,0.4); }
+    .estado-pill-secondary { background: rgba(148,163,184,0.15); color: #94a3b8; border: 1px solid rgba(148,163,184,0.4); }
+    .estado-pill-info      { background: rgba(6,182,212,0.15);  color: #06b6d4; border: 1px solid rgba(6,182,212,0.4); }
+
+    .prioridad-pill-baja     { background: rgba(34,197,94,0.15);  color: #16a34a; border: 1px solid rgba(34,197,94,0.4); }
+    .prioridad-pill-media    { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.4); }
+    .prioridad-pill-alta     { background: rgba(253,126,20,0.15); color: #fd7e14; border: 1px solid rgba(253,126,20,0.4); }
+    .prioridad-pill-critica  { background: rgba(239,68,68,0.18);  color: #ef4444; border: 1px solid rgba(239,68,68,0.5); font-weight: 800; }
+
+    /* =========================================================
+       Botones de acción: compactos, solo ícono
+       ========================================================= */
+    .acciones-grupo {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 6px;
+        flex-wrap: nowrap;
+    }
+
+    .btn-accion {
+        width: 30px;
+        height: 30px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        font-size: 0.78rem;
+        line-height: 1;
+        border: none;
+    }
+
+    .btn-accion:hover,
+    .btn-accion:focus {
+        filter: brightness(1.1);
+        color: #fff;
+    }
+
+    .btn-ver     { background: rgba(201,169,97,0.18); color: #C9A961; }
+    .btn-ver:hover { background: #C9A961; color: #0A1128 !important; }
+
+    .btn-editar  { background: rgba(245,158,11,0.18); color: #f59e0b; }
+    .btn-editar:hover { background: #f59e0b; }
+
+    .btn-eliminar-accion { background: rgba(239,68,68,0.18); color: #ef4444; }
+    .btn-eliminar-accion:hover { background: #ef4444; }
+
+    /* =========================================================
+       Responsive
+       ========================================================= */
+    @media (max-width: 767.98px) {
+
+        .incidencias-header {
+            padding: 16px;
+        }
+
+        .incidencias-header h1 {
+            font-size: 1.35rem;
+        }
+
+        .incidencias-header .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .incidencias-header > div:first-child {
+            width: 100%;
+        }
+
+        #tablaIncidencias thead {
+            display: none;
+        }
+
+        #tablaIncidencias,
+        #tablaIncidencias tbody,
+        #tablaIncidencias tr,
+        #tablaIncidencias td {
+            display: block;
+            width: 100%;
+        }
+
+        #tablaIncidencias {
+            border: none;
+        }
+
+        #tablaIncidencias tr {
+            margin-bottom: 14px;
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 12px 14px;
+            background: var(--bg-card);
+        }
+
+        #tablaIncidencias td {
+            border: none;
+            padding: 6px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        #tablaIncidencias td[data-label]::before {
+            content: attr(data-label);
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            flex-shrink: 0;
+        }
+
+        #tablaIncidencias td.celda-incidencia {
+            padding-bottom: 10px;
+            margin-bottom: 6px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        #tablaIncidencias td.celda-incidencia::before {
+            display: none;
+        }
+
+        #tablaIncidencias td.celda-incidencia .incidencia-titulo-celda {
+            width: 100%;
+        }
+
+        #tablaIncidencias td.celda-acciones {
+            padding-top: 10px;
+            margin-top: 6px;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        #tablaIncidencias td.celda-acciones::before {
+            display: none;
+        }
+
+        #tablaIncidencias td.celda-acciones .acciones-grupo {
+            width: 100%;
+            justify-content: flex-end;
+        }
+    }
+</style>
+@endsection
+
 @section('content')
 
 <div class="container-fluid">
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1>Incidencias</h1>
+    <div class="incidencias-header d-flex justify-content-between align-items-center flex-wrap mb-4">
+        <div>
+            <h1 class="mb-1"><i class="fas fa-exclamation-triangle mr-2"></i>Incidencias</h1>
+            <span style="color:var(--text-muted);">Consulta, filtra y gestiona las incidencias registradas</span>
+        </div>
 
         <a href="{{ route('incidencias.create') }}" class="btn btn-primary">
             <i class="fas fa-plus"></i> Nueva Incidencia
@@ -94,11 +308,10 @@
         </div>
 
         <div class="card-body table-responsive">
-            <table class="table table-bordered table-hover">
+            <table class="table table-bordered table-hover" id="tablaIncidencias">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Título</th>
+                        <th>Incidencia</th>
                         <th>Ciudad</th>
                         <th>Tipo</th>
                         <th>Estado</th>
@@ -106,13 +319,13 @@
                         <th>Usuario</th>
                         <th>Fecha</th>
                         <th>Antigüedad</th>
-                        <th>Acciones</th>
+                        <th class="text-right">Acciones</th>
                     </tr>
                 </thead>
 
-                <tbody id="tablaIncidencias">
+                <tbody>
                     <tr>
-                        <td colspan="10" class="text-center">
+                        <td colspan="9" class="text-center">
                             <i class="fas fa-spinner fa-spin mr-2"></i>Cargando incidencias...
                         </td>
                     </tr>
@@ -138,6 +351,21 @@ function escaparHtml(texto) {
     return div.innerHTML;
 }
 
+function inicialesTipo(nombre) {
+    const limpio = (nombre || '?').trim();
+    const palabras = limpio.split(/\s+/);
+    if (palabras.length >= 2) {
+        return (palabras[0].charAt(0) + palabras[1].charAt(0)).toUpperCase();
+    }
+    return limpio.slice(0, 2).toUpperCase();
+}
+
+function normalizarPrioridad(prioridad) {
+    return (prioridad || '')
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // quita tildes: Crítica -> Critica
+        .toLowerCase();
+}
+
 function badgeAntiguedad(inc) {
     const dias = Math.floor((new Date() - new Date(inc.created_at)) / 86400000);
     const resuelta = inc.estado && (inc.estado.nombre === 'Resuelto' || inc.estado.nombre === 'Rechazado');
@@ -151,7 +379,6 @@ function badgeAntiguedad(inc) {
 
 async function cargarIncidencias() {
 
-    const tabla = document.getElementById('tablaIncidencias');
     const contador = document.getElementById('contadorResultados');
 
     const params = new URLSearchParams();
@@ -166,11 +393,13 @@ async function cargarIncidencias() {
     if (prioridad) params.append('prioridad', prioridad);
     if (ciudad) params.append('ciudad_id', ciudad);
 
+    const tbody = document.querySelector('#tablaIncidencias tbody');
+
     try {
         const response = await authFetch('/api/incidencias?' + params.toString());
 
         if (!response.ok) {
-            tabla.innerHTML = '<tr><td colspan="10" class="text-center text-danger">Error al cargar las incidencias.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center text-danger">Error al cargar las incidencias.</td></tr>';
             return;
         }
 
@@ -191,54 +420,72 @@ async function cargarIncidencias() {
         contador.textContent = incidencias.length + (incidencias.length === 1 ? ' resultado' : ' resultados');
 
         if (incidencias.length === 0) {
-            tabla.innerHTML = '<tr><td colspan="10" class="text-center">No se encontraron incidencias con los filtros aplicados.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center">No se encontraron incidencias con los filtros aplicados.</td></tr>';
             return;
         }
 
-        tabla.innerHTML = '';
+        let html = '';
 
         incidencias.forEach(inc => {
 
             const fecha = new Date(inc.created_at).toLocaleDateString('es-EC');
+            const tipoNombre = inc.tipo ? inc.tipo.nombre : 'Sin tipo';
+            const estadoColor = inc.estado ? inc.estado.color : 'secondary';
+            const prioridadClase = normalizarPrioridad(inc.prioridad);
 
             const botonEliminar = esAdmin
-                ? `<button type="button" class="btn btn-sm btn-danger btn-eliminar" data-id="${inc.id}">
+                ? `<button type="button" class="btn-accion btn-eliminar-accion btn-eliminar" data-id="${inc.id}" title="Eliminar">
                        <i class="fas fa-trash"></i>
                    </button>`
                 : '';
 
-            const fila = document.createElement('tr');
-            fila.innerHTML = `
-                <td>${inc.id}</td>
-                <td>${escaparHtml(inc.titulo)}</td>
-                <td>${escaparHtml(inc.ciudad ? inc.ciudad.nombre : 'Sin ciudad')}</td>
-                <td>${escaparHtml(inc.tipo ? inc.tipo.nombre : 'Sin tipo')}</td>
-                <td>
-                    <span class="badge badge-${inc.estado ? inc.estado.color : 'secondary'}">
-                        ${escaparHtml(inc.estado ? inc.estado.nombre : 'Sin estado')}
-                    </span>
-                </td>
-                <td>${escaparHtml(inc.prioridad)}</td>
-                <td>${escaparHtml(inc.usuario ? inc.usuario.name : 'Sin usuario')}</td>
-                <td>${fecha}</td>
-                <td>${badgeAntiguedad(inc)}</td>
-                <td>
-                    <a href="/incidencias/${inc.id}" class="btn btn-sm btn-info">
-                        <i class="fas fa-eye"></i>
-                    </a>
-                    <a href="/incidencias/${inc.id}/editar" class="btn btn-sm btn-warning">
-                        <i class="fas fa-edit"></i>
-                    </a>
-                    ${botonEliminar}
-                </td>
+            html += `
+                <tr>
+                    <td class="celda-incidencia">
+                        <div class="incidencia-titulo-celda">
+                            <div class="avatar-mini" title="${escaparHtml(tipoNombre)}">${inicialesTipo(tipoNombre)}</div>
+                            <div>
+                                <div class="titulo-principal">${escaparHtml(inc.titulo)}</div>
+                                <div class="id-chico">ID #${inc.id}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td data-label="Ciudad">${escaparHtml(inc.ciudad ? inc.ciudad.nombre : 'Sin ciudad')}</td>
+                    <td data-label="Tipo">${escaparHtml(tipoNombre)}</td>
+                    <td data-label="Estado">
+                        <span class="estado-pill estado-pill-${estadoColor}">
+                            ${escaparHtml(inc.estado ? inc.estado.nombre : 'Sin estado')}
+                        </span>
+                    </td>
+                    <td data-label="Prioridad">
+                        <span class="prioridad-pill prioridad-pill-${prioridadClase}">
+                            ${escaparHtml(inc.prioridad)}
+                        </span>
+                    </td>
+                    <td data-label="Usuario">${escaparHtml(inc.usuario ? inc.usuario.name : 'Sin usuario')}</td>
+                    <td data-label="Fecha">${fecha}</td>
+                    <td data-label="Antigüedad">${badgeAntiguedad(inc)}</td>
+                    <td class="celda-acciones">
+                        <div class="acciones-grupo">
+                            <a href="/incidencias/${inc.id}" class="btn-accion btn-ver" title="Ver">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="/incidencias/${inc.id}/editar" class="btn-accion btn-editar" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            ${botonEliminar}
+                        </div>
+                    </td>
+                </tr>
             `;
-            tabla.appendChild(fila);
         });
+
+        tbody.innerHTML = html;
 
         activarBotonesEliminar();
 
     } catch (error) {
-        tabla.innerHTML = '<tr><td colspan="10" class="text-center text-danger">Error de conexión con el servidor.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" class="text-center text-danger">Error de conexión con el servidor.</td></tr>';
     }
 }
 

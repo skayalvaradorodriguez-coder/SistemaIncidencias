@@ -5,29 +5,98 @@
 @section('styles')
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
-    #mapa { height: 380px; border-radius: 4px; z-index: 1; }
+    .pagina-header {
+        background: linear-gradient(135deg, rgba(30,58,138,0.35) 0%, rgba(29,78,216,0.25) 45%, rgba(14,165,233,0.18) 100%);
+        border: 1px solid var(--border-subtle);
+        border-radius: 14px;
+        padding: 18px 22px;
+    }
+
+    .btn-ghost {
+        background: rgba(148,163,184,0.12);
+        border: 1px solid var(--border-subtle);
+        color: var(--text-main);
+    }
+
+    .btn-ghost:hover,
+    .btn-ghost:focus {
+        background: rgba(148,163,184,0.22);
+        color: var(--text-main);
+        border-color: var(--border-subtle);
+    }
+
+    #mapa {
+        height: 380px;
+        border-radius: 10px;
+        border: 1px solid var(--border-subtle);
+        z-index: 1;
+    }
 
     .obligatorio {
-        color: #dc3545;
+        color: #ef4444;
         font-weight: 700;
         margin-left: 2px;
     }
 
     .leyenda-campos {
         font-size: 0.85rem;
-        opacity: 0.75;
+        color: var(--text-muted);
         margin-bottom: 18px;
     }
 
+    label {
+        color: var(--text-main);
+    }
+
+    /* ===== Autocompletado del navegador: usa los mismos colores
+       del tema activo (oscuro o claro), en vez de un fondo fijo ===== */
     input:-webkit-autofill,
     input:-webkit-autofill:hover,
     input:-webkit-autofill:focus,
     textarea:-webkit-autofill,
     select:-webkit-autofill {
-        -webkit-text-fill-color: #fff !important;
-        -webkit-box-shadow: 0 0 0 1000px #343a40 inset !important;
-        caret-color: #fff;
+        -webkit-text-fill-color: var(--text-main) !important;
+        -webkit-box-shadow: 0 0 0 1000px var(--input-bg) inset !important;
+        caret-color: var(--text-main);
         transition: background-color 9999s ease-in-out 0s;
+    }
+
+    /* ===== Selector de archivo (foto) a juego con el resto de inputs ===== */
+    .custom-file-label,
+    .custom-file-label::after {
+        background: var(--input-bg);
+        border-color: var(--border-subtle);
+        color: var(--text-main);
+    }
+
+    .btn-ubicacion {
+        background: rgba(14,165,233,0.15);
+        border: 1px solid rgba(14,165,233,0.4);
+        color: #0ea5e9;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+    .btn-ubicacion:hover {
+        background: #0ea5e9;
+        color: #fff;
+    }
+
+    @media (max-width: 767.98px) {
+
+        .pagina-header {
+            padding: 16px;
+        }
+
+        .pagina-header h1 {
+            font-size: 1.35rem;
+        }
+
+        #formIncidencia > .btn,
+        #formIncidencia > a.btn {
+            width: 100%;
+            margin-bottom: 8px;
+        }
     }
 </style>
 @endsection
@@ -36,7 +105,9 @@
 
 <div class="container-fluid">
 
-    <h1 class="mb-4">Nueva Incidencia</h1>
+    <div class="pagina-header mb-4">
+        <h1 class="mb-0"><i class="fas fa-exclamation-triangle mr-2"></i>Nueva Incidencia</h1>
+    </div>
 
     <div id="alertBox" class="alert d-none"></div>
 
@@ -136,7 +207,7 @@
                         Haga clic en el mapa para marcar el punto exacto de la incidencia, o use su ubicación actual.
                     </small>
                     <div id="mapa"></div>
-                    <button type="button" id="btnMiUbicacion" class="btn btn-info btn-sm mt-2">
+                    <button type="button" id="btnMiUbicacion" class="btn btn-ubicacion btn-sm mt-2">
                         <i class="fas fa-location-arrow"></i> Usar mi ubicación
                     </button>
                 </div>
@@ -157,7 +228,7 @@
                     </div>
                 </div>
 
-                <a href="{{ route('incidencias.index') }}" class="btn btn-secondary">
+                <a href="{{ route('incidencias.index') }}" class="btn btn-ghost">
                     Cancelar
                 </a>
 
