@@ -1,0 +1,40 @@
+# ============================================================
+# Normalización de finales de línea
+# Evita que archivos creados en Windows (CRLF) rompan los
+# contenedores Linux, en especial los scripts de arranque.
+# ============================================================
+
+# Por defecto: Git normaliza a LF en el repositorio
+* text=auto eol=lf
+
+# Scripts y configuración que DEBEN tener LF (se ejecutan en Linux)
+*.sh            text eol=lf
+*.yml           text eol=lf
+*.yaml          text eol=lf
+*.conf          text eol=lf
+*.template      text eol=lf
+Dockerfile      text eol=lf
+*.Dockerfile    text eol=lf
+.env.example    text eol=lf
+
+# Código fuente
+*.php           text eol=lf
+*.js            text eol=lf
+*.css           text eol=lf
+*.json          text eol=lf
+*.md            text eol=lf
+*.sql           text eol=lf
+*.blade.php     text eol=lf
+
+# Archivos binarios (Git no debe tocarlos)
+*.png           binary
+*.jpg           binary
+*.jpeg          binary
+*.gif           binary
+*.ico           binary
+*.pdf           binary
+*.zip           binary
+*.woff          binary
+*.woff2         binary
+*.ttf           binary
+*.eot           binary
