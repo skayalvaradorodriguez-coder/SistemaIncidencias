@@ -31,8 +31,10 @@ trazabilidad completa del ciclo de vida y control de acceso por roles.
 
 | Integrante | Rol principal |
 |---|---|
-| Skay Gisell Alvarado Rodríguez | Desarrollo frontend y módulo de reportes |
-| Peter Leonardo Villón Orrala | Desarrollo backend y base de datos |
+| Skay Gisell Alvarado Rodriguez | Backend y desarrollo frontend |
+| Kerlly Belinda Mite Chalen | Desarrollo frontend |
+| María De Los Ángeles Llerena Hernández | Desarrollo frontend |
+| Peter Leonardo Villón Orrala | Seguridad, pruebas y calidad de software |
 | Byron Andrés Velecela Méndez | Seguridad, pruebas y calidad de software |
 
 ---
