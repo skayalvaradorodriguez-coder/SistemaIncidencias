@@ -16,6 +16,8 @@ use App\Http\Controllers\AsignacionController;
 Route::middleware('throttle:5,1')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 });
 
 // Rutas protegidas (requieren token válido)

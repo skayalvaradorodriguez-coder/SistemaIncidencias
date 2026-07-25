@@ -133,6 +133,9 @@
             <div class="pildora-reporte" data-tipo="usuarios" id="pildoraUsuarios" style="display:none;">
                 <i class="fas fa-users"></i> Usuarios del Sistema
             </div>
+            <div class="pildora-reporte" data-tipo="por_usuario" id="pildoraPorUsuario" style="display:none;">
+                <i class="fas fa-user"></i> Reporte por Usuario
+            </div>
         </div>
 
         <!-- ===== KPIs ===== -->
@@ -142,8 +145,13 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
                 <h3 class="card-title mb-0" id="tituloTabla">Todas las Incidencias</h3>
-                <input type="text" id="buscadorReporte" class="form-control form-control-sm buscador-reporte"
-                       placeholder="Buscar en esta tabla...">
+                <div class="d-flex align-items-center flex-wrap" style="gap:10px;">
+                    <select id="selectUsuarioReporte" class="form-control form-control-sm" style="display:none; min-width:220px;">
+                        <option value="">Selecciona un usuario...</option>
+                    </select>
+                    <input type="text" id="buscadorReporte" class="form-control form-control-sm buscador-reporte"
+                           placeholder="Buscar en esta tabla...">
+                </div>
             </div>
             <div class="card-body table-responsive p-0">
                 <table class="table table-hover mb-0">
@@ -182,6 +190,7 @@ window.addEventListener('error', function (e) {
 });
 
 let todasLasIncidencias = [];
+let ultimosKpis = [];
 let todosLosUsuarios = [];
 let tipoActivo = 'todas';
 let esAdminReporte = false;
@@ -219,6 +228,7 @@ function escaparHtml(texto) {
     esAdminReporte  = (rol === 'Administrador');
     if (esAdminReporte) {
         document.getElementById('pildoraUsuarios').style.display = 'flex';
+        document.getElementById('pildoraPorUsuario').style.display = 'flex';
     }
 
     document.getElementById('contenidoReportes').style.display = 'block';
@@ -261,11 +271,30 @@ function renderizarReporte(tipo) {
     document.getElementById('buscadorReporte').value = '';
 
     if (tipo === 'usuarios') {
+        document.getElementById('selectUsuarioReporte').style.display = 'none';
         renderizarKpisUsuarios();
         renderizarTablaUsuarios(todosLosUsuarios);
         document.getElementById('tituloTabla').textContent = 'Usuarios del Sistema';
         return;
     }
+
+    if (tipo === 'por_usuario') {
+        const selector = document.getElementById('selectUsuarioReporte');
+        selector.style.display = 'inline-block';
+        poblarSelectUsuarios();
+        if (selector.value) {
+            renderizarReportePorUsuario(selector.value);
+        } else {
+            document.getElementById('tituloTabla').textContent = 'Reporte por Usuario';
+            document.getElementById('filaKpis').innerHTML = '';
+            document.getElementById('cabeceraTabla').innerHTML = '';
+            document.getElementById('cuerpoTabla').innerHTML =
+                '<tr><td class="text-center text-muted py-4">Selecciona un usuario arriba para ver su reporte de incidencias.</td></tr>';
+        }
+        return;
+    }
+
+    document.getElementById('selectUsuarioReporte').style.display = 'none';
 
     const datos = tipo === 'todas'
         ? todasLasIncidencias
@@ -331,7 +360,73 @@ function renderizarKpisUsuarios() {
     pintarKpis(kpis);
 }
 
+// ================== REPORTE POR USUARIO ==================
+let selectUsuariosPoblado = false;
+
+function poblarSelectUsuarios() {
+    if (selectUsuariosPoblado) return;
+
+    const selector = document.getElementById('selectUsuarioReporte');
+    const usuariosOrdenados = [...todosLosUsuarios].sort((a, b) =>
+        (a.name || '').localeCompare(b.name || '')
+    );
+
+    usuariosOrdenados.forEach(u => {
+        const opcion = document.createElement('option');
+        opcion.value = u.id;
+        opcion.textContent = `${u.name} ${u.apellido || ''}`.trim();
+        selector.appendChild(opcion);
+    });
+
+    selectUsuariosPoblado = true;
+}
+
+document.getElementById('selectUsuarioReporte').addEventListener('change', function () {
+    if (this.value) {
+        renderizarReportePorUsuario(this.value);
+    } else {
+        document.getElementById('tituloTabla').textContent = 'Reporte por Usuario';
+        document.getElementById('filaKpis').innerHTML = '';
+        document.getElementById('cabeceraTabla').innerHTML = '';
+        document.getElementById('cuerpoTabla').innerHTML =
+            '<tr><td class="text-center text-muted py-4">Selecciona un usuario arriba para ver su reporte de incidencias.</td></tr>';
+    }
+});
+
+function renderizarReportePorUsuario(usuarioId) {
+    const usuario = todosLosUsuarios.find(u => String(u.id) === String(usuarioId));
+    const datos = todasLasIncidencias.filter(i => i.usuario && String(i.usuario.id) === String(usuarioId));
+
+    const nombreUsuario = usuario ? `${usuario.name} ${usuario.apellido || ''}`.trim() : 'Usuario';
+    document.getElementById('tituloTabla').textContent = `Incidencias de ${nombreUsuario}`;
+
+    renderizarKpisIncidencias(datos);
+    renderizarTablaIncidencias(datos);
+}
+
+// Botón "Ver reporte" desde la tabla de Usuarios del Sistema: salta directo
+// al reporte de incidencias de ese usuario, sin pasar por el select manual.
+document.getElementById('cuerpoTabla').addEventListener('click', function (e) {
+    const boton = e.target.closest('.btn-reporte-usuario');
+    if (!boton) return;
+
+    const usuarioId = boton.dataset.usuarioId;
+
+    document.querySelectorAll('.pildora-reporte').forEach(p => p.classList.remove('activa'));
+    document.getElementById('pildoraPorUsuario').classList.add('activa');
+
+    tipoActivo = 'por_usuario';
+
+    poblarSelectUsuarios();
+    const selector = document.getElementById('selectUsuarioReporte');
+    selector.value = usuarioId;
+    selector.style.display = 'inline-block';
+
+    renderizarReportePorUsuario(usuarioId);
+});
+
 function pintarKpis(kpis) {
+    ultimosKpis = kpis;
     const fila = document.getElementById('filaKpis');
     fila.innerHTML = kpis.map(k => `
         <div class="col-md-3 col-sm-6 mb-3 mb-md-0">
@@ -395,27 +490,41 @@ function renderizarTablaIncidencias(datos) {
 }
 
 // ================== TABLA: USUARIOS ==================
+function conteoIncidenciasPorUsuario(usuarioId) {
+    return todasLasIncidencias.filter(i => i.usuario && String(i.usuario.id) === String(usuarioId)).length;
+}
+
 function renderizarTablaUsuarios(datos) {
     document.getElementById('cabeceraTabla').innerHTML = `
-        <tr><th>#</th><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Registrado</th></tr>`;
+        <tr><th>#</th><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Incidencias</th><th>Registrado</th><th></th></tr>`;
 
     const cuerpo = document.getElementById('cuerpoTabla');
 
     function pintar(filtrados) {
         if (filtrados.length === 0) {
-            cuerpo.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Sin resultados.</td></tr>';
+            cuerpo.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">Sin resultados.</td></tr>';
             return;
         }
 
-        cuerpo.innerHTML = filtrados.map(u => `
+        cuerpo.innerHTML = filtrados.map(u => {
+            const conteo = conteoIncidenciasPorUsuario(u.id);
+            return `
             <tr>
                 <td>${u.id}</td>
                 <td>${escaparHtml(u.name)} ${escaparHtml(u.apellido)}</td>
                 <td>${escaparHtml(u.email)}</td>
                 <td>${escaparHtml(u.rol ? u.rol.nombre : 'N/A')}</td>
                 <td>${u.activo ? '<span class="badge badge-success">Activo</span>' : '<span class="badge badge-danger">Inactivo</span>'}</td>
+                <td><span class="badge badge-secondary">${conteo}</span></td>
                 <td>${new Date(u.created_at).toLocaleDateString('es-EC')}</td>
-            </tr>`).join('');
+                <td>
+                    <button type="button" class="btn btn-sm btn-outline-info btn-reporte-usuario"
+                            data-usuario-id="${u.id}" title="Ver reporte de incidencias">
+                        <i class="fas fa-file-alt"></i>
+                    </button>
+                </td>
+            </tr>`;
+        }).join('');
     }
 
     pintar(datos);
@@ -433,15 +542,28 @@ function renderizarTablaUsuarios(datos) {
 const LOGO_URL = '/images/logo.png'; // <-- 👈 CAMBIÁ ESTA RUTA POR LA DE TU LOGO
  
 document.getElementById('btnPdf').addEventListener('click', function () {
+
+    const idUsuarioReporte = document.getElementById('selectUsuarioReporte').value;
+
+    if (tipoActivo === 'por_usuario' && !idUsuarioReporte) {
+        alert('Selecciona un usuario para generar su reporte.');
+        return;
+    }
  
     const usuarioActual = getUser();
     const ahora = new Date();
     const fechaEmision = ahora.toLocaleDateString('es-EC', { day: '2-digit', month: 'long', year: 'numeric' });
     const horaEmision = ahora.toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' });
-    const referencia = `RPT-${ahora.getFullYear()}${String(ahora.getMonth() + 1).padStart(2, '0')}${String(ahora.getDate()).padStart(2, '0')}-${tipoActivo.replace(/\s+/g, '')}`;
+    const sufijoReferencia = tipoActivo === 'por_usuario' ? `usuario${idUsuarioReporte}` : tipoActivo.replace(/\s+/g, '');
+    const referencia = `RPT-${ahora.getFullYear()}${String(ahora.getMonth() + 1).padStart(2, '0')}${String(ahora.getDate()).padStart(2, '0')}-${sufijoReferencia}`;
  
     const titulo = document.getElementById('tituloTabla').textContent;
-    const kpisHtml = document.getElementById('filaKpis').innerHTML;
+    const kpisHtmlPdf = ultimosKpis.map(k => `
+        <div class="kpi-pdf-item" style="border-top-color:${k.color};">
+            <div class="kpi-numero" style="color:${k.color};">${escaparHtml(String(k.numero))}</div>
+            <div class="kpi-etiqueta">${escaparHtml(k.etiqueta)}</div>
+        </div>
+    `).join('');
  
     let filasTabla = '';
     let columnasTabla = [];
@@ -466,9 +588,15 @@ document.getElementById('btnPdf').addEventListener('click', function () {
         });
  
     } else {
-        const datos = tipoActivo === 'todas'
-            ? todasLasIncidencias
-            : todasLasIncidencias.filter(i => (i.estado ? i.estado.nombre : '') === tipoActivo);
+        let datos;
+
+        if (tipoActivo === 'por_usuario') {
+            datos = todasLasIncidencias.filter(i => i.usuario && String(i.usuario.id) === String(idUsuarioReporte));
+        } else {
+            datos = tipoActivo === 'todas'
+                ? todasLasIncidencias
+                : todasLasIncidencias.filter(i => (i.estado ? i.estado.nombre : '') === tipoActivo);
+        }
  
         columnasTabla = ['#', 'Título', 'Ciudad', 'Tipo', 'Estado', 'Prioridad', 'Reportado por', 'Fecha'];
         filasTabla = datos.map(inc => `
@@ -523,12 +651,13 @@ document.getElementById('btnPdf').addEventListener('click', function () {
         <head>
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1">
-            <title>${escaparHtml(titulo)} - Sistema de Incidencias</title>
+            <title>${escaparHtml(titulo)}</title>
             <style>
                 :root {
                     --brand-900: #0A1128;
                     --brand-700: #16233F;
                     --brand-400: #C9A961;
+                    --brand-400-suave: #E3CD8F;
                     --texto: #1f2937;
                     --texto-suave: #64748b;
                     --borde: #e2e8f0;
@@ -551,17 +680,39 @@ document.getElementById('btnPdf').addEventListener('click', function () {
  
                 /* ===== Hoja centrada tipo "documento" al verla en pantalla ===== */
                 .hoja {
+                    position: relative;
                     max-width: 860px;
                     margin: 24px auto;
                     background: #fff;
-                    box-shadow: 0 4px 24px rgba(10, 17, 40, 0.12);
-                    border-radius: 10px;
+                    box-shadow: 0 10px 34px rgba(10, 17, 40, 0.16);
+                    border-radius: 12px;
                     overflow: hidden;
+                }
+
+                /* Marca de agua sutil tipo membrete oficial */
+                .marca-agua {
+                    position: absolute;
+                    top: 48%;
+                    left: 50%;
+                    transform: translate(-50%, -50%) rotate(-28deg);
+                    font-family: Georgia, 'Times New Roman', serif;
+                    font-size: 4.6rem;
+                    font-weight: 700;
+                    letter-spacing: 6px;
+                    color: rgba(10, 17, 40, 0.035);
+                    white-space: nowrap;
+                    pointer-events: none;
+                    z-index: 0;
+                }
+
+                .encabezado, .contenido, .pie-documento, .no-imprimir {
+                    position: relative;
+                    z-index: 1;
                 }
  
                 .franja-superior {
-                    height: 6px;
-                    background: linear-gradient(90deg, var(--brand-900), var(--brand-700), var(--brand-400));
+                    height: 7px;
+                    background: linear-gradient(90deg, var(--brand-900) 0%, var(--brand-700) 45%, var(--brand-400) 100%);
                 }
  
                 .encabezado {
@@ -569,39 +720,44 @@ document.getElementById('btnPdf').addEventListener('click', function () {
                     justify-content: space-between;
                     align-items: flex-start;
                     gap: 16px;
-                    padding: 20px 28px 16px;
+                    padding: 26px 32px 20px;
                     border-bottom: 2px solid var(--brand-900);
-                    margin-bottom: 22px;
+                    box-shadow: 0 2px 0 var(--brand-400);
+                    margin-bottom: 26px;
                     flex-wrap: wrap;
                 }
  
                 .encabezado .marca {
                     display: flex;
                     align-items: center;
-                    gap: 14px;
+                    gap: 16px;
                     min-width: 0;
                 }
  
                 .encabezado .logo {
-                    height: 44px;
+                    height: 46px;
                     width: auto;
                     flex-shrink: 0;
                     object-fit: contain;
                 }
  
                 .encabezado .institucion {
-                    font-size: 0.72rem;
+                    font-size: 0.7rem;
                     text-transform: uppercase;
-                    letter-spacing: 0.06em;
-                    color: var(--texto-suave);
-                    margin: 0 0 2px;
+                    letter-spacing: 0.12em;
+                    color: var(--brand-400);
+                    font-weight: 700;
+                    margin: 0 0 4px;
                 }
  
                 .encabezado h1 {
-                    margin: 0 0 6px;
-                    font-size: 1.35rem;
+                    margin: 0 0 7px;
+                    font-family: Georgia, 'Times New Roman', serif;
+                    font-size: 1.55rem;
+                    font-weight: 700;
                     color: var(--brand-900);
-                    line-height: 1.25;
+                    line-height: 1.2;
+                    letter-spacing: -0.01em;
                 }
  
                 .encabezado .generado-por {
@@ -620,30 +776,45 @@ document.getElementById('btnPdf').addEventListener('click', function () {
  
                 .encabezado .referencia {
                     display: inline-block;
-                    background: #f1efe6;
-                    color: var(--brand-900);
-                    font-weight: 600;
-                    padding: 4px 12px;
+                    background: linear-gradient(135deg, var(--brand-900), var(--brand-700));
+                    color: #fff;
+                    font-weight: 700;
+                    letter-spacing: 0.03em;
+                    padding: 5px 14px;
                     border-radius: 20px;
-                    margin-bottom: 6px;
-                    font-size: 0.74rem;
+                    margin-bottom: 8px;
+                    font-size: 0.72rem;
                 }
  
-                .contenido { padding: 0 28px 8px; }
+                .contenido { padding: 0 32px 8px; }
  
                 h2.titulo-seccion {
-                    font-size: 0.95rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 9px;
+                    font-size: 0.98rem;
+                    font-weight: 700;
                     color: var(--brand-900);
                     border-bottom: 1px solid var(--borde);
-                    padding-bottom: 6px;
-                    margin: 0 0 14px;
+                    padding-bottom: 8px;
+                    margin: 0 0 16px;
+                }
+
+                h2.titulo-seccion::before {
+                    content: '';
+                    display: inline-block;
+                    width: 9px;
+                    height: 9px;
+                    border-radius: 2px;
+                    background: var(--brand-400);
+                    flex-shrink: 0;
                 }
  
                 /* ---------- KPIs ---------- */
                 .kpis-pdf {
                     display: flex;
-                    gap: 14px;
-                    margin-bottom: 28px;
+                    gap: 16px;
+                    margin-bottom: 30px;
                     flex-wrap: wrap;
                 }
  
@@ -652,41 +823,48 @@ document.getElementById('btnPdf').addEventListener('click', function () {
                 .kpi-pdf-item {
                     flex: 1 1 160px;
                     min-width: 140px;
+                    position: relative;
                     border: 1px solid var(--borde);
+                    border-top: 3px solid var(--borde);
                     border-radius: 10px;
-                    padding: 14px 16px;
-                    background: #fbfcfe;
+                    padding: 16px 16px 14px;
+                    background: linear-gradient(180deg, #fbfcfe 0%, #ffffff 100%);
+                    box-shadow: 0 1px 4px rgba(10, 17, 40, 0.05);
                 }
  
                 .kpi-pdf-item .kpi-numero {
-                    font-size: 1.35rem;
-                    font-weight: 700;
+                    font-size: 1.5rem;
+                    font-weight: 800;
                     color: var(--brand-900);
+                    line-height: 1.15;
+                    margin-bottom: 3px;
                 }
  
                 .kpi-pdf-item .kpi-etiqueta {
-                    font-size: 0.68rem;
+                    font-size: 0.66rem;
                     text-transform: uppercase;
                     color: var(--texto-suave);
-                    letter-spacing: 0.03em;
+                    letter-spacing: 0.05em;
+                    font-weight: 600;
                 }
  
                 .kpi-icono, .kpi-card { display: none; }
  
                 /* ---------- Gráfico de distribución (barras CSS) ---------- */
                 .chart-barras {
-                    margin-bottom: 28px;
-                    padding: 16px 18px;
+                    margin-bottom: 30px;
+                    padding: 18px 20px;
                     border: 1px solid var(--borde);
                     border-radius: 10px;
-                    background: #fbfcfe;
+                    background: linear-gradient(180deg, #fbfcfe 0%, #ffffff 100%);
+                    box-shadow: 0 1px 4px rgba(10, 17, 40, 0.05);
                 }
  
                 .chart-fila {
                     display: flex;
                     align-items: center;
-                    gap: 10px;
-                    margin-bottom: 9px;
+                    gap: 12px;
+                    margin-bottom: 11px;
                     font-size: 0.78rem;
                 }
  
@@ -702,21 +880,30 @@ document.getElementById('btnPdf').addEventListener('click', function () {
                 .chart-pista {
                     flex: 1;
                     background: #eef1f5;
-                    border-radius: 5px;
+                    border-radius: 20px;
                     overflow: hidden;
-                    height: 14px;
+                    height: 15px;
                 }
  
                 .chart-relleno {
+                    position: relative;
                     display: block;
                     height: 100%;
-                    border-radius: 5px;
+                    border-radius: 20px;
+                }
+
+                .chart-relleno::after {
+                    content: '';
+                    position: absolute;
+                    inset: 0;
+                    border-radius: inherit;
+                    background-image: linear-gradient(180deg, rgba(255,255,255,0.3), rgba(255,255,255,0) 60%);
                 }
  
                 .chart-valor {
                     width: 32px;
                     text-align: right;
-                    font-weight: 700;
+                    font-weight: 800;
                     color: var(--brand-900);
                     flex-shrink: 0;
                 }
@@ -725,8 +912,9 @@ document.getElementById('btnPdf').addEventListener('click', function () {
                 .tabla-wrapper {
                     width: 100%;
                     overflow-x: auto;
-                    margin-bottom: 28px;
-                    border-radius: 8px;
+                    margin-bottom: 30px;
+                    border-radius: 9px;
+                    border: 1px solid var(--borde);
                 }
  
                 table.tabla-reporte {
@@ -737,27 +925,35 @@ document.getElementById('btnPdf').addEventListener('click', function () {
                 }
  
                 table.tabla-reporte th {
-                    background: var(--brand-900);
+                    background: linear-gradient(135deg, var(--brand-900), var(--brand-700));
                     color: #fff;
-                    padding: 9px 8px;
+                    padding: 10px 10px;
                     text-align: left;
                     font-weight: 600;
-                    font-size: 0.68rem;
+                    font-size: 0.66rem;
                     text-transform: uppercase;
-                    letter-spacing: 0.03em;
+                    letter-spacing: 0.05em;
                     white-space: nowrap;
+                    border-bottom: 2px solid var(--brand-400);
                 }
- 
+
                 table.tabla-reporte td {
-                    padding: 7px 8px;
+                    padding: 8px 10px;
                     border-bottom: 1px solid var(--borde);
+                    color: #334155;
+                }
+
+                table.tabla-reporte td:first-child {
+                    font-weight: 700;
+                    color: var(--brand-900);
                 }
  
-                table.tabla-reporte tr:nth-child(even) td { background: #f8fafc; }
+                table.tabla-reporte tr:nth-child(even) td { background: #f7f8fc; }
+                table.tabla-reporte tbody tr:last-child td { border-bottom: none; }
  
                 .pie-documento {
-                    padding: 16px 28px;
-                    border-top: 1px solid var(--borde);
+                    padding: 16px 32px;
+                    border-top: 2px solid var(--brand-400);
                     font-size: 0.7rem;
                     color: #94a3b8;
                     display: flex;
@@ -838,6 +1034,8 @@ document.getElementById('btnPdf').addEventListener('click', function () {
         </head>
         <body>
             <div class="hoja">
+
+                <div class="marca-agua">INCIDENCIAS</div>
  
                 <div class="franja-superior"></div>
  
@@ -861,9 +1059,7 @@ document.getElementById('btnPdf').addEventListener('click', function () {
  
                     <h2 class="titulo-seccion">Resumen</h2>
                     <div class="kpis-pdf">
-                        ${kpisHtml.replace(/class="col-md-3 col-sm-6 mb-3 mb-md-0"/g, 'class="kpi-pdf-item-wrap"')
-                                  .replace(/<div class="kpi-card">/g, '<div class="kpi-pdf-item">')
-                                  .replace(/<div class="kpi-icono"[^>]*>.*?<\/div>/gs, '')}
+                        ${kpisHtmlPdf}
                     </div>
  
                     ${totalDistribucion > 0 ? `
