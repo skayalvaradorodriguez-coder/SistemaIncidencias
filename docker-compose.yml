@@ -19,24 +19,75 @@ services:
       retries: 10
     networks:
       - incidencias_network
+
+  # ============================================================
+  # Backend — Instancia 1
+  # ============================================================
   backend:
     build:
       context: ./docker/php
       dockerfile: Dockerfile
-    container_name: incidencias_backend
+    container_name: incidencias_backend_1
     restart: always
     working_dir: /var/www/html
     volumes:
       - ./backend:/var/www/html
       - vendor_data:/var/www/html/vendor
-      - framework_cache:/var/www/html/storage/framework
+      - framework_cache_1:/var/www/html/storage/framework
     environment:
       DB_SEED: "true"
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "php artisan --version || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
     networks:
       - incidencias_network
+
+  # ============================================================
+  # Backend — Instancia 2 (escalamiento básico)
+  # Mismo código, mismo build, segundo contenedor independiente.
+  # Nginx reparte las peticiones entre esta y "backend" (round-robin).
+  # ============================================================
+  backend2:
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+    container_name: incidencias_backend_2
+    restart: always
+    working_dir: /var/www/html
+    volumes:
+      - ./backend:/var/www/html
+      - vendor_data:/var/www/html/vendor
+      - framework_cache_2:/var/www/html/storage/framework
+    environment:
+      DB_SEED: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "php artisan --version || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+    networks:
+      - incidencias_network
+
   nginx:
     image: nginx:alpine
     container_name: incidencias_nginx
@@ -47,13 +98,19 @@ services:
       - ./backend:/var/www/html
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
+      backend2:
+        condition: service_healthy
     networks:
       - incidencias_network
+
 volumes:
   postgres_data:
   vendor_data:
-  framework_cache:
+  framework_cache_1:
+  framework_cache_2:
+
 networks:
   incidencias_network:
     driver: bridge

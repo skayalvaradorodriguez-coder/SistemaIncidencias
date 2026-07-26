@@ -18,6 +18,21 @@ if ! grep -q "^APP_KEY=base64:" .env; then
     php artisan key:generate --force
 fi
 
+# ============================================================
+# Crea siempre las subcarpetas que Laravel necesita dentro de
+# storage/framework. Es seguro correr esto en cada arranque
+# (mkdir -p no falla si ya existen), y evita que un volumen
+# nuevo y vacío (por ejemplo, al escalar a una 2da instancia
+# o al clonar el proyecto por primera vez) rompa el sistema
+# con errores tipo "View path not found" o
+# "Please provide a valid cache path".
+# ============================================================
+echo "[entrypoint] Verificando subcarpetas de storage/framework..."
+mkdir -p storage/framework/views storage/framework/sessions storage/framework/cache/data storage/framework/testing
+mkdir -p bootstrap/cache
+chown -R www-data:www-data storage bootstrap/cache 2>/dev/null || true
+chmod -R 775 storage bootstrap/cache
+
 echo "[entrypoint] PostgreSQL listo según el healthcheck de Docker."
 
 echo "[entrypoint] Ejecutando migraciones..."
