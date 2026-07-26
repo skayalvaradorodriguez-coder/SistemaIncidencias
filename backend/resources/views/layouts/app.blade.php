@@ -460,6 +460,16 @@
                         </a>
                     </li>
 
+                    <li class="nav-item">
+                        <a href="{{ route('ayuda') }}"
+                           class="nav-link {{ request()->is('ayuda') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-life-ring"></i>
+                            <p>Ayuda</p>
+                        </a>
+                    </li>
+
+                </ul>
+
                 </ul>
 
             </nav>
