@@ -173,6 +173,55 @@
         white-space: nowrap;
     }
 
+    .badge-nuevo {
+        font-size: 0.62rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        background: linear-gradient(135deg, #E3CD8F, #C9A961);
+        color: #0A1128;
+        border-radius: 20px;
+        padding: 2px 9px;
+        margin-left: 6px;
+        vertical-align: middle;
+    }
+
+    .aviso-correo {
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
+        background: rgba(14,165,233,0.08);
+        border: 1px solid rgba(14,165,233,0.3);
+        border-left: 4px solid #0ea5e9;
+        border-radius: 10px;
+        padding: 14px 16px;
+        margin: 6px 0 18px 0;
+    }
+
+    .aviso-correo .icono-aviso {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: #0ea5e9;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 0.85rem;
+    }
+
+    .aviso-correo p {
+        margin: 0;
+        font-size: 0.83rem;
+        color: var(--text-muted);
+        line-height: 1.5;
+    }
+
+    .aviso-correo strong {
+        color: var(--text-main);
+    }
+
     .solo-gestion-ayuda { display: none; }
 
     /* ===== FAQ (accordion) ===== */
@@ -406,7 +455,7 @@
                 <div class="paso-numero">6</div>
                 <div>
                     <div class="paso-titulo">Guardar</div>
-                    <p class="paso-texto">Presiona <strong>"Guardar Incidencia"</strong>. Tu reporte quedará con estado <span class="badge-estado-ayuda" style="background:#ffc107; color:#0A1128;">Pendiente</span> y podrás verlo de inmediato en "Mis Reportes".</p>
+                    <p class="paso-texto">Presiona <strong>"Guardar Incidencia"</strong>. Tu reporte quedará con estado <span class="badge-estado-ayuda" style="background:#ffc107; color:#0A1128;">Pendiente</span>, podrás verlo de inmediato en "Mis Reportes" y te llegará un <strong>correo de confirmación</strong> a tu bandeja de entrada.</p>
                 </div>
             </div>
 
@@ -445,6 +494,20 @@
                     </p>
                 </div>
             </div>
+
+        </div>
+    </div>
+
+    <div class="aviso-correo">
+        <div class="icono-aviso"><i class="fas fa-envelope"></i></div>
+        <p>
+            <strong>Notificaciones por correo <span class="badge-nuevo">Nuevo</span></strong><br>
+            Además de la campana de notificaciones dentro del sistema, ahora también recibirás un <strong>correo electrónico</strong> cada vez que tu incidencia cambie de estado (al recibirla, al pasar a En Proceso, y al quedar Resuelta o Rechazada). Si es rechazada, el correo incluye el motivo que dejó el equipo. Solo te llegan avisos de tus propias incidencias.
+        </p>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
 
             <div class="paso-item">
                 <div class="paso-numero">3</div>
@@ -623,6 +686,10 @@
                 [
                     'q' => '¿Cómo sé si hay novedades en mis reportes?',
                     'a' => 'Revisa el ícono de la campana en la barra superior. Ahí aparecen tus notificaciones (cambios de estado, asignaciones, comentarios nuevos) con un contador de las no leídas.',
+                ],
+                [
+                    'q' => '¿Me van a llegar correos por cada incidencia, incluso las de otros ciudadanos?',
+                    'a' => 'No. Solo recibes correo por <strong>tus propias</strong> incidencias: uno de confirmación cuando la registras, y uno cada vez que cambia de estado (En Proceso, Resuelto o Rechazado). Es un canal adicional a la campana de notificaciones, no la reemplaza; ambos siguen funcionando en paralelo.',
                 ],
                 [
                     'q' => '¿Es obligatorio adjuntar foto o marcar el punto en el mapa?',
