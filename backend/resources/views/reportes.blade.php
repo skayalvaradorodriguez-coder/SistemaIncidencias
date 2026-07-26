@@ -992,7 +992,8 @@ document.getElementById('btnPdf').addEventListener('click', function () {
  
                 /* ===== Impresión: sin sombra, sin fondo gris, ocupa toda la hoja ===== */
                 @media print {
-                    body { background: #fff; font-size: 11.5px; }
+                    html, body { background: #fff; }
+                    body { font-size: 11.5px; }
                     .hoja { max-width: none; margin: 0; box-shadow: none; border-radius: 0; }
                     .no-imprimir { display: none; }
                     .tabla-wrapper { overflow-x: visible; }
