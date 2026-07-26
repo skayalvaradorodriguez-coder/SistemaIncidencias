@@ -663,7 +663,7 @@ document.getElementById('btnPdf').addEventListener('click', function () {
                     --borde: #e2e8f0;
                 }
  
-                @page { margin: 15mm 12mm; }
+                @page { margin: 12mm 10mm; }
                 * { box-sizing: border-box; }
  
                 html, body {
@@ -720,10 +720,10 @@ document.getElementById('btnPdf').addEventListener('click', function () {
                     justify-content: space-between;
                     align-items: flex-start;
                     gap: 16px;
-                    padding: 26px 32px 20px;
+                    padding: 20px 32px 16px;
                     border-bottom: 2px solid var(--brand-900);
                     box-shadow: 0 2px 0 var(--brand-400);
-                    margin-bottom: 26px;
+                    margin-bottom: 20px;
                     flex-wrap: wrap;
                 }
  
@@ -796,8 +796,8 @@ document.getElementById('btnPdf').addEventListener('click', function () {
                     font-weight: 700;
                     color: var(--brand-900);
                     border-bottom: 1px solid var(--borde);
-                    padding-bottom: 8px;
-                    margin: 0 0 16px;
+                    padding-bottom: 6px;
+                    margin: 0 0 12px;
                 }
 
                 h2.titulo-seccion::before {
@@ -813,8 +813,8 @@ document.getElementById('btnPdf').addEventListener('click', function () {
                 /* ---------- KPIs ---------- */
                 .kpis-pdf {
                     display: flex;
-                    gap: 16px;
-                    margin-bottom: 30px;
+                    gap: 14px;
+                    margin-bottom: 20px;
                     flex-wrap: wrap;
                 }
  
@@ -827,7 +827,7 @@ document.getElementById('btnPdf').addEventListener('click', function () {
                     border: 1px solid var(--borde);
                     border-top: 3px solid var(--borde);
                     border-radius: 10px;
-                    padding: 16px 16px 14px;
+                    padding: 12px 14px 11px;
                     background: linear-gradient(180deg, #fbfcfe 0%, #ffffff 100%);
                     box-shadow: 0 1px 4px rgba(10, 17, 40, 0.05);
                 }
@@ -852,8 +852,8 @@ document.getElementById('btnPdf').addEventListener('click', function () {
  
                 /* ---------- Gráfico de distribución (barras CSS) ---------- */
                 .chart-barras {
-                    margin-bottom: 30px;
-                    padding: 18px 20px;
+                    margin-bottom: 20px;
+                    padding: 14px 18px;
                     border: 1px solid var(--borde);
                     border-radius: 10px;
                     background: linear-gradient(180deg, #fbfcfe 0%, #ffffff 100%);
@@ -864,7 +864,7 @@ document.getElementById('btnPdf').addEventListener('click', function () {
                     display: flex;
                     align-items: center;
                     gap: 12px;
-                    margin-bottom: 11px;
+                    margin-bottom: 8px;
                     font-size: 0.78rem;
                 }
  
@@ -912,7 +912,7 @@ document.getElementById('btnPdf').addEventListener('click', function () {
                 .tabla-wrapper {
                     width: 100%;
                     overflow-x: auto;
-                    margin-bottom: 30px;
+                    margin-bottom: 18px;
                     border-radius: 9px;
                     border: 1px solid var(--borde);
                 }
@@ -927,7 +927,7 @@ document.getElementById('btnPdf').addEventListener('click', function () {
                 table.tabla-reporte th {
                     background: linear-gradient(135deg, var(--brand-900), var(--brand-700));
                     color: #fff;
-                    padding: 10px 10px;
+                    padding: 8px 10px;
                     text-align: left;
                     font-weight: 600;
                     font-size: 0.66rem;
@@ -938,7 +938,7 @@ document.getElementById('btnPdf').addEventListener('click', function () {
                 }
 
                 table.tabla-reporte td {
-                    padding: 8px 10px;
+                    padding: 6px 10px;
                     border-bottom: 1px solid var(--borde);
                     color: #334155;
                 }
@@ -952,7 +952,7 @@ document.getElementById('btnPdf').addEventListener('click', function () {
                 table.tabla-reporte tbody tr:last-child td { border-bottom: none; }
  
                 .pie-documento {
-                    padding: 16px 32px;
+                    padding: 12px 32px;
                     border-top: 2px solid var(--brand-400);
                     font-size: 0.7rem;
                     color: #94a3b8;
@@ -998,6 +998,22 @@ document.getElementById('btnPdf').addEventListener('click', function () {
                     .tabla-wrapper { overflow-x: visible; }
                     table.tabla-reporte { min-width: 0; }
 
+                    /* Reserva espacio abajo para que el contenido nunca quede
+                    tapado por el pie de página fijo */
+                    .contenido { padding-bottom: 54px; }
+
+                    /* Pie de página fijo: el navegador lo repite automáticamente
+                    en cada hoja impresa, en la misma posición. Así nunca queda
+                    "huérfano" empujando una hoja extra casi en blanco. */
+                    .pie-documento {
+                        position: fixed;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        background: #fff;
+                        z-index: 5;
+                    }
+
                     /* Fuerza a imprimir colores de fondo aunque el navegador
                     tenga desactivada la opción "Gráficos de fondo" */
                     * {
@@ -1009,8 +1025,7 @@ document.getElementById('btnPdf').addEventListener('click', function () {
                     /* Evita que se corten elementos justo en el salto de página */
                     .kpi-pdf-item,
                     .chart-barras,
-                    tr,
-                    .pie-documento {
+                    tr {
                         page-break-inside: avoid;
                         break-inside: avoid;
                     }
