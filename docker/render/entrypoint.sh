@@ -47,5 +47,16 @@ php artisan storage:link >/dev/null 2>&1 || true
 php artisan optimize:clear
 php artisan config:cache
 
-echo "[entrypoint] Listo. Iniciando PHP-FPM..."
+# ============================================================
+# Render asigna el puerto dinámicamente vía $PORT. La imagen
+# oficial de Nginx procesa /etc/nginx/templates/*.template
+# automáticamente, pero aquí no usamos esa imagen, así que hay
+# que correr envsubst a mano antes de arrancar Nginx.
+# ============================================================
+echo "[entrypoint] Generando configuración de Nginx para el puerto ${PORT:-10000}..."
+export PORT="${PORT:-10000}"
+envsubst '${PORT}' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf
+rm -f /etc/nginx/conf.d/default.conf.bak 2>/dev/null || true
+
+echo "[entrypoint] Listo. Iniciando PHP-FPM y Nginx..."
 exec "$@"
