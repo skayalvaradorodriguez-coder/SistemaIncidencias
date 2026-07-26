@@ -125,6 +125,9 @@ class IncidenciaController extends Controller
         // Notifica a administradores y responsables sobre la nueva incidencia
         $this->notificaciones->notificarNuevaIncidencia($incidencia, $request->user()->id);
 
+        // Confirma por correo al ciudadano que su incidencia fue recibida
+        $this->notificaciones->notificarRegistroPorCorreo($incidencia);
+
         return response()->json(
             $incidencia->load([
                 'usuario',
@@ -243,7 +246,8 @@ class IncidenciaController extends Controller
             $incidencia,
             $estadoAnterior->nombre ?? 'Sin estado',
             $estadoNuevo->nombre,
-            $request->user()->id
+            $request->user()->id,
+            $request->observacion
         );
 
         return response()->json(
