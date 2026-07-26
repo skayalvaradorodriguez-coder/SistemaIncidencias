@@ -35,6 +35,10 @@ Route::get('/perfil', function () {
     return view('perfil');
 })->name('perfil');
 
+Route::get('/ayuda', function () {
+    return view('ayuda');
+})->name('ayuda');
+
 Route::get('/incidencias', [IncidenciaController::class, 'vistaIndex'])
     ->name('incidencias.index');
 
