@@ -114,9 +114,9 @@
                                 id="rol_id"
                                 class="form-control">
 
-                                <option value="2">Administrador</option>
-                                <option value="3">Responsable</option>
-                                <option value="4">Ciudadano</option>
+                                <option value="1">Administrador</option>
+                                <option value="2">Responsable</option>
+                                <option value="3">Ciudadano</option>
 
                             </select>
                         </div>
@@ -148,7 +148,7 @@
 
                         </button>
 
-                        <a
+                        
                             href="{{ route('usuarios.index') }}"
                             class="btn btn-ghost">
 
