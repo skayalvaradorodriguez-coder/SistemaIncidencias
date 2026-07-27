@@ -50,30 +50,30 @@
         background: linear-gradient(to right, #0dcaf0, #ffc107, #fd7e14, #dc3545);
     }
 
-    /* Panel solo visible para gestión */
-    .solo-gestion { display: none; }
+    /* Panel solo visible para Administrador (Responsable ya no lo ve: solo mapa + historial) */
+    .solo-admin { display: none; }
 
     /* Empareja la altura de las tarjetas de analítica */
-    .solo-gestion .info-box {
+    .solo-admin .info-box {
         min-height: 105px;
         align-items: center;
     }
-    .solo-gestion .info-box-text {
+    .solo-admin .info-box-text {
         font-size: 0.82rem;
         line-height: 1.2;
     }
-    .solo-gestion .info-box .progress {
+    .solo-admin .info-box .progress {
         margin: 6px 0;
     }
 
         /* ===== Tarjetas de analítica (info-box) con paleta elite ===== */
-    .solo-gestion .bg-gradient-teal   { background: linear-gradient(135deg, #2F7A4D, #1F5636) !important; }
-    .solo-gestion .bg-gradient-indigo { background: linear-gradient(135deg, #1E2E52, #0A1128) !important; }
-    .solo-gestion .bg-gradient-info   { background: linear-gradient(135deg, #16233F, #101A33) !important; }
-    .solo-gestion .bg-gradient-orange { background: linear-gradient(135deg, #E3CD8F, #C9A961) !important; color: #0A1128 !important; }
-    .solo-gestion .bg-gradient-orange .info-box-icon,
-    .solo-gestion .bg-gradient-orange .info-box-content * { color: #0A1128 !important; }
-    .solo-gestion .info-box .progress-bar { background-color: #C9A961; }
+    .solo-admin .bg-gradient-teal   { background: linear-gradient(135deg, #2F7A4D, #1F5636) !important; }
+    .solo-admin .bg-gradient-indigo { background: linear-gradient(135deg, #1E2E52, #0A1128) !important; }
+    .solo-admin .bg-gradient-info   { background: linear-gradient(135deg, #16233F, #101A33) !important; }
+    .solo-admin .bg-gradient-orange { background: linear-gradient(135deg, #E3CD8F, #C9A961) !important; color: #0A1128 !important; }
+    .solo-admin .bg-gradient-orange .info-box-icon,
+    .solo-admin .bg-gradient-orange .info-box-content * { color: #0A1128 !important; }
+    .solo-admin .info-box .progress-bar { background-color: #C9A961; }
 </style>
 @endsection
 
@@ -85,8 +85,8 @@
         Sistema de Gestión de Incidencias
     </h1>
 
-    <!-- Tarjetas de resumen -->
-    <div class="row">
+    <!-- Tarjetas de resumen (SOLO ADMINISTRADOR) -->
+    <div class="row solo-admin">
 
         <div class="col-md-3 col-sm-6">
             <div class="small-box bg-info">
@@ -150,8 +150,8 @@
 
     </div>
 
-    <!-- Segunda fila de indicadores (SOLO GESTIÓN) -->
-    <div class="row solo-gestion">
+    <!-- Segunda fila de indicadores (SOLO ADMINISTRADOR) -->
+    <div class="row solo-admin">
 
         <div class="col-md-3 col-sm-6">
             <div class="info-box bg-gradient-teal">
@@ -268,8 +268,8 @@
         </div>
     </div>
 
-    <!-- Gráficos -->
-    <div class="row">
+    <!-- Gráficos (SOLO ADMINISTRADOR) -->
+    <div class="row solo-admin">
 
         <div class="col-md-5">
             <div class="card">
@@ -301,8 +301,8 @@
 
     </div>
 
-    <!-- Analítica adicional: tendencia (SOLO GESTIÓN) -->
-    <div class="row solo-gestion">
+    <!-- Analítica adicional: tendencia (SOLO ADMINISTRADOR) -->
+    <div class="row solo-admin">
 
         <div class="col-md-12">
             <div class="card">
@@ -320,8 +320,8 @@
 
     </div>
 
-    <!-- Analítica adicional: ciudades y provincias (SOLO GESTIÓN) -->
-    <div class="row solo-gestion">
+    <!-- Analítica adicional: ciudades y provincias (SOLO ADMINISTRADOR) -->
+    <div class="row solo-admin">
 
         <div class="col-md-6">
             <div class="card">
@@ -422,8 +422,17 @@
         const usuario = getUser();
         const rol = usuario && usuario.rol ? usuario.rol.nombre : null;
 
-        if (rol === 'Administrador' || rol === 'Responsable') {
-            document.querySelectorAll('.solo-gestion').forEach(el => {
+        // El Ciudadano no tiene acceso al Dashboard general: se le redirige
+        // a su propio historial antes de que se cargue ningún dato/gráfico.
+        if (rol === 'Ciudadano') {
+            window.location.href = "{{ route('incidencias.mis') }}";
+            return;
+        }
+
+        // Solo el Administrador ve las tarjetas y gráficos completos.
+        // El Responsable solo ve el mapa y el historial de incidencias.
+        if (rol === 'Administrador') {
+            document.querySelectorAll('.solo-admin').forEach(el => {
                 el.style.display = 'flex';
             });
         }

@@ -393,7 +393,7 @@
 
                     <li class="nav-header">GENERAL</li>
 
-                    <li class="nav-item">
+                    <li class="nav-item" id="menuDashboard">
                         <a href="/" class="nav-link {{ request()->is('/') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-home"></i>
                             <p>Dashboard</p>
@@ -569,6 +569,11 @@ if(usuario){
     if(rolNombre === "Administrador"){
         document.getElementById("menuUsuarios").style.display = "block";
         document.getElementById("menuCoordinador").style.display = "block";
+    }
+
+    // El Ciudadano no debe ver el Dashboard general (solo su propio historial en "Mis Reportes")
+    if(rolNombre === "Ciudadano"){
+        document.getElementById("menuDashboard").style.display = "none";
     }
 
 }
