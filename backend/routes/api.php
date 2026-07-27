@@ -11,7 +11,7 @@ use App\Http\Controllers\UbicacionController;
 use App\Http\Controllers\EstadoController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AsignacionController;
-use App\Http\Controllers\CoordinadorController;
+use App\Http\Controllers\TareaController;
 
 // Rutas públicas (limitadas a 5 intentos por minuto contra fuerza bruta)
 Route::middleware('throttle:5,1')->group(function () {
@@ -31,6 +31,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'api']);
+    Route::get('/dashboard/mias', [DashboardController::class, 'misStats']);
 
     // Incidencias (lectura y registro: cualquier usuario autenticado)
     Route::get('/incidencias', [IncidenciaController::class, 'index']);
@@ -40,11 +41,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Asignaciones (consulta abierta a autenticados)
     Route::get('/incidencias/{id}/asignaciones', [AsignacionController::class, 'index']);
-    Route::get('/mis-tareas', [AsignacionController::class, 'misTareas']);
 
     // Comentarios
     Route::get('/incidencias/{id}/comentarios', [ComentarioController::class, 'index']);
     Route::post('/incidencias/{id}/comentarios', [ComentarioController::class, 'store']);
+
+    // ===== Tareas (Mis Tareas): cualquier autenticado consulta SOLO las suyas =====
+    Route::get('/tareas/mias', [TareaController::class, 'misTareas']);
+    Route::get('/tareas/{id}', [TareaController::class, 'show']);
 
     // Notificaciones (siempre del usuario autenticado)
     Route::get('/notificaciones', [NotificacionController::class, 'index']);
@@ -68,6 +72,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/asignaciones/{id}', [AsignacionController::class, 'destroy']);
 
         Route::delete('/comentarios/{id}', [ComentarioController::class, 'destroy']);
+
+        // El Responsable actualiza el estado de SU tarea + nota de avance
+        // (el Administrador también puede, por si necesita corregir algo)
+        Route::put('/tareas/{id}/estado', [TareaController::class, 'actualizarEstado']);
     });
 
     // ===== Administración del sistema: solo Administrador =====
@@ -89,9 +97,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/estados', [EstadoController::class, 'store']);
         Route::put('/estados/{id}', [EstadoController::class, 'update']);
 
-        // Panel de Coordinación: carga de trabajo por Responsable
-        // e incidencias pendientes de asignar
-        Route::get('/coordinador/responsables', [CoordinadorController::class, 'responsables']);
-        Route::get('/coordinador/sin-asignar', [CoordinadorController::class, 'sinAsignar']);
+        // Asignar (crear) una tarea a un Responsable, dentro de una incidencia
+        Route::get('/incidencias/{id}/tareas', [TareaController::class, 'index']);
+        Route::post('/incidencias/{id}/tareas', [TareaController::class, 'store']);
+        Route::delete('/tareas/{id}', [TareaController::class, 'destroy']);
     });
 });

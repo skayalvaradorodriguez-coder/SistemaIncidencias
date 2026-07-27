@@ -85,6 +85,140 @@
         Sistema de Gestión de Incidencias
     </h1>
 
+    <!-- ===== Dashboard PERSONAL del Ciudadano ===== -->
+    <div id="dashboardCiudadano" style="display:none;">
+
+        <!-- Accesos rápidos -->
+        <div class="row mb-1">
+            <div class="col-md-6 mb-3">
+                <a href="{{ route('incidencias.create') }}" class="card bg-primary text-white h-100 d-block" style="text-decoration:none;">
+                    <div class="card-body d-flex align-items-center">
+                        <i class="fas fa-plus-circle fa-2x mr-3"></i>
+                        <div>
+                            <h5 class="mb-0">Reportar nueva incidencia</h5>
+                            <small>Registra un problema en tu sector</small>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-6 mb-3">
+                <a href="{{ route('emergencias') }}" class="card bg-danger text-white h-100 d-block" style="text-decoration:none;">
+                    <div class="card-body d-flex align-items-center">
+                        <i class="fas fa-phone-alt fa-2x mr-3"></i>
+                        <div>
+                            <h5 class="mb-0">Contactos de emergencia</h5>
+                            <small>ECU 911, Policía, Bomberos y más</small>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Tarjetas resumen (SOLO de sus propios reportes) -->
+        <div class="row">
+
+            <div class="col-md-3 col-sm-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3 id="mioTotal">-</h3>
+                        <p>Mis Reportes</p>
+                    </div>
+                    <div class="icon"><i class="fas fa-clipboard-list"></i></div>
+                    <a href="{{ route('incidencias.mis') }}" class="small-box-footer">
+                        Ver todos <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-sm-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3 id="mioPendientes">-</h3>
+                        <p>Pendientes</p>
+                    </div>
+                    <div class="icon"><i class="fas fa-clock"></i></div>
+                    <a href="{{ route('incidencias.mis') }}" class="small-box-footer">
+                        Ver detalle <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-sm-6">
+                <div class="small-box bg-primary">
+                    <div class="inner">
+                        <h3 id="mioEnProceso">-</h3>
+                        <p>En Proceso</p>
+                    </div>
+                    <div class="icon"><i class="fas fa-spinner"></i></div>
+                    <a href="{{ route('incidencias.mis') }}" class="small-box-footer">
+                        Ver detalle <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-sm-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3 id="mioResueltas">-</h3>
+                        <p>Resueltas</p>
+                    </div>
+                    <div class="icon"><i class="fas fa-check-circle"></i></div>
+                    <a href="{{ route('incidencias.mis') }}" class="small-box-footer">
+                        Ver detalle <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Mapa de MIS incidencias -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title mb-0">
+                    <i class="fas fa-map-marked-alt mr-2"></i>
+                    Mapa de mis incidencias
+                </h3>
+            </div>
+            <div class="card-body">
+                <div id="mapaMio" style="height: 350px; border-radius: 4px; z-index: 1;"></div>
+                <p id="mapaMioVacio" class="text-muted text-center py-4 mb-0" style="display:none;">
+                    <i class="fas fa-map-marker-alt d-block mb-2" style="font-size:2rem;"></i>
+                    Aún no tienes incidencias con ubicación registrada.
+                </p>
+            </div>
+        </div>
+
+        <!-- Historial de MIS incidencias -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-history mr-2"></i>
+                    Mis incidencias recientes
+                </h3>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Título</th>
+                            <th>Ciudad</th>
+                            <th>Estado</th>
+                            <th>Prioridad</th>
+                            <th>Fecha</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaMisRecientes">
+                        <tr><td colspan="7" class="text-center text-muted py-3">Cargando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+    <!-- ===== Fin Dashboard personal del Ciudadano ===== -->
+
     <!-- Tarjetas de resumen (SOLO ADMINISTRADOR) -->
     <div class="row solo-admin">
 
@@ -219,7 +353,7 @@
     </div>
 
     <!-- Mapa general -->
-    <div class="card">
+    <div class="card" id="cardMapaGeneral">
         <div class="card-header">
             <div class="d-flex justify-content-between align-items-center flex-wrap">
                 <h3 class="card-title mb-0">
@@ -354,7 +488,7 @@
     </div>
 
     <!-- Incidencias recientes -->
-    <div class="card">
+    <div class="card" id="cardHistorialGeneral">
         <div class="card-header">
             <h3 class="card-title">
                 <i class="fas fa-history mr-2"></i>
@@ -422,10 +556,14 @@
         const usuario = getUser();
         const rol = usuario && usuario.rol ? usuario.rol.nombre : null;
 
-        // El Ciudadano no tiene acceso al Dashboard general: se le redirige
-        // a su propio historial antes de que se cargue ningún dato/gráfico.
         if (rol === 'Ciudadano') {
-            window.location.href = "{{ route('incidencias.mis') }}";
+            // Oculta TODO lo global (tarjetas, gráficos, mapa y tabla de todos)
+            document.getElementById('cardMapaGeneral')?.remove();
+            document.getElementById('cardHistorialGeneral')?.remove();
+
+            // Muestra su panel personal y carga sus datos
+            document.getElementById('dashboardCiudadano').style.display = 'block';
+            cargarDashboardCiudadano();
             return;
         }
 
@@ -437,6 +575,81 @@
             });
         }
     })();
+
+    // ================== DASHBOARD PERSONAL (Ciudadano) ==================
+    async function cargarDashboardCiudadano() {
+        try {
+            const response = await authFetch('/api/dashboard/mias');
+            if (!response.ok) return;
+
+            const datos = await response.json();
+
+            document.getElementById('mioTotal').textContent = datos.total;
+            document.getElementById('mioPendientes').textContent = datos.pendientes;
+            document.getElementById('mioEnProceso').textContent = datos.en_proceso;
+            document.getElementById('mioResueltas').textContent = datos.resueltas;
+
+            // ---- Tabla de sus incidencias recientes ----
+            const tbody = document.getElementById('tablaMisRecientes');
+
+            if (datos.recientes.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-3">Aún no has reportado ninguna incidencia.</td></tr>';
+            } else {
+                tbody.innerHTML = '';
+                datos.recientes.forEach(inc => {
+                    const fecha = new Date(inc.created_at).toLocaleDateString('es-EC');
+                    const fila = document.createElement('tr');
+                    fila.innerHTML = `
+                        <td>${inc.id}</td>
+                        <td>${inc.titulo}</td>
+                        <td>${inc.ciudad ? inc.ciudad.nombre : 'N/A'}</td>
+                        <td><span class="badge badge-${inc.estado ? inc.estado.color : 'secondary'}">${inc.estado ? inc.estado.nombre : 'N/A'}</span></td>
+                        <td>${inc.prioridad}</td>
+                        <td>${fecha}</td>
+                        <td><a href="/incidencias/${inc.id}" class="btn btn-sm btn-outline-info"><i class="fas fa-eye"></i></a></td>
+                    `;
+                    tbody.appendChild(fila);
+                });
+            }
+
+            // ---- Mapa de sus incidencias ----
+            const ubicaciones = datos.con_ubicacion;
+
+            if (ubicaciones.length === 0) {
+                document.getElementById('mapaMioVacio').style.display = 'block';
+                return;
+            }
+
+            const coloresEstadoMio = { 'Pendiente': '#C9A961', 'En Proceso': '#16233F', 'Resuelto': '#2F7A4D' };
+
+            const mapaMio = L.map('mapaMio').setView([-2.2276, -80.8585], 11);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap'
+            }).addTo(mapaMio);
+
+            const marcadoresMio = ubicaciones.map(inc => {
+                const nombreEstado = inc.estado ? inc.estado.nombre : 'Otro';
+                const color = coloresEstadoMio[nombreEstado] || '#6c757d';
+
+                return L.circleMarker([inc.latitud, inc.longitud], {
+                    radius: 9, fillColor: color, color: '#ffffff', weight: 2, opacity: 1, fillOpacity: 0.85
+                }).bindPopup(`
+                    <strong>#${inc.id} - ${inc.titulo}</strong><br>
+                    Estado: <b style="color:${color}">${nombreEstado}</b><br>
+                    Prioridad: ${inc.prioridad}<br>
+                    <a href="/incidencias/${inc.id}">Ver detalle →</a>
+                `);
+            });
+
+            const grupoMio = L.featureGroup(marcadoresMio).addTo(mapaMio);
+            mapaMio.fitBounds(grupoMio.getBounds().pad(0.2));
+
+        } catch (error) {
+            console.log(error);
+        }
+    }
 
     // ================== COLORES DEL TEMA ACTIVO ==================
     // Se leen de las variables CSS (--text-muted / --border-subtle) para que

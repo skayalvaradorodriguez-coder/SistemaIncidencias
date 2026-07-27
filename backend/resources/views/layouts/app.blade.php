@@ -571,11 +571,6 @@ if(usuario){
         document.getElementById("menuCoordinador").style.display = "block";
     }
 
-    // El Ciudadano no debe ver el Dashboard general (solo su propio historial en "Mis Reportes")
-    if(rolNombre === "Ciudadano"){
-        document.getElementById("menuDashboard").style.display = "none";
-    }
-
 }
 
 // Devuelve icono y color según el tipo de notificación

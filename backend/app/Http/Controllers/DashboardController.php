@@ -122,6 +122,55 @@ class DashboardController extends Controller
     }
 
     /**
+     * Dashboard personal del Ciudadano: mismos indicadores que el
+     * Administrador, pero filtrados únicamente a lo que él reportó.
+     */
+    public function misStats(\Illuminate\Http\Request $request)
+    {
+        $usuarioId = $request->user()->id;
+
+        $base = Incidencia::where('usuario_id', $usuarioId);
+
+        $total = (clone $base)->count();
+
+        $pendientes = (clone $base)->whereHas('estado', function ($q) {
+            $q->where('nombre', 'Pendiente');
+        })->count();
+
+        $enProceso = (clone $base)->whereHas('estado', function ($q) {
+            $q->where('nombre', 'En Proceso');
+        })->count();
+
+        $resueltas = (clone $base)->whereHas('estado', function ($q) {
+            $q->where('nombre', 'Resuelto');
+        })->count();
+
+        $recientes = (clone $base)
+            ->with(['estado', 'ciudad'])
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        $conUbicacion = (clone $base)
+            ->with(['estado', 'tipo'])
+            ->whereNotNull('latitud')
+            ->whereNotNull('longitud')
+            ->get([
+                'id', 'titulo', 'prioridad', 'latitud', 'longitud',
+                'estado_incidencia_id', 'tipo_incidencia_id',
+            ]);
+
+        return response()->json([
+            'total' => $total,
+            'pendientes' => $pendientes,
+            'en_proceso' => $enProceso,
+            'resueltas' => $resueltas,
+            'recientes' => $recientes,
+            'con_ubicacion' => $conUbicacion,
+        ]);
+    }
+
+    /**
      * Dashboard API (JSON)
      */
     public function api()
