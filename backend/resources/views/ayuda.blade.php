@@ -223,6 +223,8 @@
     }
 
     .solo-gestion-ayuda { display: none; }
+    .solo-admin-ayuda { display: none; }
+    .solo-responsable-ayuda { display: none; }
 
     /* ===== FAQ (accordion) ===== */
     .faq-item {
@@ -398,6 +400,13 @@
                 <p>Dudas comunes resueltas.</p>
             </a>
         </div>
+        <div class="col-6 col-md-3 mb-3 solo-gestion-ayuda">
+            <a href="#guia-gestion" class="acceso-rapido">
+                <div class="icono-acceso"><i class="fas fa-columns"></i></div>
+                <h5>Gestionar y asignar</h5>
+                <p>Tablero, Coordinador y Mis Tareas.</p>
+            </a>
+        </div>
     </div>
 
     <!-- ===== Guía: cómo reportar una incidencia ===== -->
@@ -528,6 +537,138 @@
         </div>
     </div>
 
+    <!-- ===== Guía: gestionar y asignar incidencias (Administrador y Responsable) ===== -->
+    <div class="seccion-header-row solo-gestion-ayuda" id="guia-gestion">
+        <div class="subtitulo-seccion"><i class="fas fa-columns mr-2"></i>Cómo gestionar y asignar incidencias <span class="badge-rol-restringido ml-2">Gestión</span></div>
+        <a href="{{ route('incidencias.tablero') }}" class="btn btn-sm btn-ghost">
+            <i class="fas fa-columns mr-1"></i>Ir al Tablero
+        </a>
+    </div>
+
+    <div class="card solo-gestion-ayuda">
+        <div class="card-body">
+
+            <div class="paso-item">
+                <div class="paso-numero">1</div>
+                <div>
+                    <div class="paso-titulo">Revisa todas las incidencias</div>
+                    <p class="paso-texto">En <strong>Incidencias</strong> ves el listado completo de todos los ciudadanos, con filtros. En <strong>Tablero Kanban</strong> las ves organizadas por columnas según su estado.</p>
+                </div>
+            </div>
+
+            <div class="paso-item">
+                <div class="paso-numero">2</div>
+                <div>
+                    <div class="paso-titulo">Cambia el estado</div>
+                    <p class="paso-texto">En el Tablero, arrastra la tarjeta a otra columna (en móvil, toca el botón <i class="fas fa-exchange-alt"></i> de la tarjeta). También puedes cambiarlo desde el detalle de una incidencia individual.</p>
+                </div>
+            </div>
+
+            <div class="paso-item">
+                <div>
+                    <div class="paso-titulo" style="margin-left:54px;">Asigna un responsable</div>
+                    <p class="paso-texto" style="margin-left:54px;">Entra al detalle de la incidencia, en la tarjeta <strong>"Responsables asignados"</strong> elige el usuario y su rol de asignación (Responsable o Apoyo), y presiona <strong>"Asignar"</strong>. Puedes quitar una asignación con el botón rojo junto a cada fila.</p>
+                </div>
+            </div>
+
+            <div class="paso-item solo-admin-ayuda">
+                <div>
+                    <div class="paso-titulo" style="margin-left:54px;">
+                        Coordina de forma centralizada <span class="badge-rol-restringido">Administrador</span>
+                    </div>
+                    <p class="paso-texto" style="margin-left:54px;">En <strong>Coordinador</strong> ves la carga de trabajo de cada Responsable y la lista de incidencias <strong>sin asignar</strong>, ordenables por antigüedad o prioridad. Desde ahí asignas directamente sin entrar a cada incidencia una por una.</p>
+                </div>
+            </div>
+
+            <div class="paso-item">
+                <div>
+                    <div class="paso-titulo" style="margin-left:54px;">
+                        Consulta tus tareas asignadas <span class="badge-rol-restringido">Responsable</span>
+                    </div>
+                    <p class="paso-texto" style="margin-left:54px;">En <strong>Mis Tareas</strong> ves únicamente las incidencias que el Administrador te asignó, con un resumen de Pendientes / En Proceso / Resueltas y un filtro por estado.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ===== Guía: reportes y estadísticas (Administrador y Responsable) ===== -->
+    <div class="seccion-header-row solo-gestion-ayuda" id="guia-reportes">
+        <div class="subtitulo-seccion"><i class="fas fa-chart-pie mr-2"></i>Reportes y estadísticas <span class="badge-rol-restringido ml-2">Gestión</span></div>
+        <a href="{{ route('reportes') }}" class="btn btn-sm btn-ghost">
+            <i class="fas fa-chart-pie mr-1"></i>Ir a Reportes
+        </a>
+    </div>
+
+    <div class="card solo-gestion-ayuda">
+        <div class="card-body">
+
+            <div class="paso-item">
+                <div class="paso-numero">1</div>
+                <div>
+                    <div class="paso-titulo">Elige el tipo de reporte</div>
+                    <p class="paso-texto">Con las pastillas de arriba filtras por: Todas, Pendientes, En Proceso, Resueltas o Rechazadas. Cada una recalcula los indicadores (KPIs) y la tabla debajo.</p>
+                </div>
+            </div>
+
+            <div class="paso-item solo-admin-ayuda">
+                <div>
+                    <div class="paso-titulo" style="margin-left:54px;">
+                        Reportes de usuarios <span class="badge-rol-restringido">Administrador</span>
+                    </div>
+                    <p class="paso-texto" style="margin-left:54px;">También puedes consultar <strong>"Usuarios del Sistema"</strong> (listado general) o <strong>"Reporte por Usuario"</strong> (todas las incidencias reportadas o atendidas por una persona específica).</p>
+                </div>
+            </div>
+
+            <div class="paso-item">
+                <div class="paso-numero">2</div>
+                <div>
+                    <div class="paso-titulo">Exporta a PDF</div>
+                    <p class="paso-texto">El botón rojo <strong>"Descargar PDF"</strong>, arriba a la derecha, genera un documento con el reporte que tengas seleccionado en ese momento.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ===== Guía: administración de usuarios (solo Administrador) ===== -->
+    <div class="seccion-header-row solo-admin-ayuda" id="guia-usuarios">
+        <div class="subtitulo-seccion"><i class="fas fa-users mr-2"></i>Administración de usuarios <span class="badge-rol-restringido ml-2">Administrador</span></div>
+        <a href="{{ route('usuarios.index') }}" class="btn btn-sm btn-ghost">
+            <i class="fas fa-users mr-1"></i>Ir a Usuarios
+        </a>
+    </div>
+
+    <div class="card solo-admin-ayuda">
+        <div class="card-body">
+
+            <div class="paso-item">
+                <div class="paso-numero">1</div>
+                <div>
+                    <div class="paso-titulo">Crea una cuenta</div>
+                    <p class="paso-texto">Desde <strong>Usuarios → Nuevo usuario</strong>, completa nombre, correo y contraseña, y asigna el rol: <strong>Administrador</strong>, <strong>Responsable</strong> o <strong>Ciudadano</strong>.</p>
+                </div>
+            </div>
+
+            <div class="paso-item">
+                <div class="paso-numero">2</div>
+                <div>
+                    <div class="paso-titulo">Edita o desactiva una cuenta</div>
+                    <p class="paso-texto">Desde el listado puedes editar los datos y el rol de cualquier usuario, o desactivarlo. Un usuario desactivado no puede iniciar sesión, pero <strong>su historial e incidencias no se borran</strong>: eliminar una cuenta en este sistema significa desactivarla, no borrarla de la base de datos.</p>
+                </div>
+            </div>
+
+            <div class="paso-item">
+                <div class="paso-numero">3</div>
+                <div>
+                    <div class="paso-titulo">Tu propia cuenta</div>
+                    <p class="paso-texto">Por seguridad, el sistema no te deja desactivar tu propia cuenta de Administrador, para evitar que el equipo se quede sin acceso.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
     <!-- ===== Secciones del sistema ===== -->
     <div class="seccion-header-row" id="secciones">
         <div class="subtitulo-seccion"><i class="fas fa-th-large mr-2"></i>Qué encuentras en cada sección</div>
@@ -588,6 +729,40 @@
                         </div>
                         <p class="mb-0" style="font-size:0.82rem; color:var(--text-muted);">
                             Vista de columnas para que el equipo mueva las incidencias entre estados y las asigne a responsables.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4 mb-3 solo-responsable-ayuda">
+            <div class="card tarjeta-seccion h-100" style="--color-s:#0d9488;">
+                <div class="card-body d-flex">
+                    <div class="icono-seccion mr-3"><i class="fas fa-clipboard-check"></i></div>
+                    <div>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <h5 style="font-size:1rem;">Mis Tareas</h5>
+                            <span class="badge-rol-restringido">Responsable</span>
+                        </div>
+                        <p class="mb-0" style="font-size:0.82rem; color:var(--text-muted);">
+                            Solo las incidencias que el Administrador te asignó a ti, con resumen por estado y filtro rápido.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4 mb-3 solo-admin-ayuda">
+            <div class="card tarjeta-seccion h-100" style="--color-s:#8b5cf6;">
+                <div class="card-body d-flex">
+                    <div class="icono-seccion mr-3"><i class="fas fa-user-shield"></i></div>
+                    <div>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <h5 style="font-size:1rem;">Coordinador</h5>
+                            <span class="badge-rol-restringido">Administrador</span>
+                        </div>
+                        <p class="mb-0" style="font-size:0.82rem; color:var(--text-muted);">
+                            Carga de trabajo de cada Responsable e incidencias sin asignar, para repartir el trabajo del equipo desde un solo lugar.
                         </p>
                     </div>
                 </div>
@@ -712,6 +887,34 @@
                     'a' => 'En la pantalla de inicio de sesión, presiona <strong>"¿Olvidaste tu contraseña?"</strong> e ingresa tu correo para recibir instrucciones de recuperación.',
                 ],
             ];
+
+            $faqsGestion = [
+                [
+                    'q' => '¿Cuál es la diferencia entre Tablero, Coordinador y Mis Tareas?',
+                    'a' => '<strong>Tablero Kanban</strong> (Administrador y Responsable) muestra todas las incidencias por estado, para moverlas arrastrando. <strong>Coordinador</strong> (solo Administrador) muestra la carga de cada Responsable y las incidencias sin asignar, para repartirlas. <strong>Mis Tareas</strong> (solo Responsable) muestra únicamente lo que a ti te asignaron.',
+                    'badge' => 'Gestión',
+                ],
+                [
+                    'q' => '¿Cómo asigno una incidencia a un Responsable?',
+                    'a' => 'Entra al detalle de la incidencia y usa la tarjeta <strong>"Responsables asignados"</strong>: elige el usuario, el rol de la asignación (Responsable o Apoyo) y presiona Asignar. Si eres Administrador, también puedes hacerlo de forma más rápida desde <strong>Coordinador</strong>, viendo primero quién tiene menos carga de trabajo.',
+                    'badge' => 'Gestión',
+                ],
+                [
+                    'q' => '¿Quién puede cambiar el estado de una incidencia?',
+                    'a' => 'Solo Administrador y Responsable. El ciudadano que la reportó puede editar el título, descripción o ubicación, pero no puede marcarla como Resuelta ni cambiar su estado directamente.',
+                    'badge' => 'Gestión',
+                ],
+                [
+                    'q' => '¿Cómo elimino un usuario del sistema?',
+                    'a' => 'No se eliminan cuentas de forma permanente: al "eliminar" un usuario, el sistema lo <strong>desactiva</strong> (no puede volver a iniciar sesión), pero su historial e incidencias se conservan intactos. Por seguridad, no puedes desactivar tu propia cuenta de Administrador.',
+                    'badge' => 'Administrador',
+                ],
+                [
+                    'q' => '¿Qué reportes puedo exportar en PDF?',
+                    'a' => 'El que tengas seleccionado en ese momento con las pastillas de arriba: Todas las incidencias, o filtradas por estado. Si eres Administrador, también puedes exportar el listado de usuarios o el reporte de una persona específica.',
+                    'badge' => 'Gestión',
+                ],
+            ];
         @endphp
 
         @foreach($faqs as $i => $faq)
@@ -722,6 +925,22 @@
                     <i class="fas fa-chevron-down"></i>
                 </div>
                 <div id="faqRespuesta{{ $i }}" class="collapse">
+                    <div class="faq-respuesta">{!! $faq['a'] !!}</div>
+                </div>
+            </div>
+        @endforeach
+
+        @foreach($faqsGestion as $i => $faq)
+            @php
+                $claseRol = $faq['badge'] === 'Administrador' ? 'solo-admin-ayuda' : 'solo-gestion-ayuda';
+            @endphp
+            <div class="card faq-item {{ $claseRol }}" data-texto="{{ strtolower($faq['q']) }}" data-rol="{{ $claseRol }}">
+                <div class="faq-pregunta" data-toggle="collapse" data-target="#faqGestion{{ $i }}"
+                     aria-expanded="false" role="button">
+                    <span>{{ $faq['q'] }} <span class="badge-rol-restringido ml-1">{{ $faq['badge'] }}</span></span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div id="faqGestion{{ $i }}" class="collapse">
                     <div class="faq-respuesta">{!! $faq['a'] !!}</div>
                 </div>
             </div>
@@ -753,27 +972,43 @@
 @section('scripts')
 <script>
     // ================== CONTROL POR ROL ==================
-    (function () {
-        const usuario = getUser();
-        const rol = usuario && usuario.rol ? usuario.rol.nombre : null;
+    const usuarioAyuda = getUser();
+    const rolAyuda = usuarioAyuda && usuarioAyuda.rol ? usuarioAyuda.rol.nombre : null;
+    const esGestionAyuda = rolAyuda === 'Administrador' || rolAyuda === 'Responsable';
+    const esAdminAyuda = rolAyuda === 'Administrador';
+    const esResponsableAyuda = rolAyuda === 'Responsable';
 
-        if (rol === 'Administrador' || rol === 'Responsable') {
-            document.querySelectorAll('.solo-gestion-ayuda').forEach(el => {
-                el.style.display = 'block';
-            });
-        }
-    })();
+    document.querySelectorAll('.solo-gestion-ayuda').forEach(el => {
+        el.style.display = esGestionAyuda ? 'block' : 'none';
+    });
+    document.querySelectorAll('.solo-admin-ayuda').forEach(el => {
+        el.style.display = esAdminAyuda ? 'block' : 'none';
+    });
+    document.querySelectorAll('.solo-responsable-ayuda').forEach(el => {
+        el.style.display = esResponsableAyuda ? 'block' : 'none';
+    });
 
     // ================== BUSCADOR DE FAQ ==================
     const inputBuscador = document.getElementById('buscadorFaq');
     const itemsFaq = document.querySelectorAll('#listaFaq .faq-item');
     const sinResultados = document.getElementById('sinResultadosFaq');
 
+    function itemPermitidoParaRol(item) {
+        if (item.classList.contains('solo-admin-ayuda')) return esAdminAyuda;
+        if (item.classList.contains('solo-gestion-ayuda')) return esGestionAyuda;
+        if (item.classList.contains('solo-responsable-ayuda')) return esResponsableAyuda;
+        return true;
+    }
+
     inputBuscador.addEventListener('input', function () {
         const termino = this.value.trim().toLowerCase();
         let visibles = 0;
 
         itemsFaq.forEach(item => {
+            if (!itemPermitidoParaRol(item)) {
+                item.style.display = 'none';
+                return;
+            }
             const coincide = item.dataset.texto.includes(termino);
             item.style.display = coincide ? '' : 'none';
             if (coincide) visibles++;
