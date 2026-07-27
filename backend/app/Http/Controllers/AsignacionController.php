@@ -91,6 +91,31 @@ class AsignacionController extends Controller
     }
 
     /**
+     * Lista las incidencias asignadas al usuario autenticado.
+     * Alimenta la sección "Mis Tareas" del rol Responsable.
+     */
+    public function misTareas(Request $request)
+    {
+        $query = Asignacion::with([
+                'incidencia.tipo',
+                'incidencia.ciudad',
+                'incidencia.estado',
+                'incidencia.usuario',
+            ])
+            ->where('usuario_id', $request->user()->id);
+
+        if ($request->estado_id) {
+            $query->whereHas('incidencia', function ($q) use ($request) {
+                $q->where('estado_incidencia_id', $request->estado_id);
+            });
+        }
+
+        $asignaciones = $query->orderBy('fecha_asignacion', 'desc')->get();
+
+        return response()->json($asignaciones);
+    }
+
+    /**
      * Quita a un usuario de una incidencia.
      */
     public function destroy($id)
