@@ -31,6 +31,14 @@ class IncidenciaController extends Controller
             'estado'
         ]);
 
+        // Un Ciudadano solo puede ver sus propias incidencias reportadas.
+        // Este filtro va en el servidor (no en el frontend) para que el
+        // navegador nunca reciba datos de incidencias ajenas.
+        $usuarioAutenticado = $request->user();
+        if ($usuarioAutenticado->rol && $usuarioAutenticado->rol->nombre === 'Ciudadano') {
+            $query->where('usuario_id', $usuarioAutenticado->id);
+        }
+
         if ($request->estado_id) {
             $query->where('estado_incidencia_id', $request->estado_id);
         }
@@ -140,7 +148,7 @@ class IncidenciaController extends Controller
         );
     }
 
-    public function show($id)
+    public function show(Request $request, $id)
     {
         $incidencia = Incidencia::with([
             'usuario',
@@ -153,12 +161,30 @@ class IncidenciaController extends Controller
             'comentarios.usuario'
         ])->findOrFail($id);
 
+        $usuarioAutenticado = $request->user();
+        $esCiudadano = $usuarioAutenticado->rol && $usuarioAutenticado->rol->nombre === 'Ciudadano';
+
+        if ($esCiudadano && $incidencia->usuario_id !== $usuarioAutenticado->id) {
+            return response()->json([
+                'message' => 'No tiene permisos para ver esta incidencia.'
+            ], 403);
+        }
+
         return response()->json($incidencia);
     }
 
     public function update(Request $request, $id)
     {
         $incidencia = Incidencia::findOrFail($id);
+
+        $usuarioAutenticado = $request->user();
+        $esCiudadano = $usuarioAutenticado->rol && $usuarioAutenticado->rol->nombre === 'Ciudadano';
+
+        if ($esCiudadano && $incidencia->usuario_id !== $usuarioAutenticado->id) {
+            return response()->json([
+                'message' => 'No tiene permisos para editar esta incidencia.'
+            ], 403);
+        }
 
         $request->validate([
             'titulo' => 'required|string|max:200',
