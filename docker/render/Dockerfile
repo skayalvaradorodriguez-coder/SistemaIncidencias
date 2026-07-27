@@ -20,7 +20,9 @@ COPY docker/render/nginx.conf.template /etc/nginx/templates/default.conf.templat
 COPY docker/render/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/render/entrypoint.sh /usr/local/bin/entrypoint.sh
 
-RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh && chmod +x /usr/local/bin/entrypoint.sh
+RUN sed -i '1s/^\xEF\xBB\xBF//' /usr/local/bin/entrypoint.sh \
+    && sed -i 's/\r$//' /usr/local/bin/entrypoint.sh \
+    && chmod +x /usr/local/bin/entrypoint.sh
 RUN chown -R www-data:www-data /var/www/html
 
 EXPOSE 10000
