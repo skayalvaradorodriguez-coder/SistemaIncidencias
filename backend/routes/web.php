@@ -21,8 +21,16 @@ Route::get('/', [DashboardController::class, 'index']);
 Route::get('/tablero', [IncidenciaController::class, 'vistaTablero'])
     ->name('incidencias.tablero');
 
+Route::get('/coordinador', function () {
+    return view('coordinador.index');
+})->name('coordinador.index');
+
 Route::get('/mis-reportes', [IncidenciaController::class, 'vistaMisReportes'])
     ->name('incidencias.mis');
+
+Route::get('/mis-tareas', function () {
+    return view('incidencias.mis-tareas');
+})->name('incidencias.mis-tareas');
 
 Route::get('/reportes', [IncidenciaController::class, 'vistaReportes'])
     ->name('reportes');
