@@ -418,6 +418,14 @@
 
                     <li class="nav-header" id="headerGestion" style="display:none;">GESTIÓN</li>
 
+                    <li class="nav-item" id="menuMisTareas" style="display:none;">
+                        <a href="{{ route('incidencias.mis-tareas') }}"
+                           class="nav-link {{ request()->is('mis-tareas') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-clipboard-check"></i>
+                            <p>Mis Tareas</p>
+                        </a>
+                    </li>
+
                     <li class="nav-item" id="menuTablero" style="display:none;">
                         <a href="{{ route('incidencias.tablero') }}"
                            class="nav-link {{ request()->is('tablero') ? 'active' : '' }}">
@@ -431,6 +439,14 @@
                            class="nav-link {{ request()->is('reportes') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-chart-pie"></i>
                             <p>Reportes</p>
+                        </a>
+                    </li>
+
+                    <li class="nav-item" id="menuCoordinador" style="display:none;">
+                        <a href="{{ route('coordinador.index') }}"
+                           class="nav-link {{ request()->is('coordinador') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-user-shield"></i>
+                            <p>Coordinador</p>
                         </a>
                     </li>
 
@@ -546,8 +562,13 @@ if(usuario){
         document.getElementById("menuReportes").style.display = "block";
     }
 
+    if(rolNombre === "Responsable"){
+        document.getElementById("menuMisTareas").style.display = "block";
+    }
+
     if(rolNombre === "Administrador"){
         document.getElementById("menuUsuarios").style.display = "block";
+        document.getElementById("menuCoordinador").style.display = "block";
     }
 
 }
