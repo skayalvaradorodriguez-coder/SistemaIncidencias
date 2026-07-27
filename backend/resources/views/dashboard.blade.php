@@ -35,6 +35,47 @@
     .btn-vista-mapa { font-size: 0.78rem; }
     .btn-vista-mapa.activo { background: #C9A961; color: #0A1128; border-color: #A9863F; }
 
+    /* Filtros del mapa general */
+    .filtros-mapa {
+        gap: 12px;
+        border-top: 1px solid var(--border-subtle, rgba(255,255,255,0.08));
+        padding-top: 12px;
+    }
+    .filtro-item {
+        display: flex;
+        flex-direction: column;
+        min-width: 150px;
+    }
+    .filtro-item label {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+        margin-bottom: 3px;
+        color: var(--text-muted, #9ca3af);
+    }
+    .filtro-contador { font-size: 0.8rem; align-self: center; }
+
+    /* Botón Limpiar filtros: alineado con los selects (no debe heredar flex-column) */
+    .btn-limpiar-filtros {
+        height: calc(1.8125rem + 2px); /* misma altura que .form-control-sm */
+        padding: 0 12px;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid #C9A961;
+        color: #C9A961;
+        background: transparent;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        transition: background-color .15s ease, color .15s ease;
+    }
+    .btn-limpiar-filtros:hover,
+    .btn-limpiar-filtros:focus {
+        background: #C9A961;
+        color: #0A1128;
+        border-color: #A9863F;
+    }
+
     /* Leyenda del mapa de calor */
     .leyenda-calor {
         display: none;
@@ -371,10 +412,69 @@
                     </div>
                 @endif
             </div>
+
+            @if($conUbicacion->count() > 0)
+            <!-- Filtros del mapa -->
+            <div class="filtros-mapa mt-3 d-flex flex-wrap align-items-end">
+                <div class="filtro-item">
+                    <label for="filtroEstado">Estado</label>
+                    <select id="filtroEstado" class="form-control form-control-sm">
+                        <option value="">Todos</option>
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="En Proceso">En Proceso</option>
+                        <option value="Resuelto">Resuelto</option>
+                        <option value="Rechazado">Rechazado</option>
+                    </select>
+                </div>
+
+                <div class="filtro-item">
+                    <label for="filtroTipo">Tipo</label>
+                    <select id="filtroTipo" class="form-control form-control-sm">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+
+                <div class="filtro-item">
+                    <label for="filtroProvincia">Provincia</label>
+                    <select id="filtroProvincia" class="form-control form-control-sm">
+                        <option value="">Todas</option>
+                    </select>
+                </div>
+
+                <div class="filtro-item">
+                    <label for="filtroCiudad">Ciudad</label>
+                    <select id="filtroCiudad" class="form-control form-control-sm">
+                        <option value="">Todas</option>
+                    </select>
+                </div>
+
+                <div class="filtro-item">
+                    <label for="filtroPrioridad">Prioridad</label>
+                    <select id="filtroPrioridad" class="form-control form-control-sm">
+                        <option value="">Todas</option>
+                        <option value="Baja">Baja</option>
+                        <option value="Media">Media</option>
+                        <option value="Alta">Alta</option>
+                        <option value="Crítica">Crítica</option>
+                    </select>
+                </div>
+
+                <button type="button" id="btnLimpiarFiltros" class="btn btn-sm btn-limpiar-filtros">
+                    <i class="fas fa-times mr-1"></i>Limpiar
+                </button>
+
+                <span class="filtro-contador ml-auto text-muted" id="filtroContador"></span>
+            </div>
+            @endif
         </div>
         <div class="card-body">
             @if($conUbicacion->count() > 0)
                 <div id="mapaGeneral"></div>
+
+                <p id="mapaGeneralVacio" class="text-muted text-center py-4 mb-0" style="display:none;">
+                    <i class="fas fa-filter d-block mb-2" style="font-size:2rem;"></i>
+                    Ninguna incidencia coincide con los filtros seleccionados.
+                </p>
 
                 <!-- Leyenda de marcadores -->
                 <div class="leyenda-mapa" id="leyendaMarcadores">
@@ -672,12 +772,14 @@
     const coloresEstado = {
         'Pendiente': dorado,
         'En Proceso': navy,
-        'Resuelto': verde
+        'Resuelto': verde,
+        'Rechazado': '#dc3545'
     };
 
     let mapaGeneral = null;
     let capaMarcadores = null;
     let capaCalor = null;
+    let vistaActiva = 'marcadores'; // 'marcadores' | 'calor'
 
     if (incidencias.length > 0) {
 
@@ -688,53 +790,173 @@
             attribution: '&copy; OpenStreetMap'
         }).addTo(mapaGeneral);
 
-        const marcadores = [];
+        // ---- Poblar el filtro de Tipo dinámicamente a partir de los datos reales ----
+        const selectTipo = document.getElementById('filtroTipo');
+        const tiposUnicos = [...new Set(
+            incidencias.map(inc => inc.tipo ? inc.tipo.nombre : null).filter(Boolean)
+        )].sort();
 
-        incidencias.forEach(inc => {
+        tiposUnicos.forEach(nombreTipo => {
+            const opt = document.createElement('option');
+            opt.value = nombreTipo;
+            opt.textContent = nombreTipo;
+            selectTipo.appendChild(opt);
+        });
 
-            const estadoNombre = inc.estado ? inc.estado.nombre : 'Otro';
-            const color = coloresEstado[estadoNombre] || '#6c757d';
+        // ---- Poblar el filtro de Provincia dinámicamente a partir de los datos reales ----
+        const selectProvincia = document.getElementById('filtroProvincia');
+        const provinciasUnicas = [...new Set(
+            incidencias.map(inc => (inc.ciudad && inc.ciudad.provincia) ? inc.ciudad.provincia.nombre : null).filter(Boolean)
+        )].sort();
 
-            const marcador = L.circleMarker([inc.latitud, inc.longitud], {
-                radius: 9,
-                fillColor: color,
-                color: '#ffffff',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.85
+        provinciasUnicas.forEach(nombreProvincia => {
+            const opt = document.createElement('option');
+            opt.value = nombreProvincia;
+            opt.textContent = nombreProvincia;
+            selectProvincia.appendChild(opt);
+        });
+
+        // ---- Filtro de Ciudad en cascada: depende de la Provincia seleccionada ----
+        const selectCiudad = document.getElementById('filtroCiudad');
+
+        function ciudadesDe(nombreProvincia) {
+            const ciudades = incidencias
+                .filter(inc => inc.ciudad && (!nombreProvincia || (inc.ciudad.provincia && inc.ciudad.provincia.nombre === nombreProvincia)))
+                .map(inc => inc.ciudad.nombre);
+            return [...new Set(ciudades)].sort();
+        }
+
+        function actualizarCiudades(nombreProvincia) {
+            const seleccionActual = selectCiudad.value;
+            selectCiudad.innerHTML = '<option value="">Todas</option>';
+
+            ciudadesDe(nombreProvincia).forEach(nombreCiudad => {
+                const opt = document.createElement('option');
+                opt.value = nombreCiudad;
+                opt.textContent = nombreCiudad;
+                selectCiudad.appendChild(opt);
             });
 
-            marcador.bindPopup(`
-                <strong>#${inc.id} - ${inc.titulo}</strong><br>
-                Estado: <b style="color:${color}">${estadoNombre}</b><br>
-                Prioridad: ${inc.prioridad}<br>
-                Tipo: ${inc.tipo ? inc.tipo.nombre : 'N/A'}<br>
-                <a href="/incidencias/${inc.id}">Ver detalle →</a>
-            `);
+            // Conserva la ciudad elegida si sigue siendo válida para la nueva provincia
+            const sigueValida = [...selectCiudad.options].some(o => o.value === seleccionActual);
+            selectCiudad.value = sigueValida ? seleccionActual : '';
+        }
 
-            marcadores.push(marcador);
+        // Poblado inicial de Ciudad (todas, sin provincia seleccionada aún)
+        actualizarCiudades('');
+
+        selectProvincia.addEventListener('change', function () {
+            actualizarCiudades(selectProvincia.value);
+            aplicarFiltros();
         });
 
-        capaMarcadores = L.featureGroup(marcadores).addTo(mapaGeneral);
+        // ---- Poblar el filtro de Tipo dinámicamente a partir de los datos reales ----
+        // (declarado más arriba)
 
-        const puntosCalor = incidencias.map(inc => [inc.latitud, inc.longitud, 0.8]);
-        capaCalor = L.heatLayer(puntosCalor, {
-            radius: 30,
-            blur: 20,
-            maxZoom: 15,
-            gradient: { 0.2: '#16233F', 0.5: '#C9A961', 0.8: '#E3CD8F', 1.0: '#dc3545' }
+        // ---- Dibuja (o redibuja) las capas del mapa con el subconjunto recibido ----
+        function dibujarMapa(lista) {
+            if (capaMarcadores) { mapaGeneral.removeLayer(capaMarcadores); capaMarcadores = null; }
+            if (capaCalor) { mapaGeneral.removeLayer(capaCalor); capaCalor = null; }
+
+            const mapaVacio = document.getElementById('mapaGeneralVacio');
+            const contenedorMapa = document.getElementById('mapaGeneral');
+
+            if (lista.length === 0) {
+                mapaVacio.style.display = 'block';
+                contenedorMapa.style.display = 'none';
+                return;
+            }
+
+            mapaVacio.style.display = 'none';
+            contenedorMapa.style.display = 'block';
+            mapaGeneral.invalidateSize();
+
+            const marcadores = lista.map(inc => {
+                const estadoNombre = inc.estado ? inc.estado.nombre : 'Otro';
+                const color = coloresEstado[estadoNombre] || '#6c757d';
+
+                return L.circleMarker([inc.latitud, inc.longitud], {
+                    radius: 9,
+                    fillColor: color,
+                    color: '#ffffff',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.85
+                }).bindPopup(`
+                    <strong>#${inc.id} - ${inc.titulo}</strong><br>
+                    Estado: <b style="color:${color}">${estadoNombre}</b><br>
+                    Prioridad: ${inc.prioridad}<br>
+                    Tipo: ${inc.tipo ? inc.tipo.nombre : 'N/A'}<br>
+                    Ciudad: ${inc.ciudad ? inc.ciudad.nombre : 'N/A'}<br>
+                    Provincia: ${(inc.ciudad && inc.ciudad.provincia) ? inc.ciudad.provincia.nombre : 'N/A'}<br>
+                    <a href="/incidencias/${inc.id}">Ver detalle →</a>
+                `);
+            });
+
+            capaMarcadores = L.featureGroup(marcadores);
+
+            const puntosCalor = lista.map(inc => [inc.latitud, inc.longitud, 0.8]);
+            capaCalor = L.heatLayer(puntosCalor, {
+                radius: 30,
+                blur: 20,
+                maxZoom: 15,
+                gradient: { 0.2: '#16233F', 0.5: '#C9A961', 0.8: '#E3CD8F', 1.0: '#dc3545' }
+            });
+
+            mapaGeneral.addLayer(vistaActiva === 'calor' ? capaCalor : capaMarcadores);
+            mapaGeneral.fitBounds(capaMarcadores.getBounds().pad(0.2));
+        }
+
+        // ---- Lee los selects, filtra el dataset completo y vuelve a dibujar ----
+        function aplicarFiltros() {
+            const estado = document.getElementById('filtroEstado').value;
+            const tipo = document.getElementById('filtroTipo').value;
+            const ciudad = document.getElementById('filtroCiudad').value;
+            const provincia = document.getElementById('filtroProvincia').value;
+            const prioridad = document.getElementById('filtroPrioridad').value;
+
+            const filtradas = incidencias.filter(inc => {
+                const coincideEstado = !estado || (inc.estado && inc.estado.nombre === estado);
+                const coincideTipo = !tipo || (inc.tipo && inc.tipo.nombre === tipo);
+                const coincideCiudad = !ciudad || (inc.ciudad && inc.ciudad.nombre === ciudad);
+                const coincideProvincia = !provincia || (inc.ciudad && inc.ciudad.provincia && inc.ciudad.provincia.nombre === provincia);
+                const coincidePrioridad = !prioridad || inc.prioridad === prioridad;
+                return coincideEstado && coincideTipo && coincideCiudad && coincideProvincia && coincidePrioridad;
+            });
+
+            document.getElementById('filtroContador').textContent =
+                `${filtradas.length} de ${incidencias.length} incidencias`;
+
+            dibujarMapa(filtradas);
+        }
+
+        document.getElementById('filtroEstado').addEventListener('change', aplicarFiltros);
+        document.getElementById('filtroTipo').addEventListener('change', aplicarFiltros);
+        document.getElementById('filtroCiudad').addEventListener('change', aplicarFiltros);
+        document.getElementById('filtroPrioridad').addEventListener('change', aplicarFiltros);
+
+        document.getElementById('btnLimpiarFiltros').addEventListener('click', function () {
+            document.getElementById('filtroEstado').value = '';
+            document.getElementById('filtroTipo').value = '';
+            document.getElementById('filtroProvincia').value = '';
+            actualizarCiudades('');
+            document.getElementById('filtroPrioridad').value = '';
+            aplicarFiltros();
         });
 
-        mapaGeneral.fitBounds(capaMarcadores.getBounds().pad(0.2));
+        // Dibujo inicial (sin filtros aplicados)
+        aplicarFiltros();
 
+        // ---- Toggle Marcadores / Mapa de calor (respeta el filtro activo) ----
         const btnMarcadores = document.getElementById('btnMarcadores');
         const btnCalor = document.getElementById('btnCalor');
         const leyendaMarc = document.getElementById('leyendaMarcadores');
         const leyendaCal = document.getElementById('leyendaCalor');
 
         btnMarcadores.addEventListener('click', function () {
-            mapaGeneral.removeLayer(capaCalor);
-            mapaGeneral.addLayer(capaMarcadores);
+            vistaActiva = 'marcadores';
+            if (capaCalor) mapaGeneral.removeLayer(capaCalor);
+            if (capaMarcadores) mapaGeneral.addLayer(capaMarcadores);
             btnMarcadores.classList.add('activo');
             btnCalor.classList.remove('activo');
             leyendaMarc.style.display = 'flex';
@@ -742,8 +964,9 @@
         });
 
         btnCalor.addEventListener('click', function () {
-            mapaGeneral.removeLayer(capaMarcadores);
-            mapaGeneral.addLayer(capaCalor);
+            vistaActiva = 'calor';
+            if (capaMarcadores) mapaGeneral.removeLayer(capaMarcadores);
+            if (capaCalor) mapaGeneral.addLayer(capaCalor);
             btnCalor.classList.add('activo');
             btnMarcadores.classList.remove('activo');
             leyendaMarc.style.display = 'none';

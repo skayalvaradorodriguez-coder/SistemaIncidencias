@@ -53,7 +53,7 @@ class DashboardController extends Controller
         ->get();
 
         // Incidencias georreferenciadas para el mapa general
-        $conUbicacion = Incidencia::with(['estado', 'tipo'])
+        $conUbicacion = Incidencia::with(['estado', 'tipo', 'ciudad.provincia'])
             ->whereNotNull('latitud')
             ->whereNotNull('longitud')
             ->get([
@@ -64,6 +64,7 @@ class DashboardController extends Controller
                 'longitud',
                 'estado_incidencia_id',
                 'tipo_incidencia_id',
+                'ciudad_id',
             ]);
 
         // Conteo por tipo de incidencia (para gráfico de barras)
