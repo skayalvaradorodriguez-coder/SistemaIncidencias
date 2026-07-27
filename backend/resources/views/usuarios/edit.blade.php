@@ -148,12 +148,8 @@
 
                         </button>
 
-                        
-                            href="{{ route('usuarios.index') }}"
-                            class="btn btn-ghost">
-
+                        <a href="{{ route('usuarios.index') }}" class="btn btn-ghost">
                             Cancelar
-
                         </a>
 
                     </div>
