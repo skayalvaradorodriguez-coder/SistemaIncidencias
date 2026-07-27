@@ -18,12 +18,14 @@ trazabilidad completa del ciclo de vida y control de acceso por roles.
 5. [Roles y permisos](#roles-y-permisos)
 6. [Módulos del sistema](#módulos-del-sistema)
 7. [Instalación y ejecución](#instalación-y-ejecución)
-8. [Credenciales de acceso](#credenciales-de-acceso)
-9. [Base de datos](#base-de-datos)
-10. [Pruebas automatizadas](#pruebas-automatizadas)
-11. [Rendimiento y optimización](#rendimiento-y-optimización)
-12. [Comandos útiles](#comandos-útiles)
-13. [Solución de problemas](#solución-de-problemas)
+8. [Despliegue en Render](#despliegue-en-render)
+9. [Credenciales de acceso](#credenciales-de-acceso)
+10. [Base de datos](#base-de-datos)
+11. [Pruebas automatizadas](#pruebas-automatizadas)
+12. [Rendimiento y optimización](#rendimiento-y-optimización)
+13. [Criterios adicionales (bonificación extra)](#criterios-adicionales-bonificación-extra)
+14. [Comandos útiles](#comandos-útiles)
+15. [Solución de problemas](#solución-de-problemas)
 
 ---
 
@@ -165,7 +167,7 @@ Sistema_Incidencias/
 │   │   ├── Dockerfile                # Imagen PHP 8.4-FPM con OPcache
 │   │   └── entrypoint.sh             # Arranque: composer, migrate, seed, cachés
 │   ├── nginx/
-│   │   └── default.conf              # Proxy FastCGI y cabeceras de seguridad
+│   │   └── default.conf              # Proxy FastCGI, balanceo round-robin y cabeceras de seguridad
 │   └── render/                       # Configuración para despliegue en Render
 │       ├── Dockerfile                # Imagen combinada (Nginx + PHP-FPM)
 │       ├── entrypoint.sh
@@ -175,7 +177,7 @@ Sistema_Incidencias/
 ├── docs/
 │   └── CALIDAD.md                    # Estrategia de pruebas, métricas y hallazgos
 │
-├── docker-compose.yml                # Orquestación de los 3 contenedores
+├── docker-compose.yml                # Orquestación de 4 contenedores (2 instancias backend + nginx + postgres)
 ├── .gitattributes                    # Normalización de finales de línea (LF)
 ├── .gitignore
 └── README.md
@@ -275,6 +277,67 @@ El sistema está listo cuando aparece `ready to handle connections`
 ### 4. Acceder
 
 **http://localhost:8080**
+
+---
+
+## Despliegue en Render
+
+El proyecto incluye una imagen combinada (Nginx + PHP-FPM en un solo contenedor,
+orquestados con `supervisord`) en `docker/render/`, pensada para plataformas
+tipo Render que solo aceptan **un** contenedor web por servicio.
+
+### Configuración del servicio
+
+- **Root Directory:** la raíz del repositorio (donde está este `README.md`).
+- **Dockerfile Path:** `docker/render/Dockerfile`
+- **Docker Context:** raíz del repositorio (el Dockerfile copia `backend/` desde ahí).
+- **Base de datos:** un servicio de PostgreSQL aparte en Render (o externo), conectado
+  por las variables `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`.
+
+### Variables de entorno obligatorias
+
+| Variable | Valor |
+|---|---|
+| `APP_ENV` | `production` |
+| `APP_DEBUG` | `false` |
+| `APP_URL` | `https://<tu-servicio>.onrender.com` (la URL real que asigna Render, **con `https://`**) |
+| `APP_KEY` | se genera solo en el primer arranque si falta |
+| `DB_CONNECTION` | `pgsql` |
+| `DB_HOST` / `DB_PORT` / `DB_DATABASE` / `DB_USERNAME` / `DB_PASSWORD` | credenciales del servicio de PostgreSQL |
+| `DB_SEED` | `true` solo en el primer despliegue, para ejecutar los seeders iniciales |
+
+### Importante: HTTPS detrás del proxy de Render
+
+Render termina el HTTPS en su proxy y reenvía las peticiones al contenedor por
+HTTP interno. Si Laravel no confía en ese proxy, genera los enlaces de
+`asset()` (CSS, JS, imágenes) con `http://` en vez de `https://`, y el
+navegador los bloquea por **contenido mixto** — el síntoma es un sitio
+funcional pero completamente sin estilos, como HTML plano.
+
+Esto ya está resuelto en el código con dos cambios:
+
+1. **`backend/bootstrap/app.php`** — `trustProxies(at: '*')` para que Laravel
+   reconozca el encabezado `X-Forwarded-Proto` que manda Render.
+2. **`backend/app/Providers/AppServiceProvider.php`** — `URL::forceScheme('https')`
+   como respaldo cuando `APP_ENV=production`.
+
+Si en un despliegue nuevo los estilos no cargan, revisa primero que `APP_URL`
+esté configurada con `https://` en las variables de entorno de Render, y luego
+haz **Manual Deploy → Clear build cache & deploy** (el entrypoint corre
+`php artisan config:cache`, así que una config vieja puede quedar cacheada).
+
+### Primer despliegue
+
+1. Crea el servicio en Render apuntando al Dockerfile de `docker/render/`.
+2. Configura las variables de entorno de la tabla anterior.
+3. Despliega. El `entrypoint.sh` de `docker/render/` se encarga de:
+   - Instalar dependencias de Composer si `vendor/` no existe.
+   - Generar `APP_KEY` si falta.
+   - Esperar a que PostgreSQL acepte conexiones.
+   - Ejecutar migraciones (`php artisan migrate --force`).
+   - Ejecutar seeders si `DB_SEED=true`.
+   - Cachear la configuración y arrancar Nginx + PHP-FPM vía `supervisord`.
+4. Verifica los logs del servicio hasta ver `Listo. Iniciando supervisord...`.
 
 ---
 
@@ -378,6 +441,74 @@ docker compose exec backend bash scripts/load-test.sh
 
 ---
 
+## Criterios adicionales (bonificación extra)
+
+Además de los requerimientos mínimos, el proyecto implementa las tres mejoras
+avanzadas contempladas en la rúbrica (sección "Criterios adicionales" de los
+lineamientos, hasta 5 puntos extra):
+
+### 1. Despliegue con múltiples instancias (escalamiento básico)
+
+`docker-compose.yml` levanta **dos instancias independientes** del backend
+Laravel (`backend` y `backend2`), cada una en su propio contenedor, ambas
+conectadas a la misma base de datos PostgreSQL:
+
+```
+                    ┌──────────────────┐
+                    │  Nginx (:8080)   │
+                    │  upstream        │
+                    │  round-robin     │
+                    └───────┬──────────┘
+                ┌───────────┴───────────┐
+                ▼                       ▼
+      ┌──────────────────┐    ┌──────────────────┐
+      │  backend (1)     │    │  backend2 (2)     │
+      │  PHP-FPM 8.4     │    │  PHP-FPM 8.4      │
+      └──────────────────┘    └──────────────────┘
+                └───────────┬───────────┘
+                            ▼
+                  ┌──────────────────┐
+                  │   PostgreSQL 15  │
+                  └──────────────────┘
+```
+
+Nginx (`docker/nginx/default.conf`) define un bloque `upstream php_backend`
+que reparte cada petición PHP entre `backend:9000` y `backend2:9000` en
+**round-robin**, con `max_fails`/`fail_timeout` para sacar automáticamente de
+la rotación a la instancia que falle.
+
+### 2. Configuraciones adicionales en contenedores
+
+- **Límites de recursos** (`deploy.resources.limits`) de `1 CPU` / `512 MB`
+  por cada instancia del backend, para simular un entorno de producción con
+  cuotas controladas.
+- **Healthchecks** propios en los tres servicios (`postgres`, `backend`,
+  `backend2`) — Nginx y la segunda instancia solo arrancan cuando sus
+  dependencias están realmente listas (`condition: service_healthy`), no solo
+  "iniciadas".
+- **Volúmenes nombrados separados** por instancia
+  (`framework_cache_1` / `framework_cache_2`) para que las cachés de vistas
+  de cada contenedor no choquen entre sí, además de un volumen compartido
+  (`vendor_data`) para no reinstalar Composer dos veces.
+- **Compresión gzip** habilitada en Nginx para las respuestas de texto/CSS/JS/JSON.
+
+### 3. Optimización más allá de los requerimientos mínimos
+
+Documentado con datos medibles en la sección
+[Rendimiento y optimización](#rendimiento-y-optimización):
+OPcache (192 MB / 20 000 archivos), `pm.max_children` ajustado de 5 a 10, y
+volúmenes nativos para `vendor/` y `storage/framework` en vez de bind mounts
+directos — la combinación llevó el throughput de una petición aislada a más
+de **23 req/s** en escenario concurrente, una mejora superior a 100× frente a
+la configuración por defecto.
+
+> **Nota:** el despliegue con múltiples instancias descrito aquí aplica al
+> entorno local con `docker-compose.yml`. El despliegue en Render
+> (ver [Despliegue en Render](#despliegue-en-render)) usa una sola instancia
+> combinada por restricciones del plan gratuito de la plataforma.
+
+---
+
 ## Comandos útiles
 
 ```bash
@@ -422,6 +553,7 @@ docker compose down
 | Acentos corruptos (`p??blico`) | Dump restaurado con tubería de PowerShell | Restaurar con `docker cp` + `psql -f` |
 | Sistema muy lento | Proyecto en carpeta sincronizada (OneDrive) | Mover a una ruta local como `C:\Proyectos\` |
 | No se puede iniciar sesión | Contraseña modificada en pruebas | Restablecerla con `php artisan tinker` dentro del contenedor |
+| **En Render: página sin estilos** (HTML plano, sin CSS/JS) | Laravel genera los `asset()` con `http://` detrás del proxy HTTPS de Render (contenido mixto bloqueado por el navegador) | Ver [Despliegue en Render](#despliegue-en-render): confirmar `APP_URL=https://...` y que `trustProxies` esté configurado en `bootstrap/app.php` |
 
 ---
 
