@@ -138,6 +138,32 @@
             </div>
         </div>
 
+        <!-- ===== Filtro por rango de fechas ===== -->
+        <div class="card mb-3" id="tarjetaFiltroFechas">
+            <div class="card-body py-3">
+                <div class="d-flex align-items-end flex-wrap" style="gap:14px;">
+                    <div>
+                        <label class="mb-1 d-block" style="font-size:0.78rem; font-weight:600;">Desde</label>
+                        <input type="date" id="filtroFechaDesde" class="form-control form-control-sm">
+                    </div>
+                    <div>
+                        <label class="mb-1 d-block" style="font-size:0.78rem; font-weight:600;">Hasta</label>
+                        <input type="date" id="filtroFechaHasta" class="form-control form-control-sm">
+                    </div>
+                    <div class="d-flex flex-wrap" style="gap:6px;">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-rango="hoy">Hoy</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-rango="7dias">Últimos 7 días</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-rango="mes">Este mes</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-rango="anio">Este año</button>
+                        <button type="button" id="btnLimpiarFechas" class="btn btn-sm btn-ghost">
+                            <i class="fas fa-times mr-1"></i>Limpiar
+                        </button>
+                    </div>
+                    <div class="ml-auto text-muted" style="font-size:0.8rem;" id="etiquetaPeriodoActivo"></div>
+                </div>
+            </div>
+        </div>
+
         <!-- ===== KPIs ===== -->
         <div class="row mb-4" id="filaKpis"></div>
 
@@ -194,6 +220,62 @@ let ultimosKpis = [];
 let todosLosUsuarios = [];
 let tipoActivo = 'todas';
 let esAdminReporte = false;
+
+// ================== FILTRO POR RANGO DE FECHAS (para auditoría/contraloría) ==================
+let filtroFechaDesde = ''; // 'YYYY-MM-DD' o '' si no hay límite
+let filtroFechaHasta = ''; // 'YYYY-MM-DD' o '' si no hay límite
+
+function fechaIncidencia(inc) {
+    // Se filtra por la fecha en que se reportó la incidencia; si por algún
+    // motivo no existe, se usa la fecha de creación del registro como respaldo.
+    return inc.fecha_reporte || inc.created_at;
+}
+
+function dentroDelRango(fechaStr) {
+    if (!fechaStr) return false;
+    const fecha = String(fechaStr).substring(0, 10); // YYYY-MM-DD
+    if (filtroFechaDesde && fecha < filtroFechaDesde) return false;
+    if (filtroFechaHasta && fecha > filtroFechaHasta) return false;
+    return true;
+}
+
+function filtrarIncidenciasPorFecha(lista) {
+    if (!filtroFechaDesde && !filtroFechaHasta) return lista;
+    return lista.filter(inc => dentroDelRango(fechaIncidencia(inc)));
+}
+
+function filtrarUsuariosPorFecha(lista) {
+    if (!filtroFechaDesde && !filtroFechaHasta) return lista;
+    return lista.filter(u => dentroDelRango(u.created_at));
+}
+
+function actualizarEtiquetaPeriodo() {
+    const etiqueta = document.getElementById('etiquetaPeriodoActivo');
+    if (!etiqueta) return;
+
+    const formato = (f) => f ? new Date(f + 'T00:00:00').toLocaleDateString('es-EC') : '';
+
+    if (!filtroFechaDesde && !filtroFechaHasta) {
+        etiqueta.innerHTML = '';
+    } else if (filtroFechaDesde && filtroFechaHasta) {
+        etiqueta.innerHTML = `<i class="fas fa-filter mr-1"></i>Periodo: ${formato(filtroFechaDesde)} — ${formato(filtroFechaHasta)}`;
+    } else if (filtroFechaDesde) {
+        etiqueta.innerHTML = `<i class="fas fa-filter mr-1"></i>Desde: ${formato(filtroFechaDesde)}`;
+    } else {
+        etiqueta.innerHTML = `<i class="fas fa-filter mr-1"></i>Hasta: ${formato(filtroFechaHasta)}`;
+    }
+}
+
+function reRenderizarVistaActual() {
+    if (tipoActivo === 'por_usuario') {
+        const usuarioId = document.getElementById('selectUsuarioReporte').value;
+        if (usuarioId) {
+            renderizarReportePorUsuario(usuarioId);
+        }
+    } else {
+        renderizarReporte(tipoActivo);
+    }
+}
 
 const COLOR_ESTADO = {
     'Pendiente': { hex: '#C9A961', clase: 'warning' },
@@ -265,6 +347,66 @@ document.getElementById('selectorReportes').addEventListener('click', function (
     renderizarReporte(pildora.dataset.tipo);
 });
 
+// ================== FILTRO POR RANGO DE FECHAS: eventos ==================
+document.getElementById('filtroFechaDesde').addEventListener('change', function () {
+    filtroFechaDesde = this.value;
+    actualizarEtiquetaPeriodo();
+    reRenderizarVistaActual();
+});
+
+document.getElementById('filtroFechaHasta').addEventListener('change', function () {
+    filtroFechaHasta = this.value;
+    actualizarEtiquetaPeriodo();
+    reRenderizarVistaActual();
+});
+
+document.getElementById('btnLimpiarFechas').addEventListener('click', function () {
+    filtroFechaDesde = '';
+    filtroFechaHasta = '';
+    document.getElementById('filtroFechaDesde').value = '';
+    document.getElementById('filtroFechaHasta').value = '';
+    actualizarEtiquetaPeriodo();
+    reRenderizarVistaActual();
+});
+
+document.querySelectorAll('#tarjetaFiltroFechas [data-rango]').forEach(function (boton) {
+    boton.addEventListener('click', function () {
+        const hoy = new Date();
+        const aISO = (d) => {
+            const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+            return local.toISOString().substring(0, 10);
+        };
+
+        let desde;
+        const hasta = aISO(hoy);
+
+        switch (this.dataset.rango) {
+            case 'hoy':
+                desde = aISO(hoy);
+                break;
+            case '7dias': {
+                const hace7 = new Date(hoy);
+                hace7.setDate(hoy.getDate() - 6);
+                desde = aISO(hace7);
+                break;
+            }
+            case 'mes':
+                desde = aISO(new Date(hoy.getFullYear(), hoy.getMonth(), 1));
+                break;
+            case 'anio':
+                desde = aISO(new Date(hoy.getFullYear(), 0, 1));
+                break;
+        }
+
+        filtroFechaDesde = desde;
+        filtroFechaHasta = hasta;
+        document.getElementById('filtroFechaDesde').value = desde;
+        document.getElementById('filtroFechaHasta').value = hasta;
+        actualizarEtiquetaPeriodo();
+        reRenderizarVistaActual();
+    });
+});
+
 // ================== RENDER PRINCIPAL ==================
 function renderizarReporte(tipo) {
     tipoActivo = tipo;
@@ -272,8 +414,9 @@ function renderizarReporte(tipo) {
 
     if (tipo === 'usuarios') {
         document.getElementById('selectUsuarioReporte').style.display = 'none';
-        renderizarKpisUsuarios();
-        renderizarTablaUsuarios(todosLosUsuarios);
+        const usuariosFiltrados = filtrarUsuariosPorFecha(todosLosUsuarios);
+        renderizarKpisUsuarios(usuariosFiltrados);
+        renderizarTablaUsuarios(usuariosFiltrados);
         document.getElementById('tituloTabla').textContent = 'Usuarios del Sistema';
         return;
     }
@@ -296,9 +439,10 @@ function renderizarReporte(tipo) {
 
     document.getElementById('selectUsuarioReporte').style.display = 'none';
 
+    const baseFiltradaPorFecha = filtrarIncidenciasPorFecha(todasLasIncidencias);
     const datos = tipo === 'todas'
-        ? todasLasIncidencias
-        : todasLasIncidencias.filter(i => (i.estado ? i.estado.nombre : '') === tipo);
+        ? baseFiltradaPorFecha
+        : baseFiltradaPorFecha.filter(i => (i.estado ? i.estado.nombre : '') === tipo);
 
     const titulos = {
         'todas': 'Todas las Incidencias',
@@ -317,6 +461,8 @@ function renderizarReporte(tipo) {
 // ================== KPIs: INCIDENCIAS ==================
 function renderizarKpisIncidencias(datos) {
 
+    const totalPeriodo = filtrarIncidenciasPorFecha(todasLasIncidencias).length;
+
     const porPrioridad = { 'Baja': 0, 'Media': 0, 'Alta': 0, 'Crítica': 0 };
     let conUbicacion = 0;
 
@@ -334,26 +480,27 @@ function renderizarKpisIncidencias(datos) {
           numero: prioridadMasFrecuente[1] > 0 ? prioridadMasFrecuente[0] : '—', etiqueta: 'Prioridad más frecuente' },
         { icono: 'fa-map-marker-alt', color: '#2F7A4D', numero: conUbicacion, etiqueta: 'Con ubicación registrada' },
         { icono: 'fa-percentage', color: '#C9A961',
-          numero: todasLasIncidencias.length > 0 ? Math.round((datos.length / todasLasIncidencias.length) * 100) + '%' : '0%',
-          etiqueta: 'Del total de incidencias' }
+          numero: totalPeriodo > 0 ? Math.round((datos.length / totalPeriodo) * 100) + '%' : '0%',
+          etiqueta: (filtroFechaDesde || filtroFechaHasta) ? 'Del total en el periodo' : 'Del total de incidencias' }
     ];
 
     pintarKpis(kpis);
 }
 
 // ================== KPIs: USUARIOS ==================
-function renderizarKpisUsuarios() {
-    const activos = todosLosUsuarios.filter(u => u.activo).length;
+function renderizarKpisUsuarios(lista) {
+    const datosUsuarios = lista || todosLosUsuarios;
+    const activos = datosUsuarios.filter(u => u.activo).length;
     const porRol = {};
-    todosLosUsuarios.forEach(u => {
+    datosUsuarios.forEach(u => {
         const r = u.rol ? u.rol.nombre : 'Sin rol';
         porRol[r] = (porRol[r] || 0) + 1;
     });
 
     const kpis = [
-        { icono: 'fa-users', color: '#16233F', numero: todosLosUsuarios.length, etiqueta: 'Total de usuarios' },
+        { icono: 'fa-users', color: '#16233F', numero: datosUsuarios.length, etiqueta: 'Total de usuarios' },
         { icono: 'fa-user-check', color: '#2F7A4D', numero: activos, etiqueta: 'Cuentas activas' },
-        { icono: 'fa-user-times', color: '#B3413A', numero: todosLosUsuarios.length - activos, etiqueta: 'Cuentas inactivas' },
+        { icono: 'fa-user-times', color: '#B3413A', numero: datosUsuarios.length - activos, etiqueta: 'Cuentas inactivas' },
         { icono: 'fa-user-shield', color: '#C9A961', numero: porRol['Administrador'] || 0, etiqueta: 'Administradores' }
     ];
 
@@ -395,7 +542,8 @@ document.getElementById('selectUsuarioReporte').addEventListener('change', funct
 
 function renderizarReportePorUsuario(usuarioId) {
     const usuario = todosLosUsuarios.find(u => String(u.id) === String(usuarioId));
-    const datos = todasLasIncidencias.filter(i => i.usuario && String(i.usuario.id) === String(usuarioId));
+    const datos = filtrarIncidenciasPorFecha(todasLasIncidencias)
+        .filter(i => i.usuario && String(i.usuario.id) === String(usuarioId));
 
     const nombreUsuario = usuario ? `${usuario.name} ${usuario.apellido || ''}`.trim() : 'Usuario';
     document.getElementById('tituloTabla').textContent = `Incidencias de ${nombreUsuario}`;
@@ -491,7 +639,8 @@ function renderizarTablaIncidencias(datos) {
 
 // ================== TABLA: USUARIOS ==================
 function conteoIncidenciasPorUsuario(usuarioId) {
-    return todasLasIncidencias.filter(i => i.usuario && String(i.usuario.id) === String(usuarioId)).length;
+    return filtrarIncidenciasPorFecha(todasLasIncidencias)
+        .filter(i => i.usuario && String(i.usuario.id) === String(usuarioId)).length;
 }
 
 function renderizarTablaUsuarios(datos) {
@@ -555,9 +704,18 @@ document.getElementById('btnPdf').addEventListener('click', function () {
     const fechaEmision = ahora.toLocaleDateString('es-EC', { day: '2-digit', month: 'long', year: 'numeric' });
     const horaEmision = ahora.toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' });
     const sufijoReferencia = tipoActivo === 'por_usuario' ? `usuario${idUsuarioReporte}` : tipoActivo.replace(/\s+/g, '');
-    const referencia = `RPT-${ahora.getFullYear()}${String(ahora.getMonth() + 1).padStart(2, '0')}${String(ahora.getDate()).padStart(2, '0')}-${sufijoReferencia}`;
+    const sufijoFechas = (filtroFechaDesde || filtroFechaHasta)
+        ? `-${(filtroFechaDesde || 'ini').replace(/-/g, '')}_${(filtroFechaHasta || 'hoy').replace(/-/g, '')}`
+        : '';
+    const referencia = `RPT-${ahora.getFullYear()}${String(ahora.getMonth() + 1).padStart(2, '0')}${String(ahora.getDate()).padStart(2, '0')}-${sufijoReferencia}${sufijoFechas}`;
  
     const titulo = document.getElementById('tituloTabla').textContent;
+
+    const formatoFechaCortaPdf = (f) => f ? new Date(f + 'T00:00:00').toLocaleDateString('es-EC') : '';
+    const textoPeriodoPdf = (filtroFechaDesde || filtroFechaHasta)
+        ? `Periodo: ${filtroFechaDesde ? formatoFechaCortaPdf(filtroFechaDesde) : 'inicio'} – ${filtroFechaHasta ? formatoFechaCortaPdf(filtroFechaHasta) : 'hoy'}`
+        : '';
+
     const kpisHtmlPdf = ultimosKpis.map(k => `
         <div class="kpi-pdf-item" style="border-top-color:${k.color};">
             <div class="kpi-numero" style="color:${k.color};">${escaparHtml(String(k.numero))}</div>
@@ -570,8 +728,9 @@ document.getElementById('btnPdf').addEventListener('click', function () {
     let distribucion = {}; // para el gráfico de barras
  
     if (tipoActivo === 'usuarios') {
+        const usuariosPdf = filtrarUsuariosPorFecha(todosLosUsuarios);
         columnasTabla = ['#', 'Nombre', 'Correo', 'Rol', 'Estado', 'Registrado'];
-        filasTabla = todosLosUsuarios.map(u => `
+        filasTabla = usuariosPdf.map(u => `
             <tr>
                 <td>${u.id}</td>
                 <td>${escaparHtml(u.name)} ${escaparHtml(u.apellido)}</td>
@@ -582,7 +741,7 @@ document.getElementById('btnPdf').addEventListener('click', function () {
             </tr>`).join('');
  
         // Distribución por rol
-        todosLosUsuarios.forEach(u => {
+        usuariosPdf.forEach(u => {
             const r = u.rol ? u.rol.nombre : 'Sin rol';
             distribucion[r] = (distribucion[r] || 0) + 1;
         });
@@ -591,11 +750,13 @@ document.getElementById('btnPdf').addEventListener('click', function () {
         let datos;
 
         if (tipoActivo === 'por_usuario') {
-            datos = todasLasIncidencias.filter(i => i.usuario && String(i.usuario.id) === String(idUsuarioReporte));
+            datos = filtrarIncidenciasPorFecha(todasLasIncidencias)
+                .filter(i => i.usuario && String(i.usuario.id) === String(idUsuarioReporte));
         } else {
+            const basePdf = filtrarIncidenciasPorFecha(todasLasIncidencias);
             datos = tipoActivo === 'todas'
-                ? todasLasIncidencias
-                : todasLasIncidencias.filter(i => (i.estado ? i.estado.nombre : '') === tipoActivo);
+                ? basePdf
+                : basePdf.filter(i => (i.estado ? i.estado.nombre : '') === tipoActivo);
         }
  
         columnasTabla = ['#', 'Título', 'Ciudad', 'Tipo', 'Estado', 'Prioridad', 'Reportado por', 'Fecha'];
@@ -1068,6 +1229,7 @@ document.getElementById('btnPdf').addEventListener('click', function () {
                         <span class="referencia">${referencia}</span><br>
                         Emitido: ${fechaEmision}<br>
                         Hora: ${horaEmision}
+                        ${textoPeriodoPdf ? `<br>${textoPeriodoPdf}` : ''}
                     </div>
                 </div>
  
