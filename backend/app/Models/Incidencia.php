@@ -49,6 +49,11 @@ class Incidencia extends Model
         return $this->hasMany(Asignacion::class, 'incidencia_id');
     }
 
+    public function tareas()
+    {
+        return $this->hasMany(Tarea::class, 'incidencia_id');
+    }
+
     public function comentarios()
     {
         return $this->hasMany(Comentario::class, 'incidencia_id');
