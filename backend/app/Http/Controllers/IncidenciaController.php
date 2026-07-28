@@ -25,7 +25,7 @@ class IncidenciaController extends Controller
     {
         $query = Incidencia::with([
             'usuario',
-            'ciudad',
+            'ciudad.provincia',
             'tipo',
             'subtipo',
             'estado'
