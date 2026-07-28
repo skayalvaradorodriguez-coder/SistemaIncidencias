@@ -12,6 +12,7 @@ use App\Http\Controllers\EstadoController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AsignacionController;
 use App\Http\Controllers\TareaController;
+use App\Http\Controllers\CoordinadorController;
 
 // Rutas públicas (limitadas a 5 intentos por minuto contra fuerza bruta)
 Route::middleware('throttle:5,1')->group(function () {
@@ -41,6 +42,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Asignaciones (consulta abierta a autenticados)
     Route::get('/incidencias/{id}/asignaciones', [AsignacionController::class, 'index']);
+
+    // Mis Tareas (rol Responsable): incidencias asignadas al usuario autenticado
+    Route::get('/mis-tareas', [AsignacionController::class, 'misTareas']);
 
     // Comentarios
     Route::get('/incidencias/{id}/comentarios', [ComentarioController::class, 'index']);
@@ -101,5 +105,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/incidencias/{id}/tareas', [TareaController::class, 'index']);
         Route::post('/incidencias/{id}/tareas', [TareaController::class, 'store']);
         Route::delete('/tareas/{id}', [TareaController::class, 'destroy']);
+
+        // Panel de Coordinación: carga de trabajo de Responsables + incidencias sin asignar
+        Route::get('/coordinador/responsables', [CoordinadorController::class, 'responsables']);
+        Route::get('/coordinador/sin-asignar', [CoordinadorController::class, 'sinAsignar']);
     });
 });
