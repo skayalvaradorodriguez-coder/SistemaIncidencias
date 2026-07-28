@@ -150,6 +150,18 @@
                         <label class="mb-1 d-block" style="font-size:0.78rem; font-weight:600;">Hasta</label>
                         <input type="date" id="filtroFechaHasta" class="form-control form-control-sm">
                     </div>
+                    <div>
+                        <label class="mb-1 d-block" style="font-size:0.78rem; font-weight:600;">Provincia</label>
+                        <select id="filtroProvinciaReporte" class="form-control form-control-sm" style="min-width:160px;">
+                            <option value="">Todas las provincias</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="mb-1 d-block" style="font-size:0.78rem; font-weight:600;">Ciudad</label>
+                        <select id="filtroCiudadReporte" class="form-control form-control-sm" style="min-width:160px;">
+                            <option value="">Todas las ciudades</option>
+                        </select>
+                    </div>
                     <div class="d-flex flex-wrap" style="gap:6px;">
                         <button type="button" class="btn btn-sm btn-outline-secondary" data-rango="hoy">Hoy</button>
                         <button type="button" class="btn btn-sm btn-outline-secondary" data-rango="7dias">Últimos 7 días</button>
@@ -225,6 +237,70 @@ let esAdminReporte = false;
 let filtroFechaDesde = ''; // 'YYYY-MM-DD' o '' si no hay límite
 let filtroFechaHasta = ''; // 'YYYY-MM-DD' o '' si no hay límite
 
+// ================== FILTRO POR CIUDAD / PROVINCIA ==================
+let filtroCiudad = '';    // id de ciudad (string) o '' si no hay filtro
+let filtroProvincia = ''; // id de provincia (string) o '' si no hay filtro
+
+function filtrarIncidenciasPorCiudad(lista) {
+    if (!filtroCiudad) return lista;
+    return lista.filter(i => i.ciudad && String(i.ciudad.id) === filtroCiudad);
+}
+
+function filtrarIncidenciasPorProvincia(lista) {
+    if (!filtroProvincia) return lista;
+    return lista.filter(i => i.ciudad && i.ciudad.provincia && String(i.ciudad.provincia.id) === filtroProvincia);
+}
+
+// Llena el select de Provincia con las provincias que realmente tienen
+// incidencias en los datos cargados.
+function poblarSelectProvinciaReporte() {
+    const select = document.getElementById('filtroProvinciaReporte');
+    if (!select) return;
+
+    const provinciasUnicas = new Map();
+    todasLasIncidencias.forEach(inc => {
+        if (inc.ciudad && inc.ciudad.provincia && inc.ciudad.provincia.id) {
+            provinciasUnicas.set(inc.ciudad.provincia.id, inc.ciudad.provincia.nombre);
+        }
+    });
+
+    const ordenadas = Array.from(provinciasUnicas.entries())
+        .sort((a, b) => a[1].localeCompare(b[1]));
+
+    const valorPrevio = select.value;
+    select.innerHTML = '<option value="">Todas las provincias</option>' +
+        ordenadas.map(([id, nombre]) => `<option value="${id}">${escaparHtml(nombre)}</option>`).join('');
+    select.value = valorPrevio;
+}
+
+// Llena el select de Ciudad solo con las ciudades que realmente tienen
+// incidencias en los datos cargados. Si hay una provincia elegida, solo
+// muestra las ciudades de esa provincia (evita combinaciones imposibles).
+function poblarSelectCiudadReporte() {
+    const select = document.getElementById('filtroCiudadReporte');
+    if (!select) return;
+
+    const ciudadesUnicas = new Map();
+    todasLasIncidencias.forEach(inc => {
+        if (!inc.ciudad || !inc.ciudad.id) return;
+        if (filtroProvincia && (!inc.ciudad.provincia || String(inc.ciudad.provincia.id) !== filtroProvincia)) return;
+        ciudadesUnicas.set(inc.ciudad.id, inc.ciudad.nombre);
+    });
+
+    const ordenadas = Array.from(ciudadesUnicas.entries())
+        .sort((a, b) => a[1].localeCompare(b[1]));
+
+    select.innerHTML = '<option value="">Todas las ciudades</option>' +
+        ordenadas.map(([id, nombre]) => `<option value="${id}">${escaparHtml(nombre)}</option>`).join('');
+
+    // Si la ciudad que estaba elegida ya no pertenece a la provincia
+    // seleccionada, se limpia para no dejar un filtro imposible.
+    if (filtroCiudad && !ciudadesUnicas.has(Number(filtroCiudad)) && !ciudadesUnicas.has(filtroCiudad)) {
+        filtroCiudad = '';
+    }
+    select.value = filtroCiudad;
+}
+
 function fechaIncidencia(inc) {
     // Se filtra por la fecha en que se reportó la incidencia; si por algún
     // motivo no existe, se usa la fecha de creación del registro como respaldo.
@@ -255,15 +331,31 @@ function actualizarEtiquetaPeriodo() {
 
     const formato = (f) => f ? new Date(f + 'T00:00:00').toLocaleDateString('es-EC') : '';
 
-    if (!filtroFechaDesde && !filtroFechaHasta) {
-        etiqueta.innerHTML = '';
-    } else if (filtroFechaDesde && filtroFechaHasta) {
-        etiqueta.innerHTML = `<i class="fas fa-filter mr-1"></i>Periodo: ${formato(filtroFechaDesde)} — ${formato(filtroFechaHasta)}`;
+    let textoPeriodo = '';
+    if (filtroFechaDesde && filtroFechaHasta) {
+        textoPeriodo = `Periodo: ${formato(filtroFechaDesde)} — ${formato(filtroFechaHasta)}`;
     } else if (filtroFechaDesde) {
-        etiqueta.innerHTML = `<i class="fas fa-filter mr-1"></i>Desde: ${formato(filtroFechaDesde)}`;
-    } else {
-        etiqueta.innerHTML = `<i class="fas fa-filter mr-1"></i>Hasta: ${formato(filtroFechaHasta)}`;
+        textoPeriodo = `Desde: ${formato(filtroFechaDesde)}`;
+    } else if (filtroFechaHasta) {
+        textoPeriodo = `Hasta: ${formato(filtroFechaHasta)}`;
     }
+
+    let textoCiudad = '';
+    if (filtroProvincia) {
+        const selectProv = document.getElementById('filtroProvinciaReporte');
+        const nombreProvincia = selectProv.options[selectProv.selectedIndex]?.text || '';
+        textoCiudad = `Provincia: ${nombreProvincia}`;
+    }
+    if (filtroCiudad) {
+        const select = document.getElementById('filtroCiudadReporte');
+        const nombreCiudad = select.options[select.selectedIndex]?.text || '';
+        textoCiudad = textoCiudad ? `${textoCiudad} · Ciudad: ${nombreCiudad}` : `Ciudad: ${nombreCiudad}`;
+    }
+
+    const partes = [textoPeriodo, textoCiudad].filter(Boolean);
+    etiqueta.innerHTML = partes.length
+        ? `<i class="fas fa-filter mr-1"></i>${partes.join(' · ')}`
+        : '';
 }
 
 function reRenderizarVistaActual() {
@@ -328,6 +420,8 @@ async function cargarDatos() {
             todosLosUsuarios = respUsuarios.ok ? await respUsuarios.json() : [];
         }
 
+        poblarSelectProvinciaReporte();
+        poblarSelectCiudadReporte();
         renderizarReporte('todas');
 
     } catch (error) {
@@ -356,6 +450,20 @@ document.getElementById('filtroFechaDesde').addEventListener('change', function 
 
 document.getElementById('filtroFechaHasta').addEventListener('change', function () {
     filtroFechaHasta = this.value;
+    actualizarEtiquetaPeriodo();
+    reRenderizarVistaActual();
+});
+
+document.getElementById('filtroProvinciaReporte').addEventListener('change', function () {
+    filtroProvincia = this.value;
+    filtroCiudad = ''; // cambiar de provincia reinicia la ciudad elegida
+    poblarSelectCiudadReporte();
+    actualizarEtiquetaPeriodo();
+    reRenderizarVistaActual();
+});
+
+document.getElementById('filtroCiudadReporte').addEventListener('change', function () {
+    filtroCiudad = this.value;
     actualizarEtiquetaPeriodo();
     reRenderizarVistaActual();
 });
@@ -439,7 +547,7 @@ function renderizarReporte(tipo) {
 
     document.getElementById('selectUsuarioReporte').style.display = 'none';
 
-    const baseFiltradaPorFecha = filtrarIncidenciasPorFecha(todasLasIncidencias);
+    const baseFiltradaPorFecha = filtrarIncidenciasPorCiudad(filtrarIncidenciasPorProvincia(filtrarIncidenciasPorFecha(todasLasIncidencias)));
     const datos = tipo === 'todas'
         ? baseFiltradaPorFecha
         : baseFiltradaPorFecha.filter(i => (i.estado ? i.estado.nombre : '') === tipo);
@@ -461,7 +569,7 @@ function renderizarReporte(tipo) {
 // ================== KPIs: INCIDENCIAS ==================
 function renderizarKpisIncidencias(datos) {
 
-    const totalPeriodo = filtrarIncidenciasPorFecha(todasLasIncidencias).length;
+    const totalPeriodo = filtrarIncidenciasPorCiudad(filtrarIncidenciasPorProvincia(filtrarIncidenciasPorFecha(todasLasIncidencias))).length;
 
     const porPrioridad = { 'Baja': 0, 'Media': 0, 'Alta': 0, 'Crítica': 0 };
     let conUbicacion = 0;
@@ -715,6 +823,11 @@ document.getElementById('btnPdf').addEventListener('click', function () {
     const textoPeriodoPdf = (filtroFechaDesde || filtroFechaHasta)
         ? `Periodo: ${filtroFechaDesde ? formatoFechaCortaPdf(filtroFechaDesde) : 'inicio'} – ${filtroFechaHasta ? formatoFechaCortaPdf(filtroFechaHasta) : 'hoy'}`
         : '';
+    const textoCiudadPdf = [
+        filtroProvincia ? `Provincia: ${document.getElementById('filtroProvinciaReporte').selectedOptions[0]?.text || ''}` : '',
+        filtroCiudad ? `Ciudad: ${document.getElementById('filtroCiudadReporte').selectedOptions[0]?.text || ''}` : ''
+    ].filter(Boolean).join(' · ');
+    const textoFiltrosPdf = [textoPeriodoPdf, textoCiudadPdf].filter(Boolean).join(' · ');
 
     const kpisHtmlPdf = ultimosKpis.map(k => `
         <div class="kpi-pdf-item" style="border-top-color:${k.color};">
@@ -753,7 +866,7 @@ document.getElementById('btnPdf').addEventListener('click', function () {
             datos = filtrarIncidenciasPorFecha(todasLasIncidencias)
                 .filter(i => i.usuario && String(i.usuario.id) === String(idUsuarioReporte));
         } else {
-            const basePdf = filtrarIncidenciasPorFecha(todasLasIncidencias);
+            const basePdf = filtrarIncidenciasPorCiudad(filtrarIncidenciasPorProvincia(filtrarIncidenciasPorFecha(todasLasIncidencias)));
             datos = tipoActivo === 'todas'
                 ? basePdf
                 : basePdf.filter(i => (i.estado ? i.estado.nombre : '') === tipoActivo);
@@ -1229,7 +1342,7 @@ document.getElementById('btnPdf').addEventListener('click', function () {
                         <span class="referencia">${referencia}</span><br>
                         Emitido: ${fechaEmision}<br>
                         Hora: ${horaEmision}
-                        ${textoPeriodoPdf ? `<br>${textoPeriodoPdf}` : ''}
+                        ${textoFiltrosPdf ? `<br>${textoFiltrosPdf}` : ''}
                     </div>
                 </div>
  
