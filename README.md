@@ -343,11 +343,20 @@ haz **Manual Deploy → Clear build cache & deploy** (el entrypoint corre
 
 ## Credenciales de acceso
 
-| Rol | Correo | Contraseña |
-|---|---|---|
-| Administrador | `admin@incidencias.com` | `Admin123!` |
-| Responsable | `responsable@incidencias.com` | `Responsable123!` |
-| Ciudadano | `ciudadano@incidencias.com` | `Ciudadano123!` |
+Por seguridad, las contraseñas de las cuentas de prueba **no se publican en
+este README**, ya que el repositorio es público en GitHub. El sistema crea
+automáticamente tres cuentas, una por cada rol, mediante los seeders
+`AdminSeeder.php` y `DemoUsersSeeder.php` (ambos en `database/seeders/`):
+
+| Rol | Correo |
+|---|---|
+| Administrador | `admin@incidencias.com` |
+| Responsable | `responsable@incidencias.com` |
+| Ciudadano | `ciudadano@incidencias.com` |
+
+Las contraseñas se entregan directamente al docente evaluador (documento
+técnico o demostración en vivo). Si tienes acceso al código fuente, también
+puedes consultarlas —o cambiarlas— en los seeders mencionados arriba.
 
 ---
 
