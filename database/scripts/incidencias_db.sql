@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict d1lCH9sUldQ3FF1iKnYAqnfbeQmrll8WJm8mNs3YQ3GT8deHrf2JHwKpm0QOq93
+\restrict oi9K9drjR9DqoafbN0ZeXGCmOWXx37REyc3GEsdrdkI33ySngYkC9q4KLbrNrku
 
 -- Dumped from database version 15.18 (Debian 15.18-1.pgdg13+1)
 -- Dumped by pg_dump version 15.18 (Debian 15.18-1.pgdg13+1)
@@ -954,8 +954,8 @@ COPY public.asignaciones (id, incidencia_id, usuario_id, fecha_asignacion, creat
 COPY public.cache (key, value, expiration) FROM stdin;
 laravel-cache-748d8fb071be83587f9ba1027754a83167b697b3:timer	i:1784171318;	1784171318
 laravel-cache-748d8fb071be83587f9ba1027754a83167b697b3	i:1;	1784171318
-laravel-cache-b7ad7f2b04bd98f199a2b8c016e37e66c831b866:timer	i:1784264145;	1784264145
-laravel-cache-b7ad7f2b04bd98f199a2b8c016e37e66c831b866	i:2;	1784264145
+laravel-cache-b7ad7f2b04bd98f199a2b8c016e37e66c831b866:timer	i:1785304169;	1785304169
+laravel-cache-b7ad7f2b04bd98f199a2b8c016e37e66c831b866	i:1;	1785304169
 \.
 
 
@@ -1213,6 +1213,7 @@ COPY public.personal_access_tokens (id, tokenable_type, tokenable_id, name, toke
 61	App\\Models\\User	1	auth_token	8359df8a686d989057813d6f9ab1dbb8693af6496bf4a2e803236163bf4a4b97	["*"]	2026-07-15 21:15:34	\N	2026-07-15 21:04:04	2026-07-15 21:15:34
 62	App\\Models\\User	1	auth_token	8aa87074619fe183a5a16f48fcecd97cd754cebb0e16cd67b85b2614202417a3	["*"]	\N	\N	2026-07-15 21:31:24	2026-07-15 21:31:24
 73	App\\Models\\User	1	auth_token	39aeafd888f3ed46ec248868fb4387ebff3882d7927928d9886ac9d0234b25fb	["*"]	2026-07-17 04:59:52	\N	2026-07-17 04:55:43	2026-07-17 04:59:52
+74	App\\Models\\User	1	auth_token	3cfbc85aa951cc8b667fbf287e2ab2dde67ca19491354aaf239b9d38f174b538	["*"]	2026-07-29 05:48:42	\N	2026-07-29 05:48:29	2026-07-29 05:48:42
 \.
 
 
@@ -1242,6 +1243,7 @@ COPY public.roles (id, nombre, descripcion, created_at, updated_at) FROM stdin;
 
 COPY public.sessions (id, user_id, ip_address, user_agent, payload, last_activity) FROM stdin;
 kGbEcoW5Z79cSNKTlFnUwwX4KeSfekrEPUmmo968	\N	172.18.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36	eyJfdG9rZW4iOiJVeGoyOWFLZ1Fmc244T3lhbWx0TFREQ0w1dkdvSkRYNTlMeVlXWkJRIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL2xvY2FsaG9zdDo4MDgwXC9pbmNpZGVuY2lhcyIsInJvdXRlIjoiaW5jaWRlbmNpYXMuaW5kZXgifSwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==	1784264208
+ck9dsvEzzGQ4dcSn7fkVd7UsQPbYUPIWs63WlS8u	\N	172.18.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36	eyJfdG9rZW4iOiJLdXlEb1h6eWVaZXZMUmF5dmNvQ1h2enFvRFNPTE1qS0t0SnFOdHBqIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL2xvY2FsaG9zdDo4MDgwXC91c3VhcmlvcyIsInJvdXRlIjoidXN1YXJpb3MuaW5kZXgifSwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==	1785304122
 \.
 
 
@@ -1379,7 +1381,7 @@ SELECT pg_catalog.setval('public.paises_id_seq', 1, true);
 -- Name: personal_access_tokens_id_seq; Type: SEQUENCE SET; Schema: public; Owner: incidencias_user
 --
 
-SELECT pg_catalog.setval('public.personal_access_tokens_id_seq', 73, true);
+SELECT pg_catalog.setval('public.personal_access_tokens_id_seq', 74, true);
 
 
 --
@@ -1900,5 +1902,5 @@ ALTER TABLE ONLY public.users
 -- PostgreSQL database dump complete
 --
 
-\unrestrict d1lCH9sUldQ3FF1iKnYAqnfbeQmrll8WJm8mNs3YQ3GT8deHrf2JHwKpm0QOq93
+\unrestrict oi9K9drjR9DqoafbN0ZeXGCmOWXx37REyc3GEsdrdkI33ySngYkC9q4KLbrNrku
 
