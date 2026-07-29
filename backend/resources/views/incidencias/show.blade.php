@@ -396,11 +396,16 @@
 const INCIDENCIA_ID = {{ $incidencia->id }};
 const USUARIO_ACTUAL = getUser();
 
-// Oculta controles de gestión a usuarios con rol Ciudadano
-if (typeof esCiudadano === 'function' && esCiudadano()) {
-    document.getElementById('cardCambiarEstado')?.remove();
+// Solo el Administrador puede asignar/quitar responsables.
+// Responsable y Ciudadano ven la tabla de asignaciones en modo solo lectura.
+if (typeof esAdministrador === 'function' && !esAdministrador()) {
     document.getElementById('formAsignacion')?.remove();
     document.querySelectorAll('.btn-quitar-asignacion').forEach(b => b.remove());
+}
+
+// Además, el Ciudadano tampoco debe ver el control de cambio de estado.
+if (typeof esCiudadano === 'function' && esCiudadano()) {
+    document.getElementById('cardCambiarEstado')?.remove();
 }
 
 // Evita inyección de HTML en los mensajes (protección XSS)
