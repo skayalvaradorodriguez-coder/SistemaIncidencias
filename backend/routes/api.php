@@ -47,7 +47,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/incidencias/{id}/comentarios', [ComentarioController::class, 'index']);
     Route::post('/incidencias/{id}/comentarios', [ComentarioController::class, 'store']);
 
-<<<<<<< HEAD
     // Evidencias (fotos del avance/arreglo). Lectura abierta a cualquier
     // autenticado: el propio show()/vistaShow() de IncidenciaController ya
     // impide que un Ciudadano vea una incidencia que no es suya, así que
@@ -58,8 +57,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/tareas/mias', [TareaController::class, 'misTareas']);
     Route::get('/tareas/{id}', [TareaController::class, 'show']);
 
-=======
->>>>>>> a45477c (Solo el Administrador asigna (y reasigna/quita) Responsables a una incidencia.)
     // Notificaciones (siempre del usuario autenticado)
     Route::get('/notificaciones', [NotificacionController::class, 'index']);
     Route::put('/notificaciones/{id}/leer', [NotificacionController::class, 'marcarLeida']);
@@ -78,7 +75,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/incidencias/{id}/estado', [IncidenciaController::class, 'cambiarEstado']);
 
         Route::delete('/comentarios/{id}', [ComentarioController::class, 'destroy']);
-<<<<<<< HEAD
 
         // Subir evidencia (foto + comentario) de una incidencia en curso.
         // El propio controlador exige ser el Responsable ASIGNADO a esa
@@ -89,8 +85,6 @@ Route::middleware('auth:sanctum')->group(function () {
         // El Responsable actualiza el estado de SU tarea + nota de avance
         // (el Administrador también puede, por si necesita corregir algo)
         Route::put('/tareas/{id}/estado', [TareaController::class, 'actualizarEstado']);
-=======
->>>>>>> a45477c (Solo el Administrador asigna (y reasigna/quita) Responsables a una incidencia.)
     });
 
     // ===== Administración del sistema: solo Administrador =====
