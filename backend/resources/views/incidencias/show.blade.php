@@ -274,6 +274,21 @@
         </div>
     </div>
 
+    <!-- Evidencia del avance / arreglo (visible también para quien reportó) -->
+    <div class="card mt-3" id="cardEvidencias">
+        <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-camera mr-1"></i> Evidencia del avance</h3>
+        </div>
+        <div class="card-body">
+            <p style="color:var(--text-muted); font-size:0.85rem;">
+                Fotos que el Responsable sube mientras atiende esta incidencia.
+            </p>
+            <div id="galeriaEvidenciasDetalle" class="d-flex flex-wrap" style="gap:10px;">
+                <span class="text-muted" style="font-size:0.85rem;">Cargando evidencia...</span>
+            </div>
+        </div>
+    </div>
+
     <!-- Chat de seguimiento -->
     <div class="card mt-3">
         <div class="card-header">
@@ -355,6 +370,48 @@ function escapeHtml(texto) {
     div.textContent = texto;
     return div.innerHTML;
 }
+
+// ================== EVIDENCIA DEL AVANCE ==================
+// Visible para cualquiera que pueda ver esta página (incluido el
+// Ciudadano que reportó la incidencia; el backend ya solo le permite
+// llegar aquí si la incidencia es suya).
+async function cargarEvidenciasDetalle() {
+    const cont = document.getElementById('galeriaEvidenciasDetalle');
+    if (!cont) return;
+
+    try {
+        const res = await authFetch(`/api/incidencias/${INCIDENCIA_ID}/evidencias`);
+
+        if (!res.ok) {
+            cont.innerHTML = '<span class="text-muted" style="font-size:0.85rem;">No se pudo cargar la evidencia.</span>';
+            return;
+        }
+
+        const evidencias = await res.json();
+
+        if (evidencias.length === 0) {
+            cont.innerHTML = '<span class="text-muted" style="font-size:0.85rem;">Todavía no se ha subido evidencia para esta incidencia.</span>';
+            return;
+        }
+
+        cont.innerHTML = evidencias.map(ev => `
+            <a href="/storage/${ev.ruta_foto}" target="_blank" style="text-decoration:none;">
+                <div style="width:120px;">
+                    <img src="/storage/${ev.ruta_foto}" style="width:120px; height:120px; object-fit:cover; border-radius:8px; border:1px solid var(--border-subtle);">
+                    <div style="font-size:0.72rem; color:var(--text-muted); margin-top:4px;">
+                        ${escapeHtml(ev.usuario ? ev.usuario.name : 'Responsable')}
+                        ${ev.comentario ? '<br>' + escapeHtml(ev.comentario) : ''}
+                    </div>
+                </div>
+            </a>
+        `).join('');
+
+    } catch (error) {
+        cont.innerHTML = '<span class="text-muted" style="font-size:0.85rem;">Error de conexión.</span>';
+    }
+}
+
+cargarEvidenciasDetalle();
 
 function horaMensaje(fecha) {
     const f = new Date(fecha);
