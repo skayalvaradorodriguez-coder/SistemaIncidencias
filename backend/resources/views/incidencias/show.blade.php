@@ -276,8 +276,11 @@
 
     <!-- Evidencia del avance / arreglo (visible también para quien reportó) -->
     <div class="card mt-3" id="cardEvidencias">
-        <div class="card-header">
+        <div class="card-header d-flex justify-content-between align-items-center">
             <h3 class="card-title"><i class="fas fa-camera mr-1"></i> Evidencia del avance</h3>
+            <button type="button" class="btn btn-sm btn-outline-light d-none" id="btnAbrirModalEvidencia">
+                <i class="fas fa-camera mr-1"></i>Subir evidencia
+            </button>
         </div>
         <div class="card-body">
             <p style="color:var(--text-muted); font-size:0.85rem;">
@@ -285,6 +288,42 @@
             </p>
             <div id="galeriaEvidenciasDetalle" class="d-flex flex-wrap" style="gap:10px;">
                 <span class="text-muted" style="font-size:0.85rem;">Cargando evidencia...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Subir evidencia -->
+    <div class="modal fade" id="modalEvidenciaDetalle" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-camera mr-2"></i>Subir evidencia</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <form id="formEvidenciaDetalle">
+                    <div class="modal-body">
+
+                        <div id="alertEvidenciaDetalle" class="alert d-none"></div>
+
+                        <div class="form-group">
+                            <label>Foto de la incidencia en proceso / resuelta</label>
+                            <input type="file" id="evidenciaDetalle_foto" class="form-control-file" accept="image/png,image/jpeg,image/webp" required>
+                            <small class="form-text text-muted">JPG, PNG o WEBP. Máximo 4MB.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Comentario (opcional)</label>
+                            <textarea id="evidenciaDetalle_comentario" class="form-control" rows="2" placeholder="Ej: Cambié el foco del poste, quedó funcionando."></textarea>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-upload mr-1"></i>Subir evidencia
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -412,6 +451,79 @@ async function cargarEvidenciasDetalle() {
 }
 
 cargarEvidenciasDetalle();
+
+// Solo puede subir evidencia: un Administrador, o el Responsable que
+// está asignado a ESTA incidencia específica (mismo criterio que ya
+// exige el backend en EvidenciaController::store).
+const USUARIOS_ASIGNADOS_IDS = @json($incidencia->asignaciones->pluck('usuario_id'));
+const btnAbrirModalEvidencia = document.getElementById('btnAbrirModalEvidencia');
+
+const puedeSubirEvidenciaAqui =
+    (typeof esAdministrador === 'function' && esAdministrador()) ||
+    (USUARIO_ACTUAL && USUARIOS_ASIGNADOS_IDS.includes(USUARIO_ACTUAL.id));
+
+if (puedeSubirEvidenciaAqui) {
+    btnAbrirModalEvidencia.classList.remove('d-none');
+}
+
+btnAbrirModalEvidencia.addEventListener('click', function () {
+    document.getElementById('formEvidenciaDetalle').reset();
+    document.getElementById('alertEvidenciaDetalle').className = 'alert d-none';
+    $('#modalEvidenciaDetalle').modal('show');
+});
+
+document.getElementById('formEvidenciaDetalle').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const alerta = document.getElementById('alertEvidenciaDetalle');
+    alerta.className = 'alert d-none';
+
+    const archivo = document.getElementById('evidenciaDetalle_foto').files[0];
+    if (!archivo) {
+        alerta.textContent = 'Debe seleccionar una foto.';
+        alerta.classList.remove('d-none');
+        alerta.classList.add('alert-danger');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('foto', archivo);
+    formData.append('comentario', document.getElementById('evidenciaDetalle_comentario').value.trim());
+
+    const btnSubmit = this.querySelector('button[type="submit"]');
+    btnSubmit.disabled = true;
+    btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Subiendo...';
+
+    try {
+        const response = await authFetch(`/api/incidencias/${INCIDENCIA_ID}/evidencias`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            alerta.textContent = data.message || 'No se pudo subir la evidencia.';
+            alerta.classList.remove('d-none');
+            alerta.classList.add('alert-danger');
+            return;
+        }
+
+        $('#modalEvidenciaDetalle').modal('hide');
+        cargarEvidenciasDetalle();
+        if (typeof mostrarMensajeExito === 'function') {
+            mostrarMensajeExito('Evidencia subida correctamente.');
+        }
+
+    } catch (error) {
+        alerta.textContent = 'Error de conexión con el servidor.';
+        alerta.classList.remove('d-none');
+        alerta.classList.add('alert-danger');
+    } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = '<i class="fas fa-upload mr-1"></i>Subir evidencia';
+    }
+});
 
 function horaMensaje(fecha) {
     const f = new Date(fecha);
