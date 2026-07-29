@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict njGJ0JMTrymHuwkGaIdRUbzJ3O3fRCcHGvBBpq2ct8tdTfIlJLiNE15qRh9ZmrY
+\restrict EL0KmIwx8xXLTvghRyxgHGsamYAvGRDbls9T3c865TVcJpEWjvXSeZ49Sfre9xV
 
 -- Dumped from database version 15.18 (Debian 15.18-1.pgdg13+1)
 -- Dumped by pg_dump version 15.18 (Debian 15.18-1.pgdg13+1)
@@ -214,6 +214,44 @@ ALTER TABLE public.estados_incidencia_id_seq OWNER TO incidencias_user;
 --
 
 ALTER SEQUENCE public.estados_incidencia_id_seq OWNED BY public.estados_incidencia.id;
+
+
+--
+-- Name: evidencias; Type: TABLE; Schema: public; Owner: incidencias_user
+--
+
+CREATE TABLE public.evidencias (
+    id bigint NOT NULL,
+    incidencia_id bigint NOT NULL,
+    usuario_id bigint NOT NULL,
+    ruta_foto character varying(255) NOT NULL,
+    comentario text,
+    created_at timestamp(0) without time zone,
+    updated_at timestamp(0) without time zone
+);
+
+
+ALTER TABLE public.evidencias OWNER TO incidencias_user;
+
+--
+-- Name: evidencias_id_seq; Type: SEQUENCE; Schema: public; Owner: incidencias_user
+--
+
+CREATE SEQUENCE public.evidencias_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.evidencias_id_seq OWNER TO incidencias_user;
+
+--
+-- Name: evidencias_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: incidencias_user
+--
+
+ALTER SEQUENCE public.evidencias_id_seq OWNED BY public.evidencias.id;
 
 
 --
@@ -692,6 +730,48 @@ ALTER SEQUENCE public.subtipos_incidencia_id_seq OWNED BY public.subtipos_incide
 
 
 --
+-- Name: tareas; Type: TABLE; Schema: public; Owner: incidencias_user
+--
+
+CREATE TABLE public.tareas (
+    id bigint NOT NULL,
+    incidencia_id bigint NOT NULL,
+    usuario_id bigint NOT NULL,
+    creado_por bigint NOT NULL,
+    titulo character varying(150) NOT NULL,
+    descripcion text,
+    estado character varying(255) DEFAULT 'Pendiente'::character varying NOT NULL,
+    nota_avance text,
+    created_at timestamp(0) without time zone,
+    updated_at timestamp(0) without time zone,
+    CONSTRAINT tareas_estado_check CHECK (((estado)::text = ANY ((ARRAY['Pendiente'::character varying, 'En Proceso'::character varying, 'Completada'::character varying])::text[])))
+);
+
+
+ALTER TABLE public.tareas OWNER TO incidencias_user;
+
+--
+-- Name: tareas_id_seq; Type: SEQUENCE; Schema: public; Owner: incidencias_user
+--
+
+CREATE SEQUENCE public.tareas_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.tareas_id_seq OWNER TO incidencias_user;
+
+--
+-- Name: tareas_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: incidencias_user
+--
+
+ALTER SEQUENCE public.tareas_id_seq OWNED BY public.tareas.id;
+
+
+--
 -- Name: tipos_incidencia; Type: TABLE; Schema: public; Owner: incidencias_user
 --
 
@@ -847,6 +927,13 @@ ALTER TABLE ONLY public.estados_incidencia ALTER COLUMN id SET DEFAULT nextval('
 
 
 --
+-- Name: evidencias id; Type: DEFAULT; Schema: public; Owner: incidencias_user
+--
+
+ALTER TABLE ONLY public.evidencias ALTER COLUMN id SET DEFAULT nextval('public.evidencias_id_seq'::regclass);
+
+
+--
 -- Name: failed_jobs id; Type: DEFAULT; Schema: public; Owner: incidencias_user
 --
 
@@ -924,6 +1011,13 @@ ALTER TABLE ONLY public.subtipos_incidencia ALTER COLUMN id SET DEFAULT nextval(
 
 
 --
+-- Name: tareas id; Type: DEFAULT; Schema: public; Owner: incidencias_user
+--
+
+ALTER TABLE ONLY public.tareas ALTER COLUMN id SET DEFAULT nextval('public.tareas_id_seq'::regclass);
+
+
+--
 -- Name: tipos_incidencia id; Type: DEFAULT; Schema: public; Owner: incidencias_user
 --
 
@@ -956,8 +1050,8 @@ COPY public.asignaciones (id, incidencia_id, usuario_id, fecha_asignacion, creat
 COPY public.cache (key, value, expiration) FROM stdin;
 laravel-cache-748d8fb071be83587f9ba1027754a83167b697b3:timer	i:1784171318;	1784171318
 laravel-cache-748d8fb071be83587f9ba1027754a83167b697b3	i:1;	1784171318
-laravel-cache-b7ad7f2b04bd98f199a2b8c016e37e66c831b866:timer	i:1785304169;	1785304169
-laravel-cache-b7ad7f2b04bd98f199a2b8c016e37e66c831b866	i:1;	1785304169
+laravel-cache-b7ad7f2b04bd98f199a2b8c016e37e66c831b866:timer	i:1785304934;	1785304934
+laravel-cache-b7ad7f2b04bd98f199a2b8c016e37e66c831b866	i:1;	1785304934
 \.
 
 
@@ -1048,6 +1142,15 @@ COPY public.estados_incidencia (id, nombre, color, descripcion, created_at, upda
 2	En Proceso	info	Incidencia siendo atendida	2026-07-16 02:41:55	2026-07-16 02:41:55
 3	Resuelto	success	Incidencia resuelta satisfactoriamente	2026-07-16 02:41:55	2026-07-16 02:41:55
 4	Rechazado	danger	Incidencia rechazada por no cumplir criterios	2026-07-16 02:41:55	2026-07-16 02:41:55
+\.
+
+
+--
+-- Data for Name: evidencias; Type: TABLE DATA; Schema: public; Owner: incidencias_user
+--
+
+COPY public.evidencias (id, incidencia_id, usuario_id, ruta_foto, comentario, created_at, updated_at) FROM stdin;
+1	1	2	evidencias/EyC0S6PyZXMye7ulYRp1PbBobwcM7U126vc4jB67.jpg	vbnm	2026-07-29 06:05:42	2026-07-29 06:05:42
 \.
 
 
@@ -1159,6 +1262,8 @@ COPY public.migrations (id, migration, batch) FROM stdin;
 19	2026_07_15_031134_add_columnas_faltantes_to_asignaciones_table	7
 20	2026_07_15_195224_crear_vistas_y_trigger_sql	8
 21	2026_07_16_171607_add_foto_to_incidencias_table	9
+22	2026_07_23_000000_create_evidencias_table	10
+23	2026_07_28_000000_create_tareas_table	10
 \.
 
 
@@ -1181,8 +1286,8 @@ COPY public.notificaciones (id, usuario_id, titulo, mensaje, leida, fecha_envio,
 12	5	Nueva incidencia #40	Se registró la incidencia "bache en avenida principal" con prioridad Media.	f	2026-07-29 05:58:32	2026-07-29 05:58:32	2026-07-29 05:58:32	40
 13	2	Nueva incidencia #41	Se registró la incidencia "bache en avenida principal" con prioridad Media.	f	2026-07-29 05:58:35	2026-07-29 05:58:35	2026-07-29 05:58:35	41
 14	5	Nueva incidencia #41	Se registró la incidencia "bache en avenida principal" con prioridad Media.	f	2026-07-29 05:58:35	2026-07-29 05:58:35	2026-07-29 05:58:35	41
-15	2	Nueva asignación en incidencia #1	Fuiste asignado como Responsable en la incidencia "bache en avenida principal".	f	2026-07-29 05:59:22	2026-07-29 05:59:22	2026-07-29 05:59:22	1
 16	2	Nueva asignación en incidencia #17	Fuiste asignado como Apoyo en la incidencia "semaforo dañado".	f	2026-07-29 05:59:47	2026-07-29 05:59:46	2026-07-29 05:59:46	17
+15	2	Nueva asignación en incidencia #1	Fuiste asignado como Responsable en la incidencia "bache en avenida principal".	t	2026-07-29 05:59:22	2026-07-29 05:59:22	2026-07-29 06:01:21	1
 \.
 
 
@@ -1272,7 +1377,7 @@ COPY public.personal_access_tokens (id, tokenable_type, tokenable_id, name, toke
 61	App\\Models\\User	1	auth_token	8359df8a686d989057813d6f9ab1dbb8693af6496bf4a2e803236163bf4a4b97	["*"]	2026-07-15 21:15:34	\N	2026-07-15 21:04:04	2026-07-15 21:15:34
 62	App\\Models\\User	1	auth_token	8aa87074619fe183a5a16f48fcecd97cd754cebb0e16cd67b85b2614202417a3	["*"]	\N	\N	2026-07-15 21:31:24	2026-07-15 21:31:24
 73	App\\Models\\User	1	auth_token	39aeafd888f3ed46ec248868fb4387ebff3882d7927928d9886ac9d0234b25fb	["*"]	2026-07-17 04:59:52	\N	2026-07-17 04:55:43	2026-07-17 04:59:52
-74	App\\Models\\User	1	auth_token	3cfbc85aa951cc8b667fbf287e2ab2dde67ca19491354aaf239b9d38f174b538	["*"]	2026-07-29 06:00:33	\N	2026-07-29 05:48:29	2026-07-29 06:00:33
+75	App\\Models\\User	2	auth_token	02c26a0d6ef193cc2ff33423e6bbdf1d25b58189bba5322995d5b83f98e037fc	["*"]	2026-07-29 06:06:28	\N	2026-07-29 06:01:14	2026-07-29 06:06:28
 \.
 
 
@@ -1325,7 +1430,7 @@ COPY public.roles (id, nombre, descripcion, created_at, updated_at) FROM stdin;
 
 COPY public.sessions (id, user_id, ip_address, user_agent, payload, last_activity) FROM stdin;
 kGbEcoW5Z79cSNKTlFnUwwX4KeSfekrEPUmmo968	\N	172.18.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36	eyJfdG9rZW4iOiJVeGoyOWFLZ1Fmc244T3lhbWx0TFREQ0w1dkdvSkRYNTlMeVlXWkJRIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL2xvY2FsaG9zdDo4MDgwXC9pbmNpZGVuY2lhcyIsInJvdXRlIjoiaW5jaWRlbmNpYXMuaW5kZXgifSwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==	1784264208
-ck9dsvEzzGQ4dcSn7fkVd7UsQPbYUPIWs63WlS8u	\N	172.18.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36	eyJfdG9rZW4iOiJLdXlEb1h6eWVaZXZMUmF5dmNvQ1h2enFvRFNPTE1qS0t0SnFOdHBqIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL2xvY2FsaG9zdDo4MDgwXC91c3VhcmlvcyIsInJvdXRlIjoidXN1YXJpb3MuaW5kZXgifSwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==	1785304803
+ck9dsvEzzGQ4dcSn7fkVd7UsQPbYUPIWs63WlS8u	\N	172.18.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36	eyJfdG9rZW4iOiJLdXlEb1h6eWVaZXZMUmF5dmNvQ1h2enFvRFNPTE1qS0t0SnFOdHBqIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL2xvY2FsaG9zdDo4MDgwXC9taXMtdGFyZWFzIiwicm91dGUiOiJpbmNpZGVuY2lhcy5taXMtdGFyZWFzIn0sIl9mbGFzaCI6eyJvbGQiOltdLCJuZXciOltdfX0=	1785305157
 \.
 
 
@@ -1352,6 +1457,14 @@ COPY public.subtipos_incidencia (id, tipo_incidencia_id, nombre, descripcion, cr
 16	4	Fuga de agua	\N	2026-07-01 05:44:25	2026-07-01 05:44:25
 17	5	Foco de plagas	\N	2026-07-01 05:44:25	2026-07-01 05:44:25
 18	5	Animal en la vía pública	\N	2026-07-01 05:44:25	2026-07-01 05:44:25
+\.
+
+
+--
+-- Data for Name: tareas; Type: TABLE DATA; Schema: public; Owner: incidencias_user
+--
+
+COPY public.tareas (id, incidencia_id, usuario_id, creado_por, titulo, descripcion, estado, nota_avance, created_at, updated_at) FROM stdin;
 \.
 
 
@@ -1411,6 +1524,13 @@ SELECT pg_catalog.setval('public.estados_incidencia_id_seq', 4, true);
 
 
 --
+-- Name: evidencias_id_seq; Type: SEQUENCE SET; Schema: public; Owner: incidencias_user
+--
+
+SELECT pg_catalog.setval('public.evidencias_id_seq', 1, true);
+
+
+--
 -- Name: failed_jobs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: incidencias_user
 --
 
@@ -1442,7 +1562,7 @@ SELECT pg_catalog.setval('public.jobs_id_seq', 1, false);
 -- Name: migrations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: incidencias_user
 --
 
-SELECT pg_catalog.setval('public.migrations_id_seq', 21, true);
+SELECT pg_catalog.setval('public.migrations_id_seq', 23, true);
 
 
 --
@@ -1463,7 +1583,7 @@ SELECT pg_catalog.setval('public.paises_id_seq', 1, true);
 -- Name: personal_access_tokens_id_seq; Type: SEQUENCE SET; Schema: public; Owner: incidencias_user
 --
 
-SELECT pg_catalog.setval('public.personal_access_tokens_id_seq', 74, true);
+SELECT pg_catalog.setval('public.personal_access_tokens_id_seq', 75, true);
 
 
 --
@@ -1485,6 +1605,13 @@ SELECT pg_catalog.setval('public.roles_id_seq', 3, true);
 --
 
 SELECT pg_catalog.setval('public.subtipos_incidencia_id_seq', 18, true);
+
+
+--
+-- Name: tareas_id_seq; Type: SEQUENCE SET; Schema: public; Owner: incidencias_user
+--
+
+SELECT pg_catalog.setval('public.tareas_id_seq', 1, false);
 
 
 --
@@ -1563,6 +1690,14 @@ ALTER TABLE ONLY public.estados_incidencia
 
 ALTER TABLE ONLY public.estados_incidencia
     ADD CONSTRAINT estados_incidencia_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: evidencias evidencias_pkey; Type: CONSTRAINT; Schema: public; Owner: incidencias_user
+--
+
+ALTER TABLE ONLY public.evidencias
+    ADD CONSTRAINT evidencias_pkey PRIMARY KEY (id);
 
 
 --
@@ -1734,6 +1869,14 @@ ALTER TABLE ONLY public.subtipos_incidencia
 
 
 --
+-- Name: tareas tareas_pkey; Type: CONSTRAINT; Schema: public; Owner: incidencias_user
+--
+
+ALTER TABLE ONLY public.tareas
+    ADD CONSTRAINT tareas_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: tipos_incidencia tipos_incidencia_nombre_unique; Type: CONSTRAINT; Schema: public; Owner: incidencias_user
 --
 
@@ -1869,6 +2012,22 @@ ALTER TABLE ONLY public.comentarios
 
 
 --
+-- Name: evidencias evidencias_incidencia_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: incidencias_user
+--
+
+ALTER TABLE ONLY public.evidencias
+    ADD CONSTRAINT evidencias_incidencia_id_foreign FOREIGN KEY (incidencia_id) REFERENCES public.incidencias(id) ON DELETE CASCADE;
+
+
+--
+-- Name: evidencias evidencias_usuario_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: incidencias_user
+--
+
+ALTER TABLE ONLY public.evidencias
+    ADD CONSTRAINT evidencias_usuario_id_foreign FOREIGN KEY (usuario_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: historial_estados historial_estados_estado_anterior_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: incidencias_user
 --
 
@@ -1973,6 +2132,30 @@ ALTER TABLE ONLY public.subtipos_incidencia
 
 
 --
+-- Name: tareas tareas_creado_por_foreign; Type: FK CONSTRAINT; Schema: public; Owner: incidencias_user
+--
+
+ALTER TABLE ONLY public.tareas
+    ADD CONSTRAINT tareas_creado_por_foreign FOREIGN KEY (creado_por) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: tareas tareas_incidencia_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: incidencias_user
+--
+
+ALTER TABLE ONLY public.tareas
+    ADD CONSTRAINT tareas_incidencia_id_foreign FOREIGN KEY (incidencia_id) REFERENCES public.incidencias(id) ON DELETE CASCADE;
+
+
+--
+-- Name: tareas tareas_usuario_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: incidencias_user
+--
+
+ALTER TABLE ONLY public.tareas
+    ADD CONSTRAINT tareas_usuario_id_foreign FOREIGN KEY (usuario_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: users users_rol_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: incidencias_user
 --
 
@@ -1984,5 +2167,5 @@ ALTER TABLE ONLY public.users
 -- PostgreSQL database dump complete
 --
 
-\unrestrict njGJ0JMTrymHuwkGaIdRUbzJ3O3fRCcHGvBBpq2ct8tdTfIlJLiNE15qRh9ZmrY
+\unrestrict EL0KmIwx8xXLTvghRyxgHGsamYAvGRDbls9T3c865TVcJpEWjvXSeZ49Sfre9xV
 
