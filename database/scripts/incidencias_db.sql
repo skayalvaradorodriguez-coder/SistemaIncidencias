@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict oi9K9drjR9DqoafbN0ZeXGCmOWXx37REyc3GEsdrdkI33ySngYkC9q4KLbrNrku
+\restrict njGJ0JMTrymHuwkGaIdRUbzJ3O3fRCcHGvBBpq2ct8tdTfIlJLiNE15qRh9ZmrY
 
 -- Dumped from database version 15.18 (Debian 15.18-1.pgdg13+1)
 -- Dumped by pg_dump version 15.18 (Debian 15.18-1.pgdg13+1)
@@ -944,6 +944,8 @@ ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_
 COPY public.asignaciones (id, incidencia_id, usuario_id, fecha_asignacion, created_at, updated_at, rol) FROM stdin;
 1	39	2	2026-07-15 03:14:54	2026-07-15 03:14:54	2026-07-15 03:14:54	Apoyo
 3	39	1	2026-07-15 03:56:49	2026-07-15 03:56:48	2026-07-15 03:56:48	Responsable
+4	1	2	2026-07-29 05:59:22	2026-07-29 05:59:22	2026-07-29 05:59:22	Responsable
+5	17	2	2026-07-29 05:59:47	2026-07-29 05:59:46	2026-07-29 05:59:46	Apoyo
 \.
 
 
@@ -972,9 +974,56 @@ COPY public.cache_locks (key, owner, expiration) FROM stdin;
 --
 
 COPY public.ciudades (id, provincia_id, nombre, created_at, updated_at) FROM stdin;
-1	1	La Libertad	2026-07-16 02:41:55	2026-07-16 02:41:55
-2	1	Santa Elena	2026-07-16 02:41:55	2026-07-16 02:41:55
-3	1	Salinas	2026-07-16 02:41:55	2026-07-16 02:41:55
+4	2	Esmeraldas	2026-07-29 05:54:34	2026-07-29 05:54:34
+5	2	Atacames	2026-07-29 05:54:34	2026-07-29 05:54:34
+6	2	Quinindé	2026-07-29 05:54:34	2026-07-29 05:54:34
+7	2	San Lorenzo	2026-07-29 05:54:34	2026-07-29 05:54:34
+8	3	Manta	2026-07-29 05:54:34	2026-07-29 05:54:34
+9	3	Portoviejo	2026-07-29 05:54:34	2026-07-29 05:54:34
+10	3	Chone	2026-07-29 05:54:34	2026-07-29 05:54:34
+11	3	Bahía de Caráquez	2026-07-29 05:54:34	2026-07-29 05:54:34
+1	1	La Libertad	2026-07-29 05:54:34	2026-07-29 05:54:34
+2	1	Santa Elena	2026-07-29 05:54:34	2026-07-29 05:54:34
+3	1	Salinas	2026-07-29 05:54:34	2026-07-29 05:54:34
+12	4	Guayaquil	2026-07-29 05:54:35	2026-07-29 05:54:35
+13	4	Milagro	2026-07-29 05:54:35	2026-07-29 05:54:35
+14	4	Daule	2026-07-29 05:54:35	2026-07-29 05:54:35
+15	4	Durán	2026-07-29 05:54:35	2026-07-29 05:54:35
+16	5	Babahoyo	2026-07-29 05:54:35	2026-07-29 05:54:35
+17	5	Quevedo	2026-07-29 05:54:35	2026-07-29 05:54:35
+18	5	Vinces	2026-07-29 05:54:35	2026-07-29 05:54:35
+19	6	Machala	2026-07-29 05:54:35	2026-07-29 05:54:35
+20	6	Pasaje	2026-07-29 05:54:35	2026-07-29 05:54:35
+21	6	Santa Rosa	2026-07-29 05:54:35	2026-07-29 05:54:35
+22	7	Santo Domingo	2026-07-29 05:54:35	2026-07-29 05:54:35
+23	8	Tulcán	2026-07-29 05:54:35	2026-07-29 05:54:35
+24	8	San Gabriel	2026-07-29 05:54:35	2026-07-29 05:54:35
+25	9	Ibarra	2026-07-29 05:54:35	2026-07-29 05:54:35
+26	9	Otavalo	2026-07-29 05:54:35	2026-07-29 05:54:35
+27	9	Cotacachi	2026-07-29 05:54:35	2026-07-29 05:54:35
+28	10	Quito	2026-07-29 05:54:35	2026-07-29 05:54:35
+29	10	Cayambe	2026-07-29 05:54:35	2026-07-29 05:54:35
+30	10	Sangolquí	2026-07-29 05:54:35	2026-07-29 05:54:35
+31	11	Latacunga	2026-07-29 05:54:35	2026-07-29 05:54:35
+32	11	Saquisilí	2026-07-29 05:54:35	2026-07-29 05:54:35
+33	12	Ambato	2026-07-29 05:54:35	2026-07-29 05:54:35
+34	12	Baños	2026-07-29 05:54:35	2026-07-29 05:54:35
+35	13	Guaranda	2026-07-29 05:54:35	2026-07-29 05:54:35
+36	14	Riobamba	2026-07-29 05:54:35	2026-07-29 05:54:35
+37	15	Azogues	2026-07-29 05:54:35	2026-07-29 05:54:35
+38	15	La Troncal	2026-07-29 05:54:35	2026-07-29 05:54:35
+39	16	Cuenca	2026-07-29 05:54:35	2026-07-29 05:54:35
+40	16	Gualaceo	2026-07-29 05:54:35	2026-07-29 05:54:35
+41	17	Loja	2026-07-29 05:54:35	2026-07-29 05:54:35
+42	17	Catamayo	2026-07-29 05:54:35	2026-07-29 05:54:35
+43	18	Nueva Loja (Lago Agrio)	2026-07-29 05:54:35	2026-07-29 05:54:35
+44	19	Tena	2026-07-29 05:54:35	2026-07-29 05:54:35
+45	20	Puerto Francisco de Orellana (Coca)	2026-07-29 05:54:35	2026-07-29 05:54:35
+46	21	Puyo	2026-07-29 05:54:35	2026-07-29 05:54:35
+47	22	Macas	2026-07-29 05:54:35	2026-07-29 05:54:35
+48	23	Zamora	2026-07-29 05:54:35	2026-07-29 05:54:35
+49	24	Puerto Baquerizo Moreno	2026-07-29 05:54:35	2026-07-29 05:54:35
+50	24	Puerto Ayora	2026-07-29 05:54:35	2026-07-29 05:54:35
 \.
 
 
@@ -1037,6 +1086,8 @@ COPY public.historial_estados (id, incidencia_id, estado_anterior_id, estado_nue
 35	32	\N	1	1	Incidencia registrada	2026-07-14 22:05:36	2026-07-14 22:05:35	2026-07-14 22:05:35
 36	33	\N	1	1	Incidencia registrada	2026-07-14 22:10:41	2026-07-14 22:10:40	2026-07-14 22:10:40
 1	2	\N	1	1	Incidencia registrada	2026-07-06 05:39:01	2026-07-06 05:39:00	2026-07-06 05:39:00
+46	40	\N	1	1	Incidencia registrada	2026-07-29 05:58:32	2026-07-29 05:58:32	2026-07-29 05:58:32
+47	41	\N	1	1	Incidencia registrada	2026-07-29 05:58:35	2026-07-29 05:58:35	2026-07-29 05:58:35
 \.
 
 
@@ -1061,6 +1112,8 @@ COPY public.incidencias (id, usuario_id, ciudad_id, tipo_incidencia_id, subtipo_
 38	1	1	1	1	1	Poste de alumbrado público dañado en Av. Eleodoro Solórzano	El poste de luz ubicado frente al parque central lleva más de una semana sin funcionar, dejando la zona completamente oscura en la noche, lo que genera inseguridad para los peatones.	Alta	-2.26575100	-80.71110800	\N	\N	2026-07-14 22:18:37	2026-07-14 22:18:36	2026-07-14 22:18:36	\N
 39	1	1	1	1	3	Poste de alumbrado público dañado en Av. Eleodoro Solórzano	El poste de luz ubicado frente al parque central lleva más de una semana sin funcionar, dejando la zona completamente oscura en la noche, lo que genera inseguridad para los peatones.	Alta	-2.26575100	-80.71110800	\N	\N	2026-07-14 22:18:37	2026-07-14 22:18:36	2026-07-15 03:56:41	\N
 2	1	1	1	2	1	bache en avenida principal	bache en avenida principal del barrio Velasco Ibarra donde ocurren accidentes	Crítica	-2.22081170	-80.90776470	Velasco Ibarra	\N	2026-07-06 05:39:01	2026-07-06 05:39:00	2026-07-07 04:59:32	\N
+40	1	37	1	2	1	bache en avenida principal	hkl	Media	-2.33736200	-80.38066500	\N	incidencias/wHbmoulvEm1w52mWXtGNJSQLJUG9U3C8Ale9HIpi.jpg	2026-07-29 05:58:32	2026-07-29 05:58:32	2026-07-29 05:58:32	\N
+41	1	37	1	2	1	bache en avenida principal	hkl	Media	-2.33736200	-80.38066500	\N	incidencias/u4OYFiFduSvlaHy4EIGuSDdHFMNwMb0rzbZJYxqc.jpg	2026-07-29 05:58:35	2026-07-29 05:58:35	2026-07-29 05:58:35	\N
 \.
 
 
@@ -1124,6 +1177,12 @@ COPY public.notificaciones (id, usuario_id, titulo, mensaje, leida, fecha_envio,
 5	2	Cambio de estado en incidencia #39	La incidencia "Poste de alumbrado público dañado en Av. Eleodoro Solórzano" cambió de "Pendiente" a "En Proceso".	t	2026-07-15 03:43:17	2026-07-15 03:43:17	2026-07-15 04:18:42	39
 6	2	Nuevo comentario en incidencia #39	Se agregó un nuevo comentario en la incidencia "Poste de alumbrado público dañado en Av. Eleodoro Solórzano".	t	2026-07-15 03:43:58	2026-07-15 03:43:57	2026-07-15 04:18:42	39
 10	2	Nuevo comentario en incidencia #39	Se agregó un nuevo comentario en la incidencia "Poste de alumbrado público dañado en Av. Eleodoro Solórzano".	t	2026-07-15 04:38:28	2026-07-15 04:38:27	2026-07-15 05:57:20	39
+11	2	Nueva incidencia #40	Se registró la incidencia "bache en avenida principal" con prioridad Media.	f	2026-07-29 05:58:32	2026-07-29 05:58:32	2026-07-29 05:58:32	40
+12	5	Nueva incidencia #40	Se registró la incidencia "bache en avenida principal" con prioridad Media.	f	2026-07-29 05:58:32	2026-07-29 05:58:32	2026-07-29 05:58:32	40
+13	2	Nueva incidencia #41	Se registró la incidencia "bache en avenida principal" con prioridad Media.	f	2026-07-29 05:58:35	2026-07-29 05:58:35	2026-07-29 05:58:35	41
+14	5	Nueva incidencia #41	Se registró la incidencia "bache en avenida principal" con prioridad Media.	f	2026-07-29 05:58:35	2026-07-29 05:58:35	2026-07-29 05:58:35	41
+15	2	Nueva asignación en incidencia #1	Fuiste asignado como Responsable en la incidencia "bache en avenida principal".	f	2026-07-29 05:59:22	2026-07-29 05:59:22	2026-07-29 05:59:22	1
+16	2	Nueva asignación en incidencia #17	Fuiste asignado como Apoyo en la incidencia "semaforo dañado".	f	2026-07-29 05:59:47	2026-07-29 05:59:46	2026-07-29 05:59:46	17
 \.
 
 
@@ -1132,7 +1191,7 @@ COPY public.notificaciones (id, usuario_id, titulo, mensaje, leida, fecha_envio,
 --
 
 COPY public.paises (id, nombre, codigo, created_at, updated_at) FROM stdin;
-1	Ecuador	EC	2026-07-16 02:41:55	2026-07-16 02:41:55
+1	Ecuador	EC	2026-07-29 05:54:34	2026-07-29 05:54:34
 \.
 
 
@@ -1213,7 +1272,7 @@ COPY public.personal_access_tokens (id, tokenable_type, tokenable_id, name, toke
 61	App\\Models\\User	1	auth_token	8359df8a686d989057813d6f9ab1dbb8693af6496bf4a2e803236163bf4a4b97	["*"]	2026-07-15 21:15:34	\N	2026-07-15 21:04:04	2026-07-15 21:15:34
 62	App\\Models\\User	1	auth_token	8aa87074619fe183a5a16f48fcecd97cd754cebb0e16cd67b85b2614202417a3	["*"]	\N	\N	2026-07-15 21:31:24	2026-07-15 21:31:24
 73	App\\Models\\User	1	auth_token	39aeafd888f3ed46ec248868fb4387ebff3882d7927928d9886ac9d0234b25fb	["*"]	2026-07-17 04:59:52	\N	2026-07-17 04:55:43	2026-07-17 04:59:52
-74	App\\Models\\User	1	auth_token	3cfbc85aa951cc8b667fbf287e2ab2dde67ca19491354aaf239b9d38f174b538	["*"]	2026-07-29 05:48:42	\N	2026-07-29 05:48:29	2026-07-29 05:48:42
+74	App\\Models\\User	1	auth_token	3cfbc85aa951cc8b667fbf287e2ab2dde67ca19491354aaf239b9d38f174b538	["*"]	2026-07-29 06:00:33	\N	2026-07-29 05:48:29	2026-07-29 06:00:33
 \.
 
 
@@ -1222,7 +1281,30 @@ COPY public.personal_access_tokens (id, tokenable_type, tokenable_id, name, toke
 --
 
 COPY public.provincias (id, pais_id, nombre, created_at, updated_at) FROM stdin;
-1	1	Santa Elena	2026-07-16 02:41:55	2026-07-16 02:41:55
+2	1	Esmeraldas	2026-07-29 05:54:34	2026-07-29 05:54:34
+3	1	Manabí	2026-07-29 05:54:34	2026-07-29 05:54:34
+1	1	Santa Elena	2026-07-29 05:54:34	2026-07-29 05:54:34
+4	1	Guayas	2026-07-29 05:54:35	2026-07-29 05:54:35
+5	1	Los Ríos	2026-07-29 05:54:35	2026-07-29 05:54:35
+6	1	El Oro	2026-07-29 05:54:35	2026-07-29 05:54:35
+7	1	Santo Domingo de los Tsáchilas	2026-07-29 05:54:35	2026-07-29 05:54:35
+8	1	Carchi	2026-07-29 05:54:35	2026-07-29 05:54:35
+9	1	Imbabura	2026-07-29 05:54:35	2026-07-29 05:54:35
+10	1	Pichincha	2026-07-29 05:54:35	2026-07-29 05:54:35
+11	1	Cotopaxi	2026-07-29 05:54:35	2026-07-29 05:54:35
+12	1	Tungurahua	2026-07-29 05:54:35	2026-07-29 05:54:35
+13	1	Bolívar	2026-07-29 05:54:35	2026-07-29 05:54:35
+14	1	Chimborazo	2026-07-29 05:54:35	2026-07-29 05:54:35
+15	1	Cañar	2026-07-29 05:54:35	2026-07-29 05:54:35
+16	1	Azuay	2026-07-29 05:54:35	2026-07-29 05:54:35
+17	1	Loja	2026-07-29 05:54:35	2026-07-29 05:54:35
+18	1	Sucumbíos	2026-07-29 05:54:35	2026-07-29 05:54:35
+19	1	Napo	2026-07-29 05:54:35	2026-07-29 05:54:35
+20	1	Orellana	2026-07-29 05:54:35	2026-07-29 05:54:35
+21	1	Pastaza	2026-07-29 05:54:35	2026-07-29 05:54:35
+22	1	Morona Santiago	2026-07-29 05:54:35	2026-07-29 05:54:35
+23	1	Zamora Chinchipe	2026-07-29 05:54:35	2026-07-29 05:54:35
+24	1	Galápagos	2026-07-29 05:54:35	2026-07-29 05:54:35
 \.
 
 
@@ -1243,7 +1325,7 @@ COPY public.roles (id, nombre, descripcion, created_at, updated_at) FROM stdin;
 
 COPY public.sessions (id, user_id, ip_address, user_agent, payload, last_activity) FROM stdin;
 kGbEcoW5Z79cSNKTlFnUwwX4KeSfekrEPUmmo968	\N	172.18.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36	eyJfdG9rZW4iOiJVeGoyOWFLZ1Fmc244T3lhbWx0TFREQ0w1dkdvSkRYNTlMeVlXWkJRIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL2xvY2FsaG9zdDo4MDgwXC9pbmNpZGVuY2lhcyIsInJvdXRlIjoiaW5jaWRlbmNpYXMuaW5kZXgifSwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==	1784264208
-ck9dsvEzzGQ4dcSn7fkVd7UsQPbYUPIWs63WlS8u	\N	172.18.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36	eyJfdG9rZW4iOiJLdXlEb1h6eWVaZXZMUmF5dmNvQ1h2enFvRFNPTE1qS0t0SnFOdHBqIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL2xvY2FsaG9zdDo4MDgwXC91c3VhcmlvcyIsInJvdXRlIjoidXN1YXJpb3MuaW5kZXgifSwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==	1785304122
+ck9dsvEzzGQ4dcSn7fkVd7UsQPbYUPIWs63WlS8u	\N	172.18.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36	eyJfdG9rZW4iOiJLdXlEb1h6eWVaZXZMUmF5dmNvQ1h2enFvRFNPTE1qS0t0SnFOdHBqIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL2xvY2FsaG9zdDo4MDgwXC91c3VhcmlvcyIsInJvdXRlIjoidXN1YXJpb3MuaW5kZXgifSwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==	1785304803
 \.
 
 
@@ -1304,14 +1386,14 @@ COPY public.users (id, name, email, email_verified_at, password, remember_token,
 -- Name: asignaciones_id_seq; Type: SEQUENCE SET; Schema: public; Owner: incidencias_user
 --
 
-SELECT pg_catalog.setval('public.asignaciones_id_seq', 3, true);
+SELECT pg_catalog.setval('public.asignaciones_id_seq', 5, true);
 
 
 --
 -- Name: ciudades_id_seq; Type: SEQUENCE SET; Schema: public; Owner: incidencias_user
 --
 
-SELECT pg_catalog.setval('public.ciudades_id_seq', 3, true);
+SELECT pg_catalog.setval('public.ciudades_id_seq', 50, true);
 
 
 --
@@ -1339,14 +1421,14 @@ SELECT pg_catalog.setval('public.failed_jobs_id_seq', 1, false);
 -- Name: historial_estados_id_seq; Type: SEQUENCE SET; Schema: public; Owner: incidencias_user
 --
 
-SELECT pg_catalog.setval('public.historial_estados_id_seq', 45, true);
+SELECT pg_catalog.setval('public.historial_estados_id_seq', 47, true);
 
 
 --
 -- Name: incidencias_id_seq; Type: SEQUENCE SET; Schema: public; Owner: incidencias_user
 --
 
-SELECT pg_catalog.setval('public.incidencias_id_seq', 39, true);
+SELECT pg_catalog.setval('public.incidencias_id_seq', 41, true);
 
 
 --
@@ -1367,7 +1449,7 @@ SELECT pg_catalog.setval('public.migrations_id_seq', 21, true);
 -- Name: notificaciones_id_seq; Type: SEQUENCE SET; Schema: public; Owner: incidencias_user
 --
 
-SELECT pg_catalog.setval('public.notificaciones_id_seq', 10, true);
+SELECT pg_catalog.setval('public.notificaciones_id_seq', 16, true);
 
 
 --
@@ -1388,7 +1470,7 @@ SELECT pg_catalog.setval('public.personal_access_tokens_id_seq', 74, true);
 -- Name: provincias_id_seq; Type: SEQUENCE SET; Schema: public; Owner: incidencias_user
 --
 
-SELECT pg_catalog.setval('public.provincias_id_seq', 1, true);
+SELECT pg_catalog.setval('public.provincias_id_seq', 24, true);
 
 
 --
@@ -1902,5 +1984,5 @@ ALTER TABLE ONLY public.users
 -- PostgreSQL database dump complete
 --
 
-\unrestrict oi9K9drjR9DqoafbN0ZeXGCmOWXx37REyc3GEsdrdkI33ySngYkC9q4KLbrNrku
+\unrestrict njGJ0JMTrymHuwkGaIdRUbzJ3O3fRCcHGvBBpq2ct8tdTfIlJLiNE15qRh9ZmrY
 
