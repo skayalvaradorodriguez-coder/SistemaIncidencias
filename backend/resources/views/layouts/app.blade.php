@@ -728,6 +728,49 @@ async function cerrarSesion(){
 
 }
 
+// ============================================================
+// Mensaje de éxito reutilizable ("toast" verde en la esquina).
+//
+// Uso desde cualquier vista, justo antes de redirigir a otra página:
+//   guardarMensajeExito('Incidencia registrada correctamente.');
+//   window.location.href = '...';
+//
+// La página siguiente lo detecta sola al cargar y lo muestra.
+// ============================================================
+
+function guardarMensajeExito(texto) {
+    sessionStorage.setItem('mensajeExitoPendiente', texto);
+}
+
+function mostrarMensajeExito(texto) {
+    const toast = document.createElement('div');
+    toast.textContent = texto;
+    toast.style.cssText = `
+        position: fixed; top: 20px; right: 20px; z-index: 9999;
+        background: #1f9d55; color: #fff; padding: 14px 20px;
+        border-radius: 8px; box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+        font-size: 0.9rem; max-width: 320px;
+        opacity: 0; transition: opacity 0.25s ease;
+    `;
+    toast.innerHTML = `<i class="fas fa-check-circle mr-2"></i>${texto}`;
+    document.body.appendChild(toast);
+
+    requestAnimationFrame(() => { toast.style.opacity = '1'; });
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+    }, 4000);
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const pendiente = sessionStorage.getItem('mensajeExitoPendiente');
+    if (pendiente) {
+        sessionStorage.removeItem('mensajeExitoPendiente');
+        mostrarMensajeExito(pendiente);
+    }
+});
+
 </script>
 
 @yield('scripts')

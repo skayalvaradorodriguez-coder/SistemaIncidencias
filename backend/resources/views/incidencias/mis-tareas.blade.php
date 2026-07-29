@@ -158,6 +158,29 @@
         margin-bottom: 8px;
         opacity: 0.5;
     }
+
+    .tarea-evidencia {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px dashed var(--border-subtle);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .btn-subir-evidencia {
+        font-size: 0.75rem;
+        padding: 3px 10px;
+    }
+
+    .contador-evidencias {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+
+    .contador-evidencias i {
+        color: #34d399;
+    }
 </style>
 @endsection
 
@@ -211,6 +234,44 @@
         </div>
     </div>
 
+</div>
+
+<!-- Modal: Subir evidencia -->
+<div class="modal fade" id="modalEvidencia" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-camera mr-2"></i>Subir evidencia</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <form id="formEvidencia">
+                <div class="modal-body">
+
+                    <div id="alertEvidencia" class="alert d-none"></div>
+
+                    <div class="form-group">
+                        <label>Foto de la incidencia en proceso / resuelta</label>
+                        <input type="file" id="evidencia_foto" class="form-control-file" accept="image/png,image/jpeg,image/webp" required>
+                        <small class="form-text text-muted">JPG, PNG o WEBP. Máximo 4MB.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Comentario (opcional)</label>
+                        <textarea id="evidencia_comentario" class="form-control" rows="2" placeholder="Ej: Cambié el foco del poste, quedó funcionando."></textarea>
+                    </div>
+
+                    <div id="galeriaEvidencias"></div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-upload mr-1"></i>Subir evidencia
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 @endsection
@@ -299,6 +360,9 @@ async function cargarMisTareas() {
             tarjeta.className = 'tarjeta-tarea';
             tarjeta.style.setProperty('--color-prioridad', COLORES_PRIORIDAD[inc.prioridad] || '#6c757d');
 
+            const puedeSubirEvidencia = inc.estado && inc.estado.nombre === 'En Proceso';
+            const totalEvidencias = (inc.evidencias || []).length;
+
             tarjeta.innerHTML = `
                 <div class="fila-top">
                     <span class="tarea-id">#${inc.id}</span>
@@ -314,11 +378,30 @@ async function cargarMisTareas() {
                     <span class="estado-pill" style="--color-estado:${colorEstado(inc.estado)}; border-color:${colorEstado(inc.estado)};">${escaparHtml(inc.estado ? inc.estado.nombre : 'Sin estado')}</span>
                     <span class="rol-asignacion-pill">${escaparHtml(asig.rol)}</span>
                 </div>
+                <div class="tarea-evidencia">
+                    <span class="contador-evidencias">
+                        ${totalEvidencias > 0 ? `<i class="fas fa-check-circle mr-1"></i>${totalEvidencias} evidencia(s)` : 'Sin evidencia todavía'}
+                    </span>
+                    ${puedeSubirEvidencia
+                        ? `<button type="button" class="btn btn-outline-light btn-subir-evidencia" data-incidencia-id="${inc.id}">
+                               <i class="fas fa-camera mr-1"></i>Subir evidencia
+                           </button>`
+                        : ''}
+                </div>
             `;
 
-            tarjeta.addEventListener('click', () => {
+            tarjeta.addEventListener('click', (e) => {
+                if (e.target.closest('.btn-subir-evidencia')) return;
                 window.location.href = '/incidencias/' + inc.id;
             });
+
+            const btnEvidencia = tarjeta.querySelector('.btn-subir-evidencia');
+            if (btnEvidencia) {
+                btnEvidencia.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    abrirModalEvidencia(inc.id, inc.evidencias || []);
+                });
+            }
 
             grid.appendChild(tarjeta);
         });
@@ -344,6 +427,87 @@ function actualizarResumen(asignaciones) {
 
 document.getElementById('filtroEstado').addEventListener('change', cargarMisTareas);
 document.getElementById('btnRefrescar').addEventListener('click', cargarMisTareas);
+
+// ================== EVIDENCIAS ==================
+let incidenciaEvidenciaActual = null;
+
+function pintarGaleriaEvidencias(evidencias) {
+    const cont = document.getElementById('galeriaEvidencias');
+
+    if (!evidencias || evidencias.length === 0) {
+        cont.innerHTML = '<p class="text-muted mb-0" style="font-size:0.85rem;">Todavía no hay evidencia subida para esta incidencia.</p>';
+        return;
+    }
+
+    cont.innerHTML = '<label class="d-block mb-2">Evidencia ya subida</label>' +
+        '<div class="d-flex flex-wrap" style="gap:8px;">' +
+        evidencias.map(ev => `
+            <a href="/storage/${ev.ruta_foto}" target="_blank" title="${escaparHtml(ev.comentario || '')}">
+                <img src="/storage/${ev.ruta_foto}" style="width:70px; height:70px; object-fit:cover; border-radius:6px; border:1px solid var(--border-subtle);">
+            </a>
+        `).join('') +
+        '</div>';
+}
+
+function abrirModalEvidencia(incidenciaId, evidenciasExistentes) {
+    incidenciaEvidenciaActual = incidenciaId;
+
+    document.getElementById('formEvidencia').reset();
+    document.getElementById('alertEvidencia').className = 'alert d-none';
+    pintarGaleriaEvidencias(evidenciasExistentes);
+
+    $('#modalEvidencia').modal('show');
+}
+
+document.getElementById('formEvidencia').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const alerta = document.getElementById('alertEvidencia');
+    alerta.className = 'alert d-none';
+
+    const archivo = document.getElementById('evidencia_foto').files[0];
+    if (!archivo) {
+        alerta.textContent = 'Debe seleccionar una foto.';
+        alerta.classList.remove('d-none');
+        alerta.classList.add('alert-danger');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('foto', archivo);
+    formData.append('comentario', document.getElementById('evidencia_comentario').value.trim());
+
+    const btnSubmit = this.querySelector('button[type="submit"]');
+    btnSubmit.disabled = true;
+    btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Subiendo...';
+
+    try {
+        const response = await authFetch(`/api/incidencias/${incidenciaEvidenciaActual}/evidencias`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            alerta.textContent = data.message || 'No se pudo subir la evidencia.';
+            alerta.classList.remove('d-none');
+            alerta.classList.add('alert-danger');
+            return;
+        }
+
+        $('#modalEvidencia').modal('hide');
+        cargarMisTareas();
+
+    } catch (error) {
+        alerta.textContent = 'Error de conexión con el servidor.';
+        alerta.classList.remove('d-none');
+        alerta.classList.add('alert-danger');
+    } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = '<i class="fas fa-upload mr-1"></i>Subir evidencia';
+    }
+});
 
 cargarEstadosFiltro();
 cargarMisTareas();

@@ -13,6 +13,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AsignacionController;
 use App\Http\Controllers\TareaController;
 use App\Http\Controllers\CoordinadorController;
+use App\Http\Controllers\EvidenciaController;
 
 // Rutas públicas (limitadas a 5 intentos por minuto contra fuerza bruta)
 Route::middleware('throttle:5,1')->group(function () {
@@ -50,6 +51,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/incidencias/{id}/comentarios', [ComentarioController::class, 'index']);
     Route::post('/incidencias/{id}/comentarios', [ComentarioController::class, 'store']);
 
+    // Evidencias (fotos del avance/arreglo). Lectura abierta a cualquier
+    // autenticado: el propio show()/vistaShow() de IncidenciaController ya
+    // impide que un Ciudadano vea una incidencia que no es suya, así que
+    // si llegó hasta aquí, tiene derecho a ver también su evidencia.
+    Route::get('/incidencias/{id}/evidencias', [EvidenciaController::class, 'index']);
+
     // ===== Tareas (Mis Tareas): cualquier autenticado consulta SOLO las suyas =====
     Route::get('/tareas/mias', [TareaController::class, 'misTareas']);
     Route::get('/tareas/{id}', [TareaController::class, 'show']);
@@ -76,6 +83,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/asignaciones/{id}', [AsignacionController::class, 'destroy']);
 
         Route::delete('/comentarios/{id}', [ComentarioController::class, 'destroy']);
+
+        // Subir evidencia (foto + comentario) de una incidencia en curso.
+        // El propio controlador exige ser el Responsable ASIGNADO a esa
+        // incidencia específica, o Administrador.
+        Route::post('/incidencias/{id}/evidencias', [EvidenciaController::class, 'store']);
+        Route::delete('/evidencias/{id}', [EvidenciaController::class, 'destroy']);
 
         // El Responsable actualiza el estado de SU tarea + nota de avance
         // (el Administrador también puede, por si necesita corregir algo)

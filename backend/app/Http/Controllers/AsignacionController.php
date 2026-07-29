@@ -101,6 +101,7 @@ class AsignacionController extends Controller
                 'incidencia.ciudad',
                 'incidencia.estado',
                 'incidencia.usuario',
+                'incidencia.evidencias',
             ])
             ->where('usuario_id', $request->user()->id);
 

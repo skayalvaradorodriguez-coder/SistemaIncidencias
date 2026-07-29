@@ -412,6 +412,7 @@
                 return;
             }
 
+            guardarMensajeExito('Incidencia registrada correctamente.');
             window.location.href = "{{ route('incidencias.index') }}";
 
         } catch (err) {
