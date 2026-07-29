@@ -6,9 +6,17 @@ use Illuminate\Http\Request;
 use App\Models\Evidencia;
 use App\Models\Incidencia;
 use App\Models\Asignacion;
+use App\Services\NotificacionService;
 
 class EvidenciaController extends Controller
 {
+    protected NotificacionService $notificaciones;
+
+    public function __construct(NotificacionService $notificaciones)
+    {
+        $this->notificaciones = $notificaciones;
+    }
+
     /**
      * Lista las evidencias subidas para una incidencia (fotos del avance/arreglo).
      */
@@ -64,6 +72,12 @@ class EvidenciaController extends Controller
             'ruta_foto' => $rutaFoto,
             'comentario' => $request->comentario,
         ]);
+
+        $this->notificaciones->notificarNuevaEvidencia(
+            $incidencia,
+            $usuario->id,
+            $request->comentario
+        );
 
         return response()->json($evidencia->load('usuario'), 201);
     }

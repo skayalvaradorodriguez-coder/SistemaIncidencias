@@ -154,4 +154,32 @@ class NotificacionService
             ]);
         }
     }
+
+    /**
+     * Notifica a los administradores cuando el Responsable sube una
+     * evidencia (foto del avance o resolución) de una incidencia.
+     */
+    public function notificarNuevaEvidencia(Incidencia $incidencia, int $usuarioSubeId, ?string $comentario = null): void
+    {
+        $administradores = User::whereHas('rol', fn ($q) => $q->where('nombre', 'Administrador'))
+            ->where('activo', true)
+            ->pluck('id')
+            ->all();
+
+        $quienSube = User::find($usuarioSubeId);
+        $nombreQuienSube = $quienSube ? $quienSube->name . ' ' . $quienSube->apellido : 'Un responsable';
+
+        $mensaje = "{$nombreQuienSube} subió una evidencia de la incidencia \"{$incidencia->titulo}\".";
+        if ($comentario) {
+            $mensaje .= " Comentario: \"{$comentario}\".";
+        }
+
+        $this->crearParaVarios(
+            $administradores,
+            'Nueva evidencia — incidencia #' . $incidencia->id,
+            $mensaje,
+            $incidencia->id,
+            $usuarioSubeId
+        );
+    }
 }
