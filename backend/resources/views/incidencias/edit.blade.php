@@ -95,7 +95,12 @@
                     <label>Fotografía</label>
                     <div id="fotoActualContenedor" class="mb-2">
                         @if($incidencia->foto)
-                            <img id="fotoActual" src="{{ asset('storage/' . $incidencia->foto) }}"
+                            @php
+                                $fotoActualSrc = str_starts_with($incidencia->foto, 'data:')
+                                    ? $incidencia->foto
+                                    : asset('storage/' . $incidencia->foto);
+                            @endphp
+                            <img id="fotoActual" src="{{ $fotoActualSrc }}"
                                  class="img-fluid rounded d-block mb-2" style="max-height: 220px;"
                                  alt="Fotografía actual de la incidencia">
                         @else
