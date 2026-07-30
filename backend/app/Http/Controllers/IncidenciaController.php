@@ -104,7 +104,12 @@ class IncidenciaController extends Controller
         $rutaFoto = null;
 
         if ($request->hasFile('foto')) {
-            $rutaFoto = $request->file('foto')->store('incidencias', 'public');
+            // Se guarda como base64 directo en la base de datos (no como archivo en
+            // disco), porque el disco de Render no persiste entre reinicios/redeploys.
+            $archivo = $request->file('foto');
+            $rutaFoto = 'data:' . $archivo->getMimeType() . ';base64,' . base64_encode(
+                file_get_contents($archivo->getRealPath())
+            );
         }
 
         $incidencia = Incidencia::create([
@@ -216,11 +221,17 @@ class IncidenciaController extends Controller
         ]);
 
         if ($request->hasFile('foto')) {
-            // Eliminar la foto anterior del disco, si existía
-            if ($incidencia->foto) {
+            // Si la foto anterior era un archivo en disco (registros viejos, antes de
+            // este cambio), se intenta borrar por limpieza; si ya era base64, no hay
+            // archivo físico que borrar.
+            if ($incidencia->foto && !str_starts_with($incidencia->foto, 'data:')) {
                 \Storage::disk('public')->delete($incidencia->foto);
             }
-            $datos['foto'] = $request->file('foto')->store('incidencias', 'public');
+
+            $archivo = $request->file('foto');
+            $datos['foto'] = 'data:' . $archivo->getMimeType() . ';base64,' . base64_encode(
+                file_get_contents($archivo->getRealPath())
+            );
         }
 
         $incidencia->update($datos);
