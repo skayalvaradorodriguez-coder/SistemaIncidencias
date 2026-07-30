@@ -110,10 +110,17 @@
             </div>
 
             @if($incidencia->foto)
+                @php
+                    // Compatibilidad: fotos nuevas vienen en base64 (data:...), las
+                    // viejas (antes de este cambio) eran una ruta dentro de storage/.
+                    $fotoSrc = str_starts_with($incidencia->foto, 'data:')
+                        ? $incidencia->foto
+                        : asset('storage/' . $incidencia->foto);
+                @endphp
                 <div class="mb-3">
                     <p><strong>Fotografía:</strong></p>
-                    <a href="{{ asset('storage/' . $incidencia->foto) }}" target="_blank">
-                        <img src="{{ asset('storage/' . $incidencia->foto) }}"
+                    <a href="{{ $fotoSrc }}" target="_blank">
+                        <img src="{{ $fotoSrc }}"
                              class="img-fluid rounded" style="max-height: 350px;"
                              alt="Fotografía de la incidencia">
                     </a>
@@ -438,17 +445,23 @@ async function cargarEvidenciasDetalle() {
             return;
         }
 
-        cont.innerHTML = evidencias.map(ev => `
-            <a href="/storage/${ev.ruta_foto}" target="_blank" style="text-decoration:none;">
+        cont.innerHTML = evidencias.map(ev => {
+            // Compatibilidad: evidencias nuevas vienen en base64 (data:...),
+            // las viejas eran una ruta dentro de storage/.
+            const fotoSrc = ev.ruta_foto.startsWith('data:') ? ev.ruta_foto : `/storage/${ev.ruta_foto}`;
+
+            return `
+            <a href="${fotoSrc}" target="_blank" style="text-decoration:none;">
                 <div style="width:120px;">
-                    <img src="/storage/${ev.ruta_foto}" style="width:120px; height:120px; object-fit:cover; border-radius:8px; border:1px solid var(--border-subtle);">
+                    <img src="${fotoSrc}" style="width:120px; height:120px; object-fit:cover; border-radius:8px; border:1px solid var(--border-subtle);">
                     <div style="font-size:0.72rem; color:var(--text-muted); margin-top:4px;">
                         ${escapeHtml(ev.usuario ? ev.usuario.name : 'Responsable')}
                         ${ev.comentario ? '<br>' + escapeHtml(ev.comentario) : ''}
                     </div>
                 </div>
             </a>
-        `).join('');
+        `;
+        }).join('');
 
     } catch (error) {
         cont.innerHTML = '<span class="text-muted" style="font-size:0.85rem;">Error de conexión.</span>';
