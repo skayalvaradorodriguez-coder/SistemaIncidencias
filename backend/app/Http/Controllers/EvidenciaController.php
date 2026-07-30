@@ -64,7 +64,10 @@ class EvidenciaController extends Controller
             'foto.max' => 'La imagen no debe superar los 4 MB.',
         ]);
 
-        $rutaFoto = $request->file('foto')->store('evidencias', 'public');
+        $archivo = $request->file('foto');
+        $rutaFoto = 'data:' . $archivo->getMimeType() . ';base64,' . base64_encode(
+            file_get_contents($archivo->getRealPath())
+        );
 
         $evidencia = Evidencia::create([
             'incidencia_id' => $incidenciaId,
@@ -97,7 +100,9 @@ class EvidenciaController extends Controller
             ], 403);
         }
 
-        \Storage::disk('public')->delete($evidencia->ruta_foto);
+        if ($evidencia->ruta_foto && !str_starts_with($evidencia->ruta_foto, 'data:')) {
+            \Storage::disk('public')->delete($evidencia->ruta_foto);
+        }
         $evidencia->delete();
 
         return response()->json(['message' => 'Evidencia eliminada correctamente.']);
