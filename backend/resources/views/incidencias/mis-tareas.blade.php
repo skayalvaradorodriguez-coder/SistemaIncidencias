@@ -441,11 +441,17 @@ function pintarGaleriaEvidencias(evidencias) {
 
     cont.innerHTML = '<label class="d-block mb-2">Evidencia ya subida</label>' +
         '<div class="d-flex flex-wrap" style="gap:8px;">' +
-        evidencias.map(ev => `
-            <a href="/storage/${ev.ruta_foto}" target="_blank" title="${escaparHtml(ev.comentario || '')}">
-                <img src="/storage/${ev.ruta_foto}" style="width:70px; height:70px; object-fit:cover; border-radius:6px; border:1px solid var(--border-subtle);">
+        evidencias.map(ev => {
+            // Compatibilidad: evidencias nuevas vienen en base64 (data:...),
+            // las viejas eran una ruta dentro de storage/.
+            const fotoSrc = ev.ruta_foto.startsWith('data:') ? ev.ruta_foto : `/storage/${ev.ruta_foto}`;
+
+            return `
+            <a href="${fotoSrc}" target="_blank" title="${escaparHtml(ev.comentario || '')}">
+                <img src="${fotoSrc}" style="width:70px; height:70px; object-fit:cover; border-radius:6px; border:1px solid var(--border-subtle);">
             </a>
-        `).join('') +
+        `;
+        }).join('') +
         '</div>';
 }
 
