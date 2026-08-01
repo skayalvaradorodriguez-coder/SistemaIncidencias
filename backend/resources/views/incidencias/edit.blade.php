@@ -311,6 +311,7 @@
                 return;
             }
 
+            alert('Incidencia actualizada correctamente.');
             window.location.href = "{{ route('incidencias.show', $incidencia->id) }}";
 
         } catch (err) {
