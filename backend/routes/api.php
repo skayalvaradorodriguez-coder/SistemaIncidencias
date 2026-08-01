@@ -13,6 +13,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AsignacionController;
 use App\Http\Controllers\CoordinadorController;
 use App\Http\Controllers\EvidenciaController;
+use App\Http\Controllers\TareaController;
 
 // Rutas públicas (limitadas a 5 intentos por minuto contra fuerza bruta)
 Route::middleware('throttle:5,1')->group(function () {
@@ -32,6 +33,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'api']);
+    Route::get('/dashboard/mias', [DashboardController::class, 'misStats']);
 
     // Incidencias (lectura y registro: cualquier usuario autenticado)
     Route::get('/incidencias', [IncidenciaController::class, 'index']);
