@@ -412,7 +412,7 @@
                 return;
             }
 
-            guardarMensajeExito('Incidencia registrada correctamente.');
+            alert('Incidencia guardada correctamente.');
             window.location.href = "{{ route('incidencias.index') }}";
 
         } catch (err) {
